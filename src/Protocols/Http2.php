@@ -1,28 +1,107 @@
 <?php
 namespace Protocols;
+use Workerman\Connection\TcpConnection;
 class Http2
 {
     public static function input($http_buffer, $connection)
     {
-        if(!strpos($recv_buffer, "\r\n\r\n"))
+        if(!empty($connection->httpRequest))
         {
-            if(strlen($recv_buffer)>=TcpConnection::$maxPackageSize)
+            return 0;
+        }
+        $pos = strpos($http_buffer, "\r\n\r\n"); 
+        if(!$pos)
+        {
+            if(strlen($http_buffer)>=TcpConnection::$maxPackageSize)
             {
-                $connection->close("HTTP/1.1 400 bad request\r\n\r\n");
+                $connection->close("HTTP/1.1 400 bad request\r\n\r\nheader too long");
                 return 0;
             }
             return 0;
         }
+        $head_len = $pos + 4;
+        $raw_head = substr($http_buffer, 0, $head_len);
+        $raw_body = substr($http_buffer, $head_len);
+        if($connection->onRequest)
+        {
+            $req = new Request($connection, $raw_head);
+            $res = new Response($connection);
+            self::emitRequest($connection, $req, $res);
+            
+            if($req->method == 'GET')
+            {
+                self::emitEnd($connection, $req);
+            }
+            
+            if(!$req->onData || !$raw_body)
+            {
+                $connection->consumeRecvBuffer(strlen($http_buffer));
+                return;
+            }
+            try 
+            {
+                //call
+            }
+            catch (\Exception $e)
+            {
+                
+            }
+        }
+        else
+        {
+            
+        }
+        //return $pos+4;
+    }
+    
+    protected static function emitRequest($connection, $req, $res)
+    {
+        $connection->httpRequest = $req;
+        $connection->httpResponse = $res;
+        try
+        {
+            call_user_func($connection->onRequest, $req, $res);
+        }
+        catch(\Exception $e)
+        {
+            echo $e;
+        }
+    }
+    
+    public static function emitClose($connection, $req)
+    {
+        
+    }
+    
+    public static function emitData($connection, $req, $data)
+    {
+        
+    } 
+    
+    public static function emitEnd($connection, $req)
+    {
+        if($req->onEnd)
+        {
+            try
+            {
+                call_user_func($req->onEnd, $req);
+            }
+            catch(\Exception $e)
+            {
+                echo $e;
+            }
+        }
+        $connection->httpRequest = $connection->httpResponse = null;
     }
 
     public static function encode($buffer, $connection)
     {
-
+        return $buffer;
     }
 
     public static function decode($http_buffer, $connection)
     {
-
+        return $http_buffer;
     }
 }
 
@@ -32,6 +111,41 @@ class Request
 
     public $onEnd = null;
 
+    public $httpVersion = null;
+    
+    public $headers = array();
+    
+    public $rawHeaders = null;
+    
+    public $method = null;
+    
+    public $url = null;
+    
+    public $connection = null;
+    
+    public function __construct($connection, $raw_head)
+    {
+        $this->connection = $connection;
+        $this->parseHead($raw_head);
+    }
+    
+    public function parseHead($raw_head)
+    {
+        $header_data = explode("\r\n", $raw_head);
+        list($this->method, $this->url, $protocol) = explode(' ', $header_data[0]);
+        list($null, $this->httpVersion) = explode('/', $protocol);
+        unset($header_data[0]);
+        $this->rawHeaders = array_values($header_data);
+        foreach($header_data as $content)
+        {
+            if(empty($content))
+            {
+                continue;
+            }
+            list($key, $value) = explode(':', $content, 2);
+            $this->headers[strtolower($key)] = trim($value);
+        }
+    }
 }
 
 
@@ -108,9 +222,9 @@ class Response
                 }
                 continue;
             }
-            $head_buffer .= "$key: $val\r\n"
+            $head_buffer .= "$key: $val\r\n";
         }
-        return $headers_buffer."\r\n";
+        return $head_buffer."\r\n";
     }
 
     protected function doWriteHead()
