@@ -189,13 +189,13 @@ class Request
         list($this->method, $this->url, $protocol) = explode(' ', $header_data[0]);
         list($null, $this->httpVersion) = explode('/', $protocol);
         unset($header_data[0]);
-        $this->rawHeaders = array_values($header_data);
         foreach($header_data as $content)
         {
             if(empty($content))
             {
                 continue;
             }
+            $this->rawHeaders[] = $content;
             list($key, $value) = explode(':', $content, 2);
             $this->headers[strtolower($key)] = trim($value);
         }
@@ -272,6 +272,10 @@ class Response
         {
             $head_buffer .= "Transfer-Encoding: chunked\r\n";
         }
+        if(!isset($this->_headers['Connection']))
+        {
+            $head_buffer .= "Connection: keep-alive\r\n";
+        }
         foreach($this->_headers as $key=>$val)
         {
             if($key === 'Set-Cookie' && is_array($val))
@@ -306,12 +310,13 @@ class Response
     {
         if(!isset($this->_headers['Content-Length']))
         {
-            $trunk = strlen($chunk) . "\r\n" . $chunk . "\r\n\r\n";
+            $chunk = dechex(strlen($chunk)) . "\r\n" . $chunk . "\r\n";
         }
         if(!$this->headersSent)
         {
             $head_buffer = $this->getHeadBuffer(); 
             $chunk = $head_buffer . $chunk;
+            $this->headersSent = true;
         }
         $this->_connection->send($chunk, true);
     }
