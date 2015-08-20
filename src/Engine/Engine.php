@@ -69,7 +69,7 @@ class Engine extends Emitter
 
         $this->clients[$id] = $socket;
         $socket.once('close', function() use ($id){
-            unset($this->clients[$id];
+            unset($this->clients[$id]);
         });
 
         $this->emit('connection', $socket);
@@ -80,10 +80,11 @@ class Engine extends Emitter
         $worker->onConnection = function($connection)
         {
             $connection->onRequest = array($this, 'onRequest');
+            // clean
             $connection->onClose = function($connection)
             {
                 $connection->httpRequest = $connection->httpResponse = $connection->onRequest = null;
             };
-        }
+        };
     }
 }
