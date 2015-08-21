@@ -34,7 +34,7 @@ class Socket extends Emitter
         $this->transport->on('drain', array($this, 'flush'));
         $this->transport->once('close', array($this, 'onClose'));
         //this function will manage packet events (also message callbacks)
-        $this->setupSendCallback();
+        //$this->setupSendCallback();
     }
     
     public function onOpen()
@@ -138,12 +138,11 @@ class Socket extends Emitter
     
     public function sendPacket($type, $data = '', $options = array(), $callback = null)
     {
-        if(is_callable(options))
+        if(is_callable($options))
          {
             $callback = $options;
             $options = array();
         }
-        $options['compress'] = false !== $options['compress'];
         if('closing' !== $this->readyState) 
         {
             $packet = array(
@@ -165,23 +164,54 @@ class Socket extends Emitter
     
     public function flush() 
     {
-        if ('closed' != $this->readyState && $this->transport.writable
-        && $this->writeBuffer) {
-        $this->emit('flush', $this->writeBuffer);
-        $this->server->emit('flush', $this, $this->writeBuffer);
-        $wbuf = $this->writeBuffer;
-        $this->writeBuffer = array();
-        if (!$this->transport->supportsFraming) 
+        if ('closed' != $this->readyState && $this->transport->writable
+        && $this->writeBuffer) 
         {
-            $this->sentCallbackFn[] = $this->packetsFn;
-        } 
-        else 
-        {
-           //$this->sentCallbackFn.push.apply(this.sentCallbackFn, this.packetsFn);
+            $this->emit('flush', $this->writeBuffer);
+            $this->server->emit('flush', $this, $this->writeBuffer);
+            $wbuf = $this->writeBuffer;
+            $this->writeBuffer = array();
+            if(!empty($this->transport->supportsFraming)) 
+            {
+                $this->sentCallbackFn[] = $this->packetsFn;
+            } 
+            else 
+            {
+               // @todo check
+               $this->sentCallbackFn[]=$this->packetsFn;
+            }
+            $this->packetsFn = array();
+            $this->transport->send($wbuf);
+            $this->emit('drain');
+            $this->server->emit('drain', $this);
         }
-    this.packetsFn = [];
-    this.transport.send(wbuf);
-    this.emit('drain');
-    this.server.emit('drain', this);
-  }
+    }
+
+    public function getAvailableUpgrades()
+    {
+        return array('websocket');
+    }
+
+    public function close()
+    {
+        if ('open' != $this->readyState)
+        {
+            return;
+        }
+   
+        $this->readyState = 'closing';
+
+        if ($this->writeBuffer) {
+            $this->once('drain', array($this, 'closeTransport'));
+            return;
+        }
+
+        $this->closeTransport();
+    }
+
+    public function closeTransport()
+    {
+        //todo onClose.bind(this, 'forced close'));
+        $this->transport->close(array($this, 'onClose'));
+    }
 }

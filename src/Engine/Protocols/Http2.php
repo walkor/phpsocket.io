@@ -26,7 +26,7 @@ class Http2
         $res = new Response($connection);
         $connection->httpRequest = $req;
         $connection->httpResponse = $res;
-        if($connection->onRequest)
+        if(!empty($connection->onRequest))
         {
             $connection->consumeRecvBuffer(strlen($http_buffer));
             self::emitRequest($connection, $req, $res);
@@ -199,6 +199,11 @@ class Request
             list($key, $value) = explode(':', $content, 2);
             $this->headers[strtolower($key)] = trim($value);
         }
+    }
+
+    public function destroy()
+    {
+        $this->connection = null;
     }
 }
 

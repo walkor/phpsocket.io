@@ -13,7 +13,6 @@ class Engine extends Emitter
 
     public function __construct($ops = array())
     {
-        $this->_address = $address;
         $ops_map = array('pingTimeout',
                          'pingInterval',
                          'upgradeTimeout',
@@ -32,6 +31,7 @@ class Engine extends Emitter
 
     public function handleRequest($req, $res)
     {
+        $this->prepare($req);
         $req->res = $res;
         if(isset($req->_query['sid']))
         {
@@ -39,7 +39,7 @@ class Engine extends Emitter
         }
         else
         {
-            $this->handshake($req->_query->transport, $req);
+            $this->handshake($req->_query['transport'], $req);
         }
     }
 
@@ -47,20 +47,25 @@ class Engine extends Emitter
     {
         if(!isset($req->_query))
         {
-            $req->_query = parse_str($req->url);
+            $info = parse_url($req->url);
+            if(isset($info['query']))
+            {
+                parse_str($info['query'], $req->_query);
+            }
         }
     }
 
     public function handshake($transport, $req)
     {
         $id = rand(1, 100000000);
+        $transport = '\\Transport\\'.$transport;
         $transport = new $transport($req);
 
         $transport->supportsBinary = !isset($req->_query['b64']);
  
         $socket = new Socket($id, $this, $transport, $req);
 
-        $transport.on('headers', function($transport)
+        $transport->on('headers', function($transport)
         {
             $transport->req->res->headers['Set-Cookie'] = "io=$id";
         });
@@ -77,14 +82,17 @@ class Engine extends Emitter
 
     public function attach($worker)
     {
-        $worker->onConnection = function($connection)
+        $this->server = $worker;
+        $worker->onConnect = array($this, 'onConnect'); 
+    }
+    
+    public function onConnect($connection)
+    {
+        $connection->onRequest = array($this, 'handleRequest');
+        // clean
+        $connection->onClose = function($connection)
         {
-            $connection->onRequest = array($this, 'onRequest');
-            // clean
-            $connection->onClose = function($connection)
-            {
-                $connection->httpRequest = $connection->httpResponse = $connection->onRequest = null;
-            };
+            $connection->httpRequest = $connection->httpResponse = $connection->onRequest = null;
         };
     }
 }
