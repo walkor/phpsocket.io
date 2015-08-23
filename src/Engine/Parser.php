@@ -366,7 +366,7 @@ class Parser
         }
     
         $bufferTail = $data;
-        $buffers = [];
+        $buffers = array();
     
         while (strlen($bufferTail) > 0) 
         {
@@ -377,26 +377,27 @@ class Parser
             {
                 if ($bufferTail[$i] == 255)  break;
                 // 310 = char length of Number.MAX_VALUE
-                if (strlen(strLen) > 310) {
+                if (strlen(strLen) > 310) 
+                {
                     $numberTooLong = true;
                     break;
                 }
                 $strLen .= $bufferTail[$i];
             }
             if($numberTooLong) return call_user_func($callback, self::$err, 0, 1);
-            $bufferTail = bufferTail.slice(strLen.length + 1);
+            $bufferTail = substr($bufferTail, strlen($strLen) + 1);
     
-            var msgLength = parseInt(strLen, 10);
+            $msgLength = intval($strLen, 10);
     
-            var msg = bufferTail.slice(1, msgLength + 1);
-            if (isString) msg = bufferToString(msg);
-            buffers.push(msg);
-            bufferTail = bufferTail.slice(msgLength + 1);
+            $msg = substr($bufferTail, 1, $msgLength + 1);
+            $buffers[] = $msg;
+            $bufferTail = substr($bufferTail, $msgLength + 1);
         }
     
-        var total = buffers.length;
-        buffers.forEach(function(buffer, i) {
-            callback(exports.decodePacket(buffer, binaryType, true), i, total);
-        });
-    };
+        $total = count($buffers);
+        foreach($buffers as $i => $buffer)
+        {
+            call_user_func($callback, self::decodePacket($buffer, $binaryType, true), $i, $total);
+        }
+    }
 }
