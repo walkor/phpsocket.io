@@ -187,7 +187,7 @@ class Parser
         return strlen(message) . ':' . $message;
     }
     
-    public static function encodeOne($packet, $doneCallback, $supportsBinary = null) 
+    public static function encodeOne($packet, $doneCallback, $supportsBinary = null, $result = null) 
     {
         self::encodePacket($packet, $supportsBinary, true, function($message) 
         {
@@ -203,12 +203,28 @@ class Parser
     
     public static function map($ary, $each, $done) 
     {
-        $result = array();
-        foreach($ary as $msg)
+        $results = array();
+        $len = count($ary);
+        $ary = array_values($ary);
+        for($i = 0; $i < $len; $i++)
         {
-            $result[] = call_user_func($each, $msg);
+            $msg = $ary[$i];
+            if($i === $len -1)
+            {
+                call_user_func($each, $msg, function($err, $msg)use(&$results, $done)
+                {
+                    $result[] = $msg;
+                    call_user_func($done, null, $results);
+                });
+            }
+            else
+            {
+                call_user_func($each, $msg, function($err, $msg)use(&$results)
+                {
+                    $result[] = $msg;
+                });
+            }
         } 
-        return call_user_func($done, $result);
     }
     
     /*
@@ -219,96 +235,76 @@ class Parser
     * @api public
     */
     
-    exports.decodePayload = function (data, binaryType, callback) {
-        if ('string' != typeof data) {
-            return exports.decodePayloadAsBinary(data, binaryType, callback);
+    public static function decodePayload($data, $binaryType = null, $callback = null) 
+    {
+        if (!is_string($data))
+        {
+            return self::decodePayloadAsBinary($data, $binaryType, $callback);
         }
     
-        if (typeof binaryType === 'function') {
-            callback = binaryType;
-            binaryType = null;
+        if (is_callable($binaryType))
+        {
+            $callback = $binaryType;
+            $binaryType = null;
         }
     
-        var packet;
-        if (data == '') {
+        if (data === '') 
+        {
             // parser error - ignoring payload
-            return callback(err, 0, 1);
+            return call_user_func($callback, self::err, 0, 1);
         }
     
-        var length = ''
-        , n, msg;
+        $length = '';//, n, msg;
     
-        for (var i = 0, l = data.length; i < l; i++) {
-            var chr = data.charAt(i);
+        for ($i = 0, $l = strlen(data); $i < $l; $i++) 
+        {
+            $chr = $data[$i];
     
-            if (':' != chr) {
-                length += chr;
-            } else {
-                if ('' == length || (length != (n = Number(length)))) {
+            if (':' != $chr) 
+            {
+                $length .= $chr;
+            } 
+            else 
+            {
+                if ('' == $length || ($length != ($n = intval($length)))) 
+                {
                     // parser error - ignoring payload
-                    return callback(err, 0, 1);
+                    return call_user_func($callback, self::$err, 0, 1);
                 }
     
-                msg = data.substr(i + 1, n);
+                $msg = substr($data, $i + 1, $n);
     
-                if (length != msg.length) {
+                if ($length != strlen($msg)) 
+                {
                     // parser error - ignoring payload
-                    return callback(err, 0, 1);
+                    return call_user_func($callback, self::$err, 0, 1);
                 }
     
-                if (msg.length) {
-                    packet = exports.decodePacket(msg, binaryType, true);
+                if (isset($msg[0])) 
+                {
+                    $packet = self::decodePacket($msg, $binaryType, true);
     
-                    if (err.type == packet.type && err.data == packet.data) {
+                    if (self::$err['type'] == $packet['type'] && self::$err['data'] == $packet['data']) 
+                    {
                         // parser error in individual packet - ignoring payload
-                        return callback(err, 0, 1);
+                        return call_user_func($callback, self::$err, 0, 1);
                     }
     
-                    var ret = callback(packet, i + n, l);
-                    if (false === ret) return;
+                    $ret = call_user_func($callback, $packet,$i + $n, $l);
+                    if (false === $ret) return;
                 }
     
                 // advance cursor
-                i += n;
-                length = '';
+                $i += $n;
+                $length = '';
             }
         }
     
-        if (length != '') {
+        if ($length !== '') 
+        {
             // parser error - ignoring payload
-            return callback(err, 0, 1);
+            return call_user_func($callback, $err, 0, 1);
         }
-    
-    };
-    
-    /**
-     *
-     * Converts a buffer to a utf8.js encoded string
-     *
-     * @api private
-     */
-    
-    function bufferToString(buffer) {
-        var str = '';
-        for (var i = 0; i < buffer.length; i++) {
-            str += String.fromCharCode(buffer[i]);
-        }
-        return str;
-    }
-    
-    /**
-     *
-     * Converts a utf8.js encoded string to a buffer
-     *
-     * @api private
-     */
-    
-    function stringToBuffer(string) {
-        var buf = new Buffer(string.length);
-        for (var i = 0; i < string.length; i++) {
-            buf.writeUInt8(string.charCodeAt(i), i);
-        }
-        return buf;
     }
     
     /**
@@ -325,40 +321,33 @@ class Parser
      * @api private
      */
     
-    exports.encodePayloadAsBinary = function (packets, callback) {
-        if (!packets.length) {
-            return callback(new Buffer(0));
+    public static function encodePayloadAsBinary($packets, $callback) 
+    {
+        if (!$packets) 
+        {
+            return call_user_func($callback, '');
         }
     
-        function encodeOne(p, doneCallback) {
-            exports.encodePacket(p, true, true, function(packet) {
-    
-                if (typeof packet === 'string') {
-                    var encodingLength = '' + packet.length;
-                    var sizeBuffer = new Buffer(encodingLength.length + 2);
-                    sizeBuffer[0] = 0; // is a string (not true binary = 0)
-                    for (var i = 0; i < encodingLength.length; i++) {
-                        sizeBuffer[i + 1] = parseInt(encodingLength[i], 10);
-                    }
-                    sizeBuffer[sizeBuffer.length - 1] = 255;
-                    return doneCallback(null, Buffer.concat([sizeBuffer, stringToBuffer(packet)]));
-                }
-    
-                var encodingLength = '' + packet.length;
-                var sizeBuffer = new Buffer(encodingLength.length + 2);
-                sizeBuffer[0] = 1; // is binary (true binary = 1)
-                for (var i = 0; i < encodingLength.length; i++) {
-                    sizeBuffer[i + 1] = parseInt(encodingLength[i], 10);
-                }
-                sizeBuffer[sizeBuffer.length - 1] = 255;
-                doneCallback(null, Buffer.concat([sizeBuffer, packet]));
-            });
-        }
-    
-        map(packets, encodeOne, function(err, results) {
-            return callback(Buffer.concat(results));
+        self::map(packets, 'Parser::encodeOneAsBinary', function($err, $results) 
+        {
+            return call_user_func($callback, implode('', $results));
         });
-    };
+    }
+    
+    public static function encodeOneAsBinary($p, $doneCallback) 
+    {
+            self::encodePacket($p, true, true, function($packet) 
+            {
+                    $encodingLength = '' + strlen(packet);
+                    $sizeBuffer = '0';
+                    for ($i = 0; $i < strlen($encodingLength); $i++) 
+                    {
+                        $sizeBuffer[$i + 1] = intval($encodingLength[$i], 10);
+                    }
+                    $sizeBuffer[strlen($sizeBuffer) - 1] = 255;
+                    return call_user_func($doneCallback, null, $sizeBuffer.$packet);
+            });
+    }
     
     /*
      * Decodes data when a payload is maybe expected. Strings are decoded by
@@ -368,30 +357,34 @@ class Parser
     * @api public
     */
     
-    exports.decodePayloadAsBinary = function (data, binaryType, callback) {
-        if (typeof binaryType === 'function') {
-            callback = binaryType;
-            binaryType = null;
+    public static function decodePayloadAsBinary($data, $binaryType = null, $callback = null) 
+    {
+        if (is_callable(binaryType))
+        {
+            $callback = $binaryType;
+            $binaryType = null;
         }
     
-        var bufferTail = data;
-        var buffers = [];
+        $bufferTail = $data;
+        $buffers = [];
     
-        while (bufferTail.length > 0) {
-            var strLen = '';
-            var isString = bufferTail[0] === 0;
-            var numberTooLong = false;
-            for (var i = 1; ; i++) {
-                if (bufferTail[i] == 255)  break;
+        while (strlen($bufferTail) > 0) 
+        {
+            $strLen = '';
+            $isString = $bufferTail[0] == 0;
+            $numberTooLong = false;
+            for ($i = 1; ; $i++) 
+            {
+                if ($bufferTail[$i] == 255)  break;
                 // 310 = char length of Number.MAX_VALUE
-                if (strLen.length > 310) {
-                    numberTooLong = true;
+                if (strlen(strLen) > 310) {
+                    $numberTooLong = true;
                     break;
                 }
-                strLen += '' + bufferTail[i];
+                $strLen .= $bufferTail[$i];
             }
-            if(numberTooLong) return callback(err, 0, 1);
-            bufferTail = bufferTail.slice(strLen.length + 1);
+            if($numberTooLong) return call_user_func($callback, self::$err, 0, 1);
+            $bufferTail = bufferTail.slice(strLen.length + 1);
     
             var msgLength = parseInt(strLen, 10);
     
