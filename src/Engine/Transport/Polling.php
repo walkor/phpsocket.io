@@ -1,6 +1,7 @@
 <?php
 namespace Transport;
 use \Transport;
+use \Parser;
 class Polling extends Transport
 {
     public $name = 'polling';
@@ -62,7 +63,7 @@ class Polling extends Transport
     
     public function pollRequestClean()
     {
-        $this->req->removeListener('close', array($this, 'pollRequestOnClose'));
+        $this->req->onClose = null;
         $this->req = $this->res = null;
     }
 
@@ -169,7 +170,6 @@ class Polling extends Transport
             call_user_func($this->shouldClose);
             $this->shouldClose = null;
         }
-
         $self = $this;
         Parser::encodePayload($packets, $this->supportsBinary, function($data)use($self)
         {
@@ -179,8 +179,8 @@ class Polling extends Transport
 
     public function write($data) 
     {
-        $this->doWrite(data);
-        $this->req->cleanup();
+        $this->doWrite($data);
+        call_user_func($this->req->cleanup);
         $this->writable = false;
     }
 

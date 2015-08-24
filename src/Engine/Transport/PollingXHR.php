@@ -4,7 +4,7 @@ class PollingXHR extends Polling
 {
     public function onRequest($req)
     {
-        if('OPTIONS' == req.method)
+        if('OPTIONS' === $req->method)
         {
             $res = $req->res;
             $headers = $this->headers($req);
@@ -20,10 +20,11 @@ class PollingXHR extends Polling
 
     public function doWrite($data)
     {
-        // explicit UTF-8 is required for pages not served under utf
-        $content_type = $isString
-            ? 'text/plain; charset=UTF-8'
-            : 'application/octet-stream';
+        // explicit UTF-8 is required for pages not served under utf todo
+        //$content_type = $isString
+        //    ? 'text/plain; charset=UTF-8'
+        //    : 'application/octet-stream';
+        $content_type = 'application/octet-stream';
         $content_length = strlen($data);
         $headers = array( 
             'Content-Type'=> $content_type,
@@ -37,14 +38,12 @@ class PollingXHR extends Polling
         {
             $headers['X-XSS-Protection'] = '0';
         }
-        $this->res->writeHead(200, $this->headers($this->req, $headers));
+        $this->res->writeHead(200, '', $this->headers($this->req, $headers));
         $this->res->end($data);
     }
     
-    public function headers($req, $headers)
+    public function headers($req, $headers = array())
     {
-        $headers = $headers ? $headers : array();
-
        if($req->headers['origin']) 
        {
            $headers['Access-Control-Allow-Credentials'] = 'true';

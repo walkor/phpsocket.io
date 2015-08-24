@@ -9,7 +9,7 @@ class Engine extends Emitter
     public $transports = array();
     public $allowUpgrades = array();
     public $allowRequest = array();
-    protected $_clients = array();
+    public $clients = array();
 
     public function __construct($ops = array())
     {
@@ -58,26 +58,41 @@ class Engine extends Emitter
     public function handshake($transport, $req)
     {
         $id = rand(1, 100000000);
-        $transport = '\\Transport\\'.$transport;
+        if (isset($req->_query['j'])) 
+        {
+            $transport = '\\Transport\\PollingJSONP';
+        } 
+        else 
+        {
+            $transport = '\\Transport\\PollingXHR';
+        }
+
         $transport = new $transport($req);
 
         $transport->supportsBinary = !isset($req->_query['b64']);
  
         $socket = new Socket($id, $this, $transport, $req);
 
-        $transport->on('headers', function($transport)
+        $transport->on('headers', function($transport)use($id)
         {
-            $transport->req->res->headers['Set-Cookie'] = "io=$id";
+            $transport->req->res->setHeader('Set-Cookie', "io=$id");
         });
 
         $transport->onRequest($req);
 
         $this->clients[$id] = $socket;
-        $socket.once('close', function() use ($id){
-            unset($this->clients[$id]);
+        //$socket->once('close', array($this, 'onSocketClose')); 
+        $self = $this;
+        $socket->once('close', function()use($id, $self)
+        {
+           unset($self->clients[$id]);
         });
-
         $this->emit('connection', $socket);
+    }
+
+    public function onSocketClose($id)
+    {
+        unset($this->clients[$id]);
     }
 
     public function attach($worker)

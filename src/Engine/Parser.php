@@ -28,7 +28,7 @@ class Parser
 
     public static function encodePacket($packet, $supportsBinary = null, $utf8encode = null, $callback = null)
     {
-        if(is_callable(supportsBinary))
+        if(is_callable($supportsBinary))
         {
             $callback = $supportsBinary;
             $supportsBinary = null;
@@ -158,7 +158,7 @@ class Parser
      * @api private
      */
     
-    public static function encodePayload($packets, $supportsBinary, $callback) 
+    public static function encodePayload($packets, $supportsBinary = null, $callback = null) 
     {
         if (is_callable($supportsBinary))
         {
@@ -166,7 +166,7 @@ class Parser
             $supportsBinary = null;
         }
     
-        if (supportsBinary) 
+        if ($supportsBinary) 
         {
             return self::encodePayloadAsBinary($packets, $callback);
         }
@@ -213,7 +213,7 @@ class Parser
             {
                 call_user_func($each, $msg, function($err, $msg)use(&$results, $done)
                 {
-                    $result[] = $msg;
+                    $results[] = $msg;
                     call_user_func($done, null, $results);
                 });
             }
@@ -221,7 +221,7 @@ class Parser
             {
                 call_user_func($each, $msg, function($err, $msg)use(&$results)
                 {
-                    $result[] = $msg;
+                    $results[] = $msg;
                 });
             }
         } 
@@ -328,7 +328,7 @@ class Parser
             return call_user_func($callback, '');
         }
     
-        self::map(packets, 'Parser::encodeOneAsBinary', function($err, $results) 
+        self::map($packets, 'Parser::encodeOneAsBinary', function($err, $results)use($callback) 
         {
             return call_user_func($callback, implode('', $results));
         });
@@ -336,17 +336,18 @@ class Parser
     
     public static function encodeOneAsBinary($p, $doneCallback) 
     {
-            self::encodePacket($p, true, true, function($packet) 
+        // todo is string or arraybuf
+        self::encodePacket($p, true, true, function($packet)use($doneCallback) 
+        {
+            $encodingLength = ''.strlen($packet);
+            $sizeBuffer = chr(0);
+            for ($i = 0; $i < strlen($encodingLength); $i++) 
             {
-                    $encodingLength = '' + strlen(packet);
-                    $sizeBuffer = '0';
-                    for ($i = 0; $i < strlen($encodingLength); $i++) 
-                    {
-                        $sizeBuffer[$i + 1] = intval($encodingLength[$i], 10);
-                    }
-                    $sizeBuffer[strlen($sizeBuffer) - 1] = 255;
-                    return call_user_func($doneCallback, null, $sizeBuffer.$packet);
-            });
+                $sizeBuffer .= chr($encodingLength[$i]);
+            }
+            $sizeBuffer .= chr(255);
+            return call_user_func($doneCallback, null, $sizeBuffer.$packet);
+        });
     }
     
     /*

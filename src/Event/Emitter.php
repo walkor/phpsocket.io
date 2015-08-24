@@ -9,7 +9,7 @@ class Emitter
     
     public function on($event_name, $listener)
     {
-        $this->emit('newListener', array($event_name, $listener));
+        $this->emit('newListener', $event_name, $listener);
         $this->_eventListenerMap[$event_name][] = array($listener, 0); 
         return $this;
     }
@@ -30,7 +30,7 @@ class Emitter
         {
             if($item[0] === $listener)
             {
-                $this->emit('removeListener', array($event_name, $listener));
+                $this->emit('removeListener', $event_name, $listener);
                 unset($this->_eventListenerMap[$event_name][$key]);
             }
         }
@@ -43,7 +43,7 @@ class Emitter
 
     public function removeAllListeners($event_name)
     {
-        $this->emit('removeListener', array($event_name));
+        $this->emit('removeListener', $event_name);
         unset($this->_eventListenerMap[$event_name]);
         return $this;
     }
@@ -62,7 +62,7 @@ class Emitter
         return $listeners;
     }
 
-    public function emit($event_name, $args = array())
+    public function emit($event_name)
     {
         if(empty($this->_eventListenerMap[$event_name]))
         {
@@ -70,6 +70,8 @@ class Emitter
         }
         foreach($this->_eventListenerMap[$event_name] as $key=>$item)
         {
+             $args = func_get_args();
+             unset($args[0]);
              call_user_func_array($item[0], $args);
              // once ?
              if($item[1])

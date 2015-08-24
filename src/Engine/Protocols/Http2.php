@@ -45,7 +45,7 @@ class Http2
             {
                 return 0;
             }
-            self::onData($connection, $req, $raw_body);
+            self::onData($connection, $raw_body);
             return 0;
         }
         else
@@ -66,8 +66,9 @@ class Http2
         }
     }
     
-    public static function onData($connection, $req, $data)
+    public static function onData($connection, $data)
     {
+        $req = $connection->httpRequest;
         self::emitData($connection, $req, $data);
         if((isset($req->headers['content-length']) && $req->headers['content-length'] <= strlen($data))     
             || $end_pos = strpos($data, "0\r\n\r\n"))
@@ -261,8 +262,15 @@ class Response
         {
             $this->_statusPhrase = $reason_phrase;
         }
+        if($headers)
+        {
+            foreach($headers as $key=>$val)
+            {
+                $this->_headers[$key] = $val;
+            }
+        }
         $head_buffer = $this->getHeadBuffer();
-        $this->connection->send($head_buffer, true);
+        $this->_connection->send($head_buffer, true);
         $this->headersSent = true;
     }
 
@@ -332,7 +340,7 @@ class Response
         {
             if(null !== $data)
             {
-                return $this->_connecton->send($data."0\r\n\r\n", true);
+                return $this->_connection->send($data."0\r\n\r\n", true);
             }
             return $this->_connection->send("0\r\n\r\n", true);
         }

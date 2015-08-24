@@ -34,7 +34,7 @@ class Socket extends Emitter
         $this->transport->on('drain', array($this, 'flush'));
         $this->transport->once('close', array($this, 'onClose'));
         //this function will manage packet events (also message callbacks)
-        //$this->setupSendCallback();
+        $this->setupSendCallback();
     }
     
     public function onOpen()
@@ -46,8 +46,8 @@ class Socket extends Emitter
         $this->sendPacket('open', json_encode(array(
             'sid'=> $this->id
             , 'upgrades' => $this->getAvailableUpgrades()
-            , 'pingInterval'=> $this->server->pingInterval
-            , 'pingTimeout'=> $this->server->pingTimeout
+            , 'pingInterval'=> $this->server->pingInterval*1000
+            , 'pingTimeout'=> $this->server->pingTimeout*1000
         )));
         
         $this->emit('open');
@@ -97,7 +97,7 @@ class Socket extends Emitter
         $self = $this;
         Timer::del($this->pingTimeoutTimer);
         $this->pingTimeoutTimer = Timer::add($this->server->pingInterval + $this->server->pingTimeout ,
-         function () {
+         function ()use($self) {
             $self->onClose('ping timeout');
         }, null, false);
     }
@@ -107,7 +107,7 @@ class Socket extends Emitter
         Timer::del($this->pingTimeoutTimer);
     }
     
-    public function onClose($reason, $description)
+    public function onClose($reason, $description = null)
     {
         if ('closed' != $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
@@ -157,7 +157,10 @@ class Socket extends Emitter
             $this->emit('packetCreate', $packet);
             $this->writeBuffer[] = $packet;
             //add send callback to object
-            $this->packetsFn[] = $callback;
+            if($callback)
+            {
+                $this->packetsFn[] = $callback;
+            }
             $this->flush();
         }
     }
@@ -171,6 +174,8 @@ class Socket extends Emitter
             $this->server->emit('flush', $this, $this->writeBuffer);
             $wbuf = $this->writeBuffer;
             $this->writeBuffer = array();
+            if($this->packetsFn)
+            {
             if(!empty($this->transport->supportsFraming)) 
             {
                 $this->sentCallbackFn[] = $this->packetsFn;
@@ -179,6 +184,7 @@ class Socket extends Emitter
             {
                // @todo check
                $this->sentCallbackFn[]=$this->packetsFn;
+            }
             }
             $this->packetsFn = array();
             $this->transport->send($wbuf);
@@ -213,5 +219,30 @@ class Socket extends Emitter
     {
         //todo onClose.bind(this, 'forced close'));
         $this->transport->close(array($this, 'onClose'));
+    }
+
+    public function setupSendCallback()
+    {
+        $self = $this;
+        //the message was sent successfully, execute the callback
+        $this->transport->on('drain', function()use($self) {
+            if ($self->sentCallbackFn) 
+            {
+                 var_dump($self->sentCallbackFn);
+                 $seqFn = array_shift($self->sentCallbackFn);//self.sentCallbackFn.splice(0,1)[0];
+                 var_export($reqFn);
+                 if(is_callable($seqFn)) 
+                 {
+                     echo('executing send callback');
+                     call_user_func($seqFn, $self->transport);
+                 }else if (is_array($seqFn)) {
+                     echo('executing batch send callback');
+                     foreach($seqFn as $fn)
+                     {
+                         call_user_func($fn, $self->transport);
+                     }
+                }
+            }
+         });
     }
 }

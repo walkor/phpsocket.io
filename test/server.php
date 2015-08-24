@@ -8,6 +8,7 @@ include __DIR__ . '/../src/Engine/Transport.php';
 include __DIR__ . '/../src/Engine/Transport/Polling.php';
 include __DIR__ . '/../src/Engine/Transport/PollingXHR.php';
 include __DIR__ . '/../src/Engine/Socket.php';
+include __DIR__ . '/../src/Engine/Parser.php';
 
 $io = new Worker('Http2://0.0.0.0:8888');
 $io->onMessage = 'test';
