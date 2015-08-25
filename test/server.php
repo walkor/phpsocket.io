@@ -1,5 +1,7 @@
 <?php
 use Workerman\Worker;
+use Workerman\Autoloader;
+use \Engine\Engine;
 include __DIR__ . '/../src/Event/Emitter.php';
 include __DIR__ . '/../vendor/workerman/workerman/Autoloader.php';
 include __DIR__ . '/../src/Engine/Protocols/Http2.php';
@@ -9,7 +11,8 @@ include __DIR__ . '/../src/Engine/Transport/Polling.php';
 include __DIR__ . '/../src/Engine/Transport/PollingXHR.php';
 include __DIR__ . '/../src/Engine/Socket.php';
 include __DIR__ . '/../src/Engine/Parser.php';
-
+Autoloader::setRootPath(__DIR__.'/../src/');
+class_alias('\Engine\Protocols\Http2', "Protocols\\Http2");
 $io = new Worker('Http2://0.0.0.0:8888');
 $io->onMessage = 'test';
 /*$io->onConnect = function($connection)

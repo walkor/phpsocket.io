@@ -1,4 +1,7 @@
 <?php
+namespace Engine;
+use \Engine\Transport\Polling;
+use \Engine\Transport\PollingXHR;
 use \Event\Emitter;
 
 class Engine extends Emitter
@@ -60,11 +63,11 @@ class Engine extends Emitter
         $id = rand(1, 100000000);
         if (isset($req->_query['j'])) 
         {
-            $transport = '\\Transport\\PollingJSONP';
+            $transport = '\\Engine\\Transport\\PollingJSONP';
         } 
         else 
         {
-            $transport = '\\Transport\\PollingXHR';
+            $transport = '\\Engine\\Transport\\PollingXHR';
         }
 
         $transport = new $transport($req);

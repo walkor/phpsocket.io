@@ -1,5 +1,5 @@
 <?php
-namespace Transport;
+namespace Engine\Transport;
 class PollingXHR extends Polling
 {
     public function onRequest($req)

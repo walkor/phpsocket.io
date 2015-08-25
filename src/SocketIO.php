@@ -31,8 +31,12 @@ class SocketIO extends Worker
         return $this->_nsp[$name];
     }
     
-    public function onConnection($connection)
+    public function onConnection($engine_socket)
     {
-        //$
+        $client = new Client($this, $engine_socket);
+        $client->connect('/');
+        return $this;
     }
+
+    
 }

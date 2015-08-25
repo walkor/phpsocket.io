@@ -1,7 +1,7 @@
 <?php
-namespace Transport;
-use \Transport;
-use \Parser;
+namespace Engine\Transport;
+use \Engine\Transport;
+use \Engine\Parser;
 class Polling extends Transport
 {
     public $name = 'polling';

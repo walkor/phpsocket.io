@@ -1,5 +1,150 @@
 <?php
-class Nsp
+use Event\Emitter;
+class Nsp extends Emitter;
 {
+    public $name = null;
+    public $server = null;
+    public $emitter = null;
+    public $rooms = array();
+    public $flags = array();
+    public $sockets = array();
+    public $connected = array();
+    public $fns = array();
+    public $ids = 0;
+    public $acks = array();
+    public static $events = array(
+        'connect',    // for symmetry with client
+        'connection',
+        'newListener'
+    );
+    
+    public static $flags = array('json');
+
+    public function __construct($server, $name)
+    {
+         $this->name = $name;
+         $this->server = $server;
+         $this->emitter = new Emitter();
+         //$this->initAdapter();
+    }
+
+    public function to($name)
+    {
+        if(!isset($this->rooms[$name]))
+        {
+            $this->rooms[$name] = $name;
+        }
+        return $this;
+    }
+
+    public function in($name)
+    {
+        return $this->to($name);
+    }
+
+    public function run($socket, $fn)
+    {
+        if(!$this->fns) return call_user_func($fn, null);
+        $last_fn = array_pop($this->fns);
+        foreach($this->fns as $fn)
+        {
+            call_user_func($fn, $socket);
+        }
+        call_user_func($last_fn, null);
+    }
+
+    public function add = function($client, $fn)
+    {
+        $socket = new Socket($this, $client);
+        $self = $this;
+        $this->run($socket, function($err){
+        Timer::add(0.001, function($client, $self){
+           if ('open' === $client->conn->readyState) {
+               // track socket
+               $self->sockets[]=$socket;
+
+               // it's paramount that the internal `onconnect` logic
+               // fires before user-set events to prevent state order
+               // violations (such as a disconnection before the connection
+               // logic is complete)
+               $socket->onconnect();
+               if ($fn) call_user_func($fn);
+
+               // fire user-set events
+               $self->emit('connect', $socket);
+               $self->emit('connection', $socket);
+           } else {
+               echo('next called after client was closed - ignoring socket');
+           }}, array($client, $self), false);
+       });
+       return $socket;
+    }
+    
+    /**
+ * Removes a client. Called by each `Socket`.
+ *
+ * @api private
+ */
+
+    public function remove($socket)
+    {
+        // todo $socket->id
+        unset($this->sockets[$socket->id]);
+    }
+};
+
+/**
+ * Emits to all clients.
+ *
+ * @return {Namespace} self
+ * @api public
+ */
+
+    public function emit($ev)
+    {
+        $args = func_get_args();
+        if (isset(self::$events[$ev]))
+        {
+            call_user_func_array(array($this->emitter, 'emit'), $args);
+        }
+        else 
+        {
+            // set up packet object
+            
+            $parserType = Parser::EVENT; // default
+            if (self::hasBin($args)) { $parserType = Parser::BINARY_EVENT; } // binary
+
+            $packet = array('type'=> $parserType, 'data'=> $args );
+
+            if (is_callable(end($args))) 
+            {
+                echo('Callbacks are not supported when broadcasting');
+                return;
+             }
+
+             $this->adapter->broadcast($packet, array(
+                 'rooms'=> $this->rooms,
+                 'flags'=> $this->flags
+             ));
+
+            $this->rooms = array();
+            $this->flags = array();;
+        }
+        return $this;
+    }
+    
+    public function send()
+    {
+        $args = func_get_args();
+        array_unshift($args, 'message');
+        $this->emit($args);
+        return $this;
+    }
+
+    public function write()
+    {
+        $args = func_get_args();
+        return call_user_func_array(array($this, 'send')), $args;;
+    }
 
 }

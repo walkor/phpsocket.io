@@ -1,4 +1,5 @@
 <?php
+namespace Engine;
 use \Event\Emitter;
 
 class Transport extends Emitter

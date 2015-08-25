@@ -1,4 +1,5 @@
 <?php
+namespace Engine;
 class Parser
 {
     public static $packets=array(
@@ -176,7 +177,7 @@ class Parser
             return call_user_func($callback, '0:');
         }
         
-        self::map($packets, 'Parser::encodeOne', function($err, $results)
+        self::map($packets, '\Engine\Parser::encodeOne', function($err, $results)
         {
             return call_user_func($callback, implode('', $results));
         });
@@ -328,7 +329,7 @@ class Parser
             return call_user_func($callback, '');
         }
     
-        self::map($packets, 'Parser::encodeOneAsBinary', function($err, $results)use($callback) 
+        self::map($packets, '\Engine\Parser::encodeOneAsBinary', function($err, $results)use($callback) 
         {
             return call_user_func($callback, implode('', $results));
         });
