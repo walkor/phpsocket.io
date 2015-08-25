@@ -12,9 +12,9 @@ class Nsp extends Emitter
     public $ids = 0;
     public $acks = array();
     public static $events = array(
-        'connect',    // for symmetry with client
-        'connection',
-        'newListener'
+        'connect' => 'connect',    // for symmetry with client
+        'connection' => 'connection',
+        'newListener' => 'newListener'
     );
     
     //public static $flags = array('json','volatile');
