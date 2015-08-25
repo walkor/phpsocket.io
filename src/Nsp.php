@@ -1,10 +1,9 @@
 <?php
 use Event\Emitter;
-class Nsp extends Emitter;
+class Nsp extends Emitter
 {
     public $name = null;
     public $server = null;
-    public $emitter = null;
     public $rooms = array();
     public $flags = array();
     public $sockets = array();
@@ -18,13 +17,12 @@ class Nsp extends Emitter;
         'newListener'
     );
     
-    public static $flags = array('json');
+    //public static $flags = array('json','volatile');
 
     public function __construct($server, $name)
     {
          $this->name = $name;
          $this->server = $server;
-         $this->emitter = new Emitter();
          //$this->initAdapter();
     }
 
@@ -53,7 +51,7 @@ class Nsp extends Emitter;
         call_user_func($last_fn, null);
     }
 
-    public function add = function($client, $fn)
+    public function add($client, $fn)
     {
         $socket = new Socket($this, $client);
         $self = $this;
@@ -91,7 +89,7 @@ class Nsp extends Emitter;
         // todo $socket->id
         unset($this->sockets[$socket->id]);
     }
-};
+
 
 /**
  * Emits to all clients.
@@ -105,6 +103,7 @@ class Nsp extends Emitter;
         $args = func_get_args();
         if (isset(self::$events[$ev]))
         {
+            parent::emit($ev);
             call_user_func_array(array($this->emitter, 'emit'), $args);
         }
         else 
@@ -144,7 +143,26 @@ class Nsp extends Emitter;
     public function write()
     {
         $args = func_get_args();
-        return call_user_func_array(array($this, 'send')), $args;;
+        return call_user_func_array(array($this, 'send'), $args);
     }
-
+    
+    public function clients($fn)
+    {
+        $this->adapter->clients($this->rooms, $fn);
+        return $this;
+    }
+    
+    /**
+     * Sets the compress flag.
+     *
+     * @param {Boolean} if `true`, compresses the sending data
+     * @return {Socket} self
+     * @api public
+     */
+    
+     public function compress($compress)
+     {
+        $this->flags['compress']' = $compress;
+        return $this;
+    }
 }
