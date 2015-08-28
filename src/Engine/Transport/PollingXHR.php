@@ -9,7 +9,7 @@ class PollingXHR extends Polling
             $res = $req->res;
             $headers = $this->headers($req);
             $headers['Access-Control-Allow-Headers'] = 'Content-Type';
-            $res->writeHead(200, $headers);
+            $res->writeHead(200, '', $headers);
             $res->end();
         } 
         else
@@ -53,8 +53,11 @@ class PollingXHR extends Polling
        {
            $headers['Access-Control-Allow-Origin'] = '*';
        }
-
-       $this->emit('headers', $this);
+       $listeners = $this->listeners('headers');
+       foreach($listeners as $listener)
+       {
+           $listener($headers);
+       }
        return $headers;
     }
  

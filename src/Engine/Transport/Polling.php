@@ -128,7 +128,7 @@ class Polling extends Transport
             $headers['X-XSS-Protection'] = '0';
         }
 
-        $this->dataRes->writeHead(200, $this->headers($req, $headers));
+        $this->dataRes->writeHead(200, '', $this->headers($req, $headers));
         $this->dataRes->end('ok');
         $this->dataRequestCleanup();
     }

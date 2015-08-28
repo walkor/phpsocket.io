@@ -132,25 +132,19 @@ class Socket extends Emitter
         return $this;
     }
     
-    public function write($data, $options, $callback)
+    public function write($data, $options = array(), $callback = null)
     {
         return $this->send($data, $options, $callback);
     }
     
-    public function sendPacket($type, $data = '', $options = array(), $callback = null)
+    public function sendPacket($type, $data = null, $callback = null)
     {
-        if(is_callable($options))
-         {
-            $callback = $options;
-            $options = array();
-        }
         if('closing' !== $this->readyState) 
         {
             $packet = array(
-                'type'=> $type,
-                'options'=> $options
+                'type'=> $type
             );
-            if($data) 
+            if($data !== null) 
             {
                 $packet['data'] = $data;
             }

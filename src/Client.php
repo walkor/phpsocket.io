@@ -1,4 +1,6 @@
 <?php
+use Parser\Parser;
+
 class Client
 {
     public $server = null;
@@ -8,13 +10,13 @@ class Client
     public $id = null;
     public $request = null;
     public $nsps = array();
-    public connectBuffer = array();
+    public $connectBuffer = array();
     public function __construct($server, $conn)
     {
         $this->server = $server;
         $this->conn = $conn;
-        $this->encoder = new Parser/Encoder();
-        $this->decoder = new Parser/Decoder();
+        $this->encoder = new \Parser\Encoder();
+        $this->decoder = new \Parser\Decoder();
         $this->id = $conn->id;
         $this->request = $conn->request;
         $this->setup();
@@ -46,7 +48,7 @@ class Client
  */
 
     public function connect($name){
-        if (!isset(!$this->server->nsps[$name])) 
+        if (!isset($this->server->nsps[$name])) 
         {
             $this->packet(array('type'=> Parser::ERROR, 'nsp'=> $name, 'data'=> 'Invalid namespace'));
             return;
@@ -96,7 +98,7 @@ class Client
  * @api private
  */
 
-    public function remove = function($socket)
+    public function remove($socket)
     {
         if(isset($this->sockets[$socket->id]))
         {
@@ -131,16 +133,16 @@ class Client
  * @param {Object} options
  * @api private
  */
-
     public function packet($packet, $opts = array())
     {
         $self = $this;
         if('open' === $this->conn->readyState) 
         {
             if (empty($opts['preEncoded'])) 
-            { // not broadcasting, need to encode
-                $this->encoder->encode($packet, function ($encodedPackets)use($self) { // encode, then write results to engine
-                    $self->writeToEngine($encodedPackets);
+            {
+                // not broadcasting, need to encode
+                $this->encoder->encode($packet, function ($encodedPackets)use($self, $opts) { // encode, then write results to engine
+                    $self->writeToEngine($encodedPackets, $opts);
                 });
             } else { // a broadcast pre-encodes a packet
                  $self->writeToEngine($packet);
@@ -150,12 +152,12 @@ class Client
         }
     }
 
-    public function  writeToEngine($encodedPackets, $opts) 
+    public function  writeToEngine($encodedPackets, $opts = array()) 
     {
         if (isset($opts['volatile']) && !$self->conn->transport->writable) return;
         foreach($encodedPackets as $packet) 
         {
-             $self->conn->write($packet, array('compress'=> $opts['compress']);
+             $this->conn->write($packet);
         }
     }
 

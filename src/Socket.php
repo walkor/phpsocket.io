@@ -1,5 +1,6 @@
 <?php
 use \Event\Emitter;
+use \Parser\Parser;
 class Socket extends Emitter
 {
     public $nsp = null;
@@ -44,23 +45,23 @@ class Socket extends Emitter
     
     public function buildHandshake()
     {
-            //todo check this->request->_query
-            $info = parse_url($this->request->url);
-            $query = array();
-            if(isset($info['query']))
-            {
-                parse_str($info['query'], $query);
-            }
-            return array(
-                'headers' => $this->request['headers'],
-                'time'=> date('D M d Y H:i:s') . ' GMT',
-                'address'=> $this->conn->remoteAddress,
-                'xdomain'=> isset($this->request->headers['origin']),
-                'secure' => !empty($this->request->connection->encrypted),
-                'issued' => time(),
-                'url' => $this->request->url,
-                'query' => $query,
-          );
+        //todo check this->request->_query
+        $info = parse_url($this->request->url);
+        $query = array();
+        if(isset($info['query']))
+        {
+            parse_str($info['query'], $query);
+        }
+        return array(
+            'headers' => $this->request->headers,
+            'time'=> date('D M d Y H:i:s') . ' GMT',
+            'address'=> $this->conn->remoteAddress,
+            'xdomain'=> isset($this->request->headers['origin']),
+            'secure' => !empty($this->request->connection->encrypted),
+            'issued' => time(),
+            'url' => $this->request->url,
+            'query' => $query,
+       );
     }
     
     public function emit($ev)
@@ -165,8 +166,8 @@ class Socket extends Emitter
     
     public function packet($packet, $opts = array())
     {
-        $packet['nsp'] = $this->nsp['name'];
-        $opts['compress'] = false !== $opts['compress'];
+        $packet['nsp'] = $this->nsp->name;
+        $opts['compress'] = !empty($opts['compress']);
         $this->client->packet($packet, $opts);
     }
     
@@ -194,12 +195,12 @@ class Socket extends Emitter
                 return;
             }
             $self->rooms[$room] = $room;
-            if($fn)
+            if(!empty($fn))
             {
                 call_user_func($fn, null);
             }
         });
-        return this;
+        return $this;
     }
     
     /**
@@ -454,7 +455,7 @@ class Socket extends Emitter
     
     public function compress($compress)
     {
-        $this->flags['compress']' = $compress;
+        $this->flags['compress'] = $compress;
         return $this;
     }
 }

@@ -1,5 +1,6 @@
 <?php
 use Event\Emitter;
+use Workerman\Lib\Timer;
 class Nsp extends Emitter
 {
     public $name = null;
@@ -23,7 +24,13 @@ class Nsp extends Emitter
     {
          $this->name = $name;
          $this->server = $server;
-         //$this->initAdapter();
+         $this->initAdapter();
+    }
+
+    public function initAdapter()
+    {
+        $adapter_name = $this->server->adapter();
+        $this->adapter = new $adapter_name($this);
     }
 
     public function to($name)
@@ -55,8 +62,8 @@ class Nsp extends Emitter
     {
         $socket = new Socket($this, $client);
         $self = $this;
-        $this->run($socket, function($err){
-        Timer::add(0.001, function($client, $self){
+        $this->run($socket, function($err)use($client, $self, $socket){
+        Timer::add(0.001, function($client, $self, $socket){
            if ('open' === $client->conn->readyState) {
                // track socket
                $self->sockets[]=$socket;
@@ -66,14 +73,14 @@ class Nsp extends Emitter
                // violations (such as a disconnection before the connection
                // logic is complete)
                $socket->onconnect();
-               if ($fn) call_user_func($fn);
+               if (!empty($fn)) call_user_func($fn);
 
                // fire user-set events
                $self->emit('connect', $socket);
                $self->emit('connection', $socket);
            } else {
                echo('next called after client was closed - ignoring socket');
-           }}, array($client, $self), false);
+           }}, array($client, $self, $socket), false);
        });
        return $socket;
     }
@@ -161,7 +168,7 @@ class Nsp extends Emitter
     
      public function compress($compress)
      {
-        $this->flags['compress']' = $compress;
+        $this->flags['compress'] = $compress;
         return $this;
     }
 }

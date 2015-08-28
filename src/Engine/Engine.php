@@ -76,9 +76,9 @@ class Engine extends Emitter
  
         $socket = new Socket($id, $this, $transport, $req);
 
-        $transport->on('headers', function($transport)use($id)
+        $transport->on('headers', function(&$headers)use($id)
         {
-            $transport->req->res->setHeader('Set-Cookie', "io=$id");
+            $headers['Set-Cookie'] = "io=$id";
         });
 
         $transport->onRequest($req);

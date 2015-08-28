@@ -1,34 +1,87 @@
 <?php
-use Workerman\Worker;
-
-class SocketIO extends Worker
+use Engine\Engine;
+class SocketIO
 {
-    protected $_nsp = array();
-    protected $_adpter = null;
-    protected $_origins = array();
+    public $nsps = array();
+    public $_adpter = null;
+    public $eio = null;
+    public $engine = null;
+    public $_origins = array();
+    public $_path = null;
     
-    public function __construct($address)
+    public function __construct($srv = null, $opts = array())
     {
-        parent::__construct($address);
-        $this->_adpter = new DefaultAdpter();
-        $this->onConnect = array($this, 'onConnection');
+        $path = isset($opts['path']) ? $opts['path'] : '/socket.io';
+        $this->path($path);
+        $adapter = isset($opts['adapter']) ? $opts['adapter'] : 'DefaultAdapter';
+        $this->adapter($adapter);
+        $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
+        $this->origins($origins);
+        $this->sockets = $this->of('/');
+        if ($srv) $this->attach($srv, $opts);
     }
     
+    public function path($v = null)
+    {
+        if($v === null) return $this->_path;
+        $this->_path = str_replace('/\/$/', '', $v);
+        return $this;
+    }
+
+    public function adapter($v = null)
+    {
+         if (empty($v)) return $this->_adapter;
+         $this->_adapter = $v;
+         foreach($this->nsps as $nsp)
+         {
+             $nsp.initAdapter();
+         }
+         return $this;
+    }
+
+    public function origins($v = null)
+    {
+        if ($v === null) return $this->_origins;
+        $this->_origins = $v;
+        return $this;
+    }
+
+    public function attach($srv, $opts = array())
+    {
+         $engine = new Engine();
+         $this->eio = $engine->attach($srv, $opts);
+
+         // Export http server
+         $this->httpServer = $srv;
+
+         // bind to engine events
+         $this->bind($engine);
+
+         return $this;
+    }
+
+    public function bind($engine)
+    {
+        $this->engine = $engine;
+        $this->engine->on('connection', array($this, 'onconnection'));
+        return $this;
+    }
+ 
     public function of($name, $fn = null)
     {
         if($name[0] !== '/')
         {
             $name = "/$name";
         }
-        if(empty($this->_nsp[$name]))
+        if(empty($this->nsps[$name]))
         {
-            $this->_nsp[$name] = new Nsp($this, $name);
+            $this->nsps[$name] = new Nsp($this, $name);
         }
         if ($fn)
         {
-            $this->_nsps[$name]->on('connect', $fn);
+            $this->nsps[$name]->on('connect', $fn);
         }
-        return $this->_nsp[$name];
+        return $this->nsps[$name];
     }
     
     public function onConnection($engine_socket)
@@ -38,5 +91,38 @@ class SocketIO extends Worker
         return $this;
     }
 
-    
+    public function on()
+    {
+        return call_user_func(array($this->sockets, 'on'), func_get_args());
+    } 
+
+    public function in()
+    {
+        return call_user_func(array($this->sockets, 'in'), func_get_args());
+    }
+
+    public function to()
+    {
+        return call_user_func(array($this->sockets, 'to'), func_get_args());
+    }
+
+    public function used()
+    {
+        return call_user_func(array($this->sockets, 'use'), func_get_args());
+    }
+
+    public function emit()
+    {
+        return call_user_func(array($this->sockets, 'emit'), func_get_args());
+    }
+
+    public function send()
+    {
+        return call_user_func(array($this->sockets, 'send'), func_get_args());
+    }
+
+    public function write()
+    {
+        return call_user_func(array($this->sockets, 'write'), func_get_args());
+    }
 }

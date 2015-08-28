@@ -40,9 +40,8 @@ class Parser
             $callback = $utf8encode;
             $utf8encode = null;
         }
-
         // todo $packet['data']['buffer'] ???
-        $data = !isset($packet['data']) ? 'undefined' : $packet['data'];
+        $data = !isset($packet['data']) ? '' : $packet['data'];
 /*
   if (Buffer.isBuffer(data)) {
     return encodeBuffer(packet, supportsBinary, callback);
@@ -50,14 +49,13 @@ class Parser
     return encodeArrayBuffer(packet, supportsBinary, callback);
   }
 */
-        if(is_string($data))
+        if(strlen($data)>1)
         {
             return self::encodeBuffer($packet, $supportsBinary, $callback);
         }
 
         // Sending data as a utf-8 string
-        $encoded = self::$packets[$packet['type']];
-
+        $encoded = self::$packets[$packet['type']].$data;
         return call_user_func($callback, $encoded);
     }
 
