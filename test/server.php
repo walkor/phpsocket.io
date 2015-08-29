@@ -2,16 +2,20 @@
 use Workerman\Worker;
 use Workerman\Autoloader;
 use \Engine\Engine;
-include __DIR__ . '/../src/Event/Emitter.php';
 include __DIR__ . '/../vendor/workerman/workerman/Autoloader.php';
-include __DIR__ . '/../src/Engine/Protocols/Http2.php';
-include __DIR__ . '/../src/Engine/Engine.php';
-include __DIR__ . '/../src/Engine/Transport.php';
-include __DIR__ . '/../src/Engine/Transport/Polling.php';
-include __DIR__ . '/../src/Engine/Transport/PollingXHR.php';
-include __DIR__ . '/../src/Engine/Socket.php';
-include __DIR__ . '/../src/Engine/Parser.php';
-Autoloader::setRootPath(__DIR__.'/../src/');
+spl_autoload_register(function($name){
+    $path = str_replace('\\', DIRECTORY_SEPARATOR ,$name);
+    if(is_file($class_file = __DIR__ . "/../src/$path.php"))
+    {
+        require_once($class_file);
+        if(class_exists($name, false))
+        {
+            return true;
+        }
+    }
+    echo $class_file;
+    return false;
+});
 class_alias('\Engine\Protocols\Http2', "Protocols\\Http2");
 $io = new Worker('Http2://0.0.0.0:8888');
 $io->onMessage = 'test';
@@ -28,7 +32,10 @@ $io->onMessage = 'test';
     };
 };
 */
-$engine = new Engine();
-$engine->attach($io);
+//$engine = new Engine();
+//$engine->attach($io);
+
+$o = new SocketIO();
+$o->attach($io);
 
 Worker::runAll();
