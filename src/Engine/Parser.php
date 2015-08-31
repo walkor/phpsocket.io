@@ -13,13 +13,13 @@ class Parser
     );
 
     public static $packetsList = array(
-       'open' => 'open', 
-       'close'=> 'close',
-       'ping' => 'ping',
-       'pong' => 'pong',
-       'message' => 'message',
-       'upgrade' => 'upgrade',
-       'noop' => 'noop'
+       'open', 
+       'close',
+       'ping',
+       'pong',
+       'message',
+       'upgrade',
+       'noop'
     );
 
     public static $err = array(
@@ -111,19 +111,18 @@ class Parser
             }
     
             $type = $data[0];
-    
-            if (!isset(self::$packetslist[$type]))
+            if (!isset(self::$packetsList[$type]))
             {
                 return self::$err;
             }
     
             if (isset($data[1])) 
             {
-                return array('type'=> self::$packetslist[$type], 'data'=> substr($data, 1));
+                return array('type'=> self::$packetsList[$type], 'data'=> substr($data, 1));
             } 
             else 
             {
-                return array('type'=> self::$packetslist[$type]);
+                return array('type'=> self::$packetsList[$type]);
             }
     }
     
@@ -136,7 +135,7 @@ class Parser
     
     public static function decodeBase64Packet($msg, $binaryType) 
     {
-        $type = self::$packetslist[$msg[0]];
+        $type = self::$packetsList[$msg[0]];
         $data = base64_decode(substr($data, 1));
         return array('type'=> $type, 'data'=> $data);
     }
@@ -236,7 +235,7 @@ class Parser
     
     public static function decodePayload($data, $binaryType = null, $callback = null) 
     {
-        if (!is_string($data))
+        //if (!is_string($data))
         {
             return self::decodePayloadAsBinary($data, $binaryType, $callback);
         }
@@ -247,7 +246,7 @@ class Parser
             $binaryType = null;
         }
     
-        if (data === '') 
+        if ($data === '') 
         {
             // parser error - ignoring payload
             return call_user_func($callback, self::err, 0, 1);
@@ -255,7 +254,7 @@ class Parser
     
         $length = '';//, n, msg;
     
-        for ($i = 0, $l = strlen(data); $i < $l; $i++) 
+        for ($i = 0, $l = strlen($data); $i < $l; $i++) 
         {
             $chr = $data[$i];
     
@@ -302,7 +301,8 @@ class Parser
         if ($length !== '') 
         {
             // parser error - ignoring payload
-            return call_user_func($callback, $err, 0, 1);
+            echo new \Exception('parser error');
+            return call_user_func($callback, self::$err, 0, 1);
         }
     }
     
@@ -359,7 +359,7 @@ class Parser
     
     public static function decodePayloadAsBinary($data, $binaryType = null, $callback = null) 
     {
-        if (is_callable(binaryType))
+        if (is_callable($binaryType))
         {
             $callback = $binaryType;
             $binaryType = null;
@@ -375,14 +375,15 @@ class Parser
             $numberTooLong = false;
             for ($i = 1; ; $i++) 
             {
-                if ($bufferTail[$i] == 255)  break;
+                $tail = ord($bufferTail[$i]);
+                if ($tail === 255)  break;
                 // 310 = char length of Number.MAX_VALUE
-                if (strlen(strLen) > 310) 
+                if (strlen($strLen) > 310) 
                 {
                     $numberTooLong = true;
                     break;
                 }
-                $strLen .= $bufferTail[$i];
+                $strLen .= $tail;
             }
             if($numberTooLong) return call_user_func($callback, self::$err, 0, 1);
             $bufferTail = substr($bufferTail, strlen($strLen) + 1);
@@ -393,7 +394,6 @@ class Parser
             $buffers[] = $msg;
             $bufferTail = substr($bufferTail, $msgLength + 1);
         }
-    
         $total = count($buffers);
         foreach($buffers as $i => $buffer)
         {

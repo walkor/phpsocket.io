@@ -69,7 +69,7 @@ class Polling extends Transport
 
     public function onDataRequest($req, $res) 
     {
-        if($this->dataReq) 
+        if(isset($this->dataReq)) 
         {
             // assert: this.dataRes, '.dataReq and .dataRes should be (un)set together'
             $this->onError('data request overlap from client');
@@ -102,11 +102,12 @@ class Polling extends Transport
     public function dataRequestOnData($req, $data)
     {
         $this->chunks .= $data;
-        if(strlen($this->chunks) > $this->maxHttpBufferSize)
+        // todo maxHttpBufferSize
+        /*if(strlen($this->chunks) > $this->maxHttpBufferSize)
         {
             $this->chunks = '';
             $req->connection->destroy();
-        }
+        }*/
     }
 
     public function dataRequestOnEnd () 
@@ -128,7 +129,7 @@ class Polling extends Transport
             $headers['X-XSS-Protection'] = '0';
         }
 
-        $this->dataRes->writeHead(200, '', $this->headers($req, $headers));
+        $this->dataRes->writeHead(200, '', $this->headers($this->dataReq, $headers));
         $this->dataRes->end('ok');
         $this->dataRequestCleanup();
     }
@@ -136,7 +137,7 @@ class Polling extends Transport
     public function onData($data)
     {
         $self = $this;
-        $callback = function()use($packet, $self) 
+        $callback = function($packet)use($self) 
         {
             if ('close' === $packet['type']) 
             {
@@ -144,7 +145,6 @@ class Polling extends Transport
                 $self->onClose();
                 return false;
             }
-
             $self->onPacket($packet);
        };
 

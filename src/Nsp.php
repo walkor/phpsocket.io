@@ -1,6 +1,6 @@
 <?php
 use Event\Emitter;
-use Workerman\Lib\Timer;
+use Parser\Parser;
 class Nsp extends Emitter
 {
     public $name = null;
@@ -62,8 +62,22 @@ class Nsp extends Emitter
     {
         $socket = new Socket($this, $client);
         $self = $this;
-        $this->run($socket, function($err)use($client, $self, $socket){
-        Timer::add(0.001, function($client, $self, $socket){
+        $this->run($socket, function($err)use($client, $self, $socket, $fn){
+            if('open' === $client->conn->readyState)
+            {
+                $self->sockets[]=$socket;
+                $socket->onconnect();
+                if (!empty($fn)) call_user_func($fn, $socket);
+                $self->emit('connect', $socket);
+                $self->emit('connection', $socket);
+            }
+            else
+            {
+                echo('next called after client was closed - ignoring socket');
+            }
+        });
+        /*
+        Timer::add(0.000000001, function($client, $self, $socket){
            if ('open' === $client->conn->readyState) {
                // track socket
                $self->sockets[]=$socket;
@@ -82,6 +96,7 @@ class Nsp extends Emitter
                echo('next called after client was closed - ignoring socket');
            }}, array($client, $self, $socket), false);
        });
+       */
        return $socket;
     }
     
@@ -117,7 +132,7 @@ class Nsp extends Emitter
             // set up packet object
             
             $parserType = Parser::EVENT; // default
-            if (self::hasBin($args)) { $parserType = Parser::BINARY_EVENT; } // binary
+            //if (self::hasBin($args)) { $parserType = Parser::BINARY_EVENT; } // binary
 
             $packet = array('type'=> $parserType, 'data'=> $args );
 

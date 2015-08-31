@@ -37,5 +37,20 @@ $io->onMessage = 'test';
 
 $o = new SocketIO();
 $o->attach($io);
+/*
+io.on('connection', function(socket){
+  socket.on('chat message', function(msg){
+    io.emit('chat message', msg);
+  });
+});
+
+
+*/
+$o->on('connection', function($socket)use($o){
+    $socket->on('chat message', function($msg)use($o)
+    {
+        $o->emit('chat message', $msg);
+    });
+});
 
 Worker::runAll();

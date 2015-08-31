@@ -38,7 +38,7 @@ class DefaultAdapter
         }
     }
 
-    public function delAll($id, $fn)
+    public function delAll($id, $fn = null)
     {
         $rooms = isset($this->sids[$id]) ? $this->sids[$id] : array();
         if($rooms) 

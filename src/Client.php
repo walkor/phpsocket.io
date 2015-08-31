@@ -35,9 +35,9 @@ class Client
           this.ondecoded = this.ondecoded.bind(this);
          */
          $this->decoder->on('decoded', array($this,'ondecoded'));
-         $this->conn->onData = array($this,'ondata');
-         $this->conn->onError = array($this, 'onerror');
-         $this->conn->onClose = array($this, 'onclose');
+         $this->conn->on('data', array($this,'ondata'));
+         $this->conn->on('error', array($this, 'onerror'));
+         $this->conn->on('close' ,array($this, 'onclose'));
     }
 
 /**
@@ -59,12 +59,10 @@ class Client
             $this->connectBuffer[$name] = $name;
             return;
         }
-
         $self = $this;
-        $socket = $nsp->add($this, function(){
-            $self->sockets[] = socket;
+        $socket = $nsp->add($this, function($socket)use($nsp, $self){
+            $self->sockets[] = $socket;
             $self->nsps[$nsp->name] = $socket;
-
             if ('/' === $nsp->name && $self->connectBuffer) 
             {
                 foreach($self->connectBuffer as $name)
@@ -106,7 +104,7 @@ class Client
             unset($this->sockets[$socket->id]);
             unset($this->nsps[$nsp]);
         } else {
-            echo('ignoring remove for '. socket.id);
+            echo('ignoring remove for '. $socket->id);
         }
     }
 
@@ -133,16 +131,16 @@ class Client
  * @param {Object} options
  * @api private
  */
-    public function packet($packet, $opts = array())
+    public function packet($packet, $preEncoded = false, $volatile = false)
     {
         $self = $this;
         if('open' === $this->conn->readyState) 
         {
-            if (empty($opts['preEncoded'])) 
+            if (!$preEncoded) 
             {
                 // not broadcasting, need to encode
-                $this->encoder->encode($packet, function ($encodedPackets)use($self, $opts) { // encode, then write results to engine
-                    $self->writeToEngine($encodedPackets, $opts);
+                $this->encoder->encode($packet, function ($encodedPackets)use($self, $volatile) { // encode, then write results to engine
+                    $self->writeToEngine($encodedPackets, $volatile);
                 });
             } else { // a broadcast pre-encodes a packet
                  $self->writeToEngine($packet);
@@ -152,9 +150,12 @@ class Client
         }
     }
 
-    public function  writeToEngine($encodedPackets, $opts = array()) 
+    public function  writeToEngine($encodedPackets, $volatile = false) 
     {
-        if (isset($opts['volatile']) && !$self->conn->transport->writable) return;
+        if($volatile)echo new \Exception('volatile');
+        if ($volatile && !$this->conn->transport->writable) return;
+        // todo check
+        if(isset($encodedPackets['nsp']))unset($encodedPackets['nsp']);
         foreach($encodedPackets as $packet) 
         {
              $this->conn->write($packet);
@@ -194,7 +195,7 @@ class Client
             {
                  $socket->onpacket($packet);
             } else {
-                echo('no socket for namespace ' . $packet->nsp);
+                echo('no socket for namespace ' . $packet['nsp']);
             }
         }
     }

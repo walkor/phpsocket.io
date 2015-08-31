@@ -25,11 +25,11 @@ class Socket extends Emitter
         'removeListener' => 'removeListener'
     );
     
-    /*public static $flags = array(
+    public static $flagsMap = array(
         'json' => 'json',
         'volatile' => 'volatile',
         'broadcast' => 'broadcast'
-    );*/
+    );
     
     public function __construct($nsp, $client)
     {
@@ -164,11 +164,12 @@ class Socket extends Emitter
      * @api private
      */
     
-    public function packet($packet, $opts = array())
+    public function packet($packet, $preEncoded = false)
     {
         $packet['nsp'] = $this->nsp->name;
-        $opts['compress'] = !empty($opts['compress']);
-        $this->client->packet($packet, $opts);
+        //$volatile = !empty(self::$flagsMap['volatile']);
+        $volatile = false;
+        $this->client->packet($packet, $preEncoded, $volatile);
     }
     
     /**
@@ -401,11 +402,11 @@ class Socket extends Emitter
         echo('closing socket - reason ' . $reason);
         $this->leaveAll();
         $this->nsp->remove($this);
-        $this->client.remove($this);
+        $this->client->remove($this);
         $this->connected = false;
         $this->disconnected = true;
         unset($this->nsp->connected[$this->id]);
-        $this->emit('disconnect', reason);
+        $this->emit('disconnect', $reason);
     }
     
     /**

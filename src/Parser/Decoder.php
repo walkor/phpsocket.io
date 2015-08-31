@@ -49,7 +49,7 @@ class Decoder extends Emitter
 
         // look up type
         $p['type'] = $str[0];
-        if(Parser::$types[$p['type']]) return self::error();
+        if(!isset(Parser::$types[$p['type']])) return self::error();
 
         // look up attachments if type binary
         if(Parser::BINARY_EVENT == $p['type'] || Parser::BINARY_ACK == $p['type'])
@@ -110,5 +110,17 @@ class Decoder extends Emitter
 
         return $p;
     }
+    
+    public static function error()
+    {
+         return array(
+            'type'=> Parser::ERROR,
+            'data'=> 'parser error'
+         );
+    }
 
+    public function destroy()
+    {
+
+    }
 }

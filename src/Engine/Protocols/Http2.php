@@ -31,11 +31,12 @@ class Http2
             $connection->consumeRecvBuffer(strlen($http_buffer));
             self::emitRequest($connection, $req, $res);
             
-            if($req->method === 'GET')
+            if($req->method === 'GET' || $req->method === 'OPTIONS')
             {
                 self::emitEnd($connection, $req);
                 return 0;
             }
+
             // POST
             if('\Protocols\Http2::onData' !== $connection->onMessage)
             {

@@ -65,7 +65,7 @@ class Socket extends Emitter
             // other side's liveness
             $this->setPingTimeout();
         
-            switch (packet.type) {
+            switch ($packet['type']) {
         
                 case 'ping':
                     $this->sendPacket('pong');
@@ -171,15 +171,15 @@ class Socket extends Emitter
             $this->writeBuffer = array();
             if($this->packetsFn)
             {
-            if(!empty($this->transport->supportsFraming)) 
-            {
-                $this->sentCallbackFn[] = $this->packetsFn;
-            } 
-            else 
-            {
-               // @todo check
-               $this->sentCallbackFn[]=$this->packetsFn;
-            }
+                if(!empty($this->transport->supportsFraming)) 
+                {
+                    $this->sentCallbackFn[] = $this->packetsFn;
+                } 
+                else 
+                {
+                   // @todo check
+                   $this->sentCallbackFn[]=$this->packetsFn;
+                }
             }
             $this->packetsFn = array();
             $this->transport->send($wbuf);
@@ -223,9 +223,7 @@ class Socket extends Emitter
         $this->transport->on('drain', function()use($self) {
             if ($self->sentCallbackFn) 
             {
-                 var_dump($self->sentCallbackFn);
                  $seqFn = array_shift($self->sentCallbackFn);//self.sentCallbackFn.splice(0,1)[0];
-                 var_export($reqFn);
                  if(is_callable($seqFn)) 
                  {
                      echo('executing send callback');

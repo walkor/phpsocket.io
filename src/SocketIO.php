@@ -93,36 +93,36 @@ class SocketIO
 
     public function on()
     {
-        return call_user_func(array($this->sockets, 'on'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'on'), func_get_args());
     } 
 
     public function in()
     {
-        return call_user_func(array($this->sockets, 'in'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'in'), func_get_args());
     }
 
     public function to()
     {
-        return call_user_func(array($this->sockets, 'to'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'to'), func_get_args());
     }
 
     public function used()
     {
-        return call_user_func(array($this->sockets, 'use'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'used'), func_get_args());
     }
 
     public function emit()
     {
-        return call_user_func(array($this->sockets, 'emit'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'emit'), func_get_args());
     }
 
     public function send()
     {
-        return call_user_func(array($this->sockets, 'send'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'send'), func_get_args());
     }
 
     public function write()
     {
-        return call_user_func(array($this->sockets, 'write'), func_get_args());
+        return call_user_func_array(array($this->sockets, 'write'), func_get_args());
     }
 }
