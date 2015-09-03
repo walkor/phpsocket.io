@@ -13,10 +13,6 @@ class WebSocket extends Transport
         $this->socket->onMessage = array($this. 'onData');
         $this->socket->onClose = array($this, 'onClose');
         $this->socket->onError = array($this, 'onError');
-        $this->socket->on('headers', function ($headers) {
-            //self.emit('headers', headers);
-        });
-        $this->writable = true;
     }
     
     public function onData($connection, $data) 
