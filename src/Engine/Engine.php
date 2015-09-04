@@ -2,6 +2,7 @@
 namespace Engine;
 use \Engine\Transport\Polling;
 use \Engine\Transport\PollingXHR;
+use \Engine\Transport\WebSocket;
 use \Event\Emitter;
 
 class Engine extends Emitter
@@ -14,22 +15,23 @@ class Engine extends Emitter
     public $allowRequest = array();
     public $clients = array();
 
-    public function __construct($ops = array())
+    public function __construct($opts = array())
     {
-        $ops_map = array('pingTimeout',
-                         'pingInterval',
-                         'upgradeTimeout',
-                         'transports',
-                         'allowUpgrades',
-                         'allowRequest');
+        $ops_map = array(
+            'pingTimeout',
+             'pingInterval',
+             'upgradeTimeout',
+             'transports',
+             'allowUpgrades',
+             'allowRequest'
+        );
         foreach($ops_map as $key)
         {
-            if(isset($ops[$key]))
+            if(isset($opts[$key]))
             {
                 $this->$key = $opts[$key];
             }
         }
-        
     }
 
     public function handleRequest($req, $res)
@@ -107,10 +109,17 @@ class Engine extends Emitter
     public function onConnect($connection)
     {
         $connection->onRequest = array($this, 'handleRequest');
+        $connection->onWebSocketConnect = array($this, 'onWebSocketConnect');
         // clean
         $connection->onClose = function($connection)
         {
             $connection->httpRequest = $connection->httpResponse = $connection->onRequest = null;
         };
+    }
+    
+    public function onWebSocketConnect($connection, $req, $res)
+    {
+        $transport = new WebSocket($req);
+        $this->clients[$req->_query['sid']]->maybeUpgrade($transport);
     }
 }

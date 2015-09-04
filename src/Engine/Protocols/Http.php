@@ -1,5 +1,7 @@
 <?php
 namespace Engine\Protocols;
+use \Engine\Protocols\WebSocket;
+
 use Protocols\Http\Request;
 use Protocols\Http\Response;
 use Workerman\Connection\TcpConnection;
@@ -30,7 +32,9 @@ class Http
         $connection->httpResponse = $res;
         if(isset($req->headers['upgrade']) && $req->headers['upgrade'] = 'websocket')
         {
-            self::upgradeToWebSocket($connection, $req, $res);
+            $connection->consumeRecvBuffer(strlen($http_buffer));
+            WebSocket::dealHandshake($connection, $req, $res);
+            return 0;
         }
         if(!empty($connection->onRequest))
         {
@@ -44,9 +48,9 @@ class Http
             }
 
             // POST
-            if('\Protocols\Http2::onData' !== $connection->onMessage)
+            if('\Protocols\Http::onData' !== $connection->onMessage)
             {
-                $connection->onMessage = '\Protocols\Http2::onData';
+                $connection->onMessage = '\Protocols\Http::onData';
             }
             if(!$raw_body)
             {
@@ -71,33 +75,6 @@ class Http
                 return 0; 
             }
         }
-    }
-    
-    public static function upgradeToWebSocket($connection, $req, $res)
-    {
-        $headers = array();
-        if(isset($connection->onWebSocketConnect))
-        {
-            call_user_func_array($connection->onWebSocketConnect, array($connection, $req, &$headers));
-        }
-        
-        if(isset($req->headers['sec-websocket-key']))
-        {
-            $sec_websocket_key = $req->headers['sec-websocket-key'];
-        }
-        else
-        {
-            $res->writeHead(400);
-            $res->end('<b>400 Bad Request</b><br>Upgrade to websocket but Sec-WebSocket-Key not found.');
-            return 0;
-        }
-        
-        $sec_websocket_accept = base64_encode(sha1($sec_websocket_key.'258EAFA5-E914-47DA-95CA-C5AB0DC85B11',true));
-        $headers['Upgrade'] = 'websocket';
-        $headers['Sec-WebSocket-Version'] = 13;
-        $headers['Connection'] = 'Upgrade';
-        $headers['Sec-WebSocket-Accept'] = $sec_websocket_accept;
-        
     }
     
     public static function onData($connection, $data)

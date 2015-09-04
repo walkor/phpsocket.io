@@ -73,7 +73,7 @@ class Response
             $this->_statusPhrase = isset(self::$codes[$this->statusCode]) ? self::$codes[$this->statusCode] : '';
         }
         $head_buffer = "HTTP/1.1 $this->statusCode $this->_statusPhrase\r\n";
-        if(!isset($this->_headers['Content-Length']))
+        if(!isset($this->_headers['Content-Length']) && !isset($this->_headers['Transfer-Encoding']))
         {
             $head_buffer .= "Transfer-Encoding: chunked\r\n";
         }

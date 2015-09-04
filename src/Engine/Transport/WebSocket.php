@@ -8,8 +8,7 @@ class WebSocket extends Transport
     public $supportsFraming = true;
     public function __construct($req)
     {
-        $self = $this;
-        $this->socket = $req->websocket;
+        $this->socket = $req->connection;
         $this->socket->onMessage = array($this. 'onData');
         $this->socket->onClose = array($this, 'onClose');
         $this->socket->onError = array($this, 'onError');

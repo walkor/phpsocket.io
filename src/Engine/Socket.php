@@ -27,6 +27,14 @@ class Socket extends Emitter
         $this->onOpen();
     }
     
+    public function maybeUpgrade($transport)
+    {
+        $this->upgraded = true;
+        $this->clearTransport();
+        $this->setTransport($transport);
+        $this->emit('upgrade', $transport);
+    }
+    
     public function setTransport($transport)
     {
         $this->transport = $transport;
@@ -68,6 +76,16 @@ class Socket extends Emitter
             switch ($packet['type']) {
         
                 case 'ping':
+                    if(isset($packet['data']) && $packet['data'] === 'probe')
+                    {
+                        $this->transport->send(array(
+                                array(
+                                   'type' => 'pong', 
+                                   'data'=> 'probe', 
+                                   'options'=>array( 'compress'=> true )
+                        )));
+                        break;
+                    }
                     $this->sendPacket('pong');
                     $this->emit('heartbeat');
                     break;
@@ -79,6 +97,8 @@ class Socket extends Emitter
                 case 'message':
                     $this->emit('data', $packet['data']);
                     $this->emit('message', $packet['data']);
+                    break;
+                case 'upgrade':
                     break;
             }
         } 
