@@ -119,6 +119,7 @@ class Engine extends Emitter
     
     public function onWebSocketConnect($connection, $req, $res)
     {
+        $this->prepare($req);
         $transport = new WebSocket($req);
         $this->clients[$req->_query['sid']]->maybeUpgrade($transport);
     }

@@ -2,9 +2,9 @@
 namespace Engine\Protocols;
 use \Engine\Protocols\WebSocket;
 
-use Protocols\Http\Request;
-use Protocols\Http\Response;
-use Workerman\Connection\TcpConnection;
+use \Engine\Protocols\Http\Request;
+use \Engine\Protocols\Http\Response;
+use \Workerman\Connection\TcpConnection;
 class Http
 {
     public static function input($http_buffer, $connection)
@@ -82,7 +82,7 @@ class Http
         $req = $connection->httpRequest;
         self::emitData($connection, $req, $data);
         if((isset($req->headers['content-length']) && $req->headers['content-length'] <= strlen($data))     
-            || substr($data, -5) = "0\r\n\r\n")
+            || substr($data, -5) === "0\r\n\r\n")
         {
             self::emitEnd($connection, $req);
         }

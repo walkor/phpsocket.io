@@ -12,12 +12,13 @@ spl_autoload_register(function($name){
         {
             return true;
         }
+        echo $name."\n";
     }
     echo $class_file;
     return false;
 });
-class_alias('\Engine\Protocols\Http2', "Protocols\\Http2");
-$io = new Worker('Http2://0.0.0.0:8888');
+class_alias('\Engine\Protocols\Http', "Protocols\\Http");
+$io = new Worker('Http://0.0.0.0:8888');
 $io->onMessage = 'test';
 /*$io->onConnect = function($connection)
 {

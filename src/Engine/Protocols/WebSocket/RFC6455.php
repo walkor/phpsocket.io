@@ -11,7 +11,7 @@
  * @link http://www.workerman.net/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Protocols\WebSocket;
+namespace Engine\Protocols\WebSocket;
 
 use Workerman\Connection\ConnectionInterface;
 
@@ -273,7 +273,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
      * @param TcpConnection $connection
      * @return int
      */
-    protected static function dealHandshake($connection, $req, $res)
+    public static function dealHandshake($connection, $req, $res)
     {
         $headers = array();
         if(isset($connection->onWebSocketConnect))

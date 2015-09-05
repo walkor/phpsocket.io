@@ -102,7 +102,7 @@ class Parser
      * @api private
      */
     
-    public static function decodePacket($data, $binaryType, $utf8decode) 
+    public static function decodePacket($data, $binaryType = null, $utf8decode = true) 
     {
         // String data todo check if (typeof data == 'string' || data === undefined) 
             if ($data[0] === 'b') 

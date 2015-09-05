@@ -6,20 +6,21 @@ class WebSocket extends Transport
 {
     public $writable = true;
     public $supportsFraming = true;
+    public $supportsBinary = true;
     public function __construct($req)
     {
         $this->socket = $req->connection;
-        $this->socket->onMessage = array($this. 'onData');
+        $this->socket->onMessage = array($this, 'onData2');
         $this->socket->onClose = array($this, 'onClose');
-        $this->socket->onError = array($this, 'onError');
+        $this->socket->onError = array($this, 'onError2');
     }
     
-    public function onData($connection, $data) 
+    public function onData2($connection, $data) 
     {
         call_user_func(array($this, 'parent::onData'), $data);
     }
     
-    public function onError($conection, $code, $msg)
+    public function onError2($conection, $code, $msg)
     {
         call_user_func(array($this, 'parent::onClose'), $code, $msg);
     }
@@ -31,7 +32,7 @@ class WebSocket extends Transport
             $self = $this;
             Parser::encodePacket($packet, $this->supportsBinary, function($data)use($self) 
             {
-                $self->socket->send(data);
+                $self->socket->send($data);
                 $self->emit('drain');
             });
         }
