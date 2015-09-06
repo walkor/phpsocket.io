@@ -132,7 +132,7 @@ class Response
         {
             if(null !== $data)
             {
-                return $this->_connection->send($data."0\r\n\r\n", true);
+                return $this->_connection->send(dechex(strlen($data))."\r\n$data\r\n"."0\r\n\r\n", true);
             }
             return $this->_connection->send("0\r\n\r\n", true);
         }

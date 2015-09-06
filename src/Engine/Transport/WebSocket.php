@@ -7,6 +7,7 @@ class WebSocket extends Transport
     public $writable = true;
     public $supportsFraming = true;
     public $supportsBinary = true;
+    public $name = 'websocket';
     public function __construct($req)
     {
         $this->socket = $req->connection;

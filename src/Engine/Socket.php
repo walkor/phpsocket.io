@@ -84,6 +84,7 @@ class Socket extends Emitter
                                    'data'=> 'probe', 
                                    'options'=>array( 'compress'=> true )
                         )));
+                        //Timer::add(0.1, array($this, 'check'), array(), false);
                         break;
                     }
                     $this->sendPacket('pong');
@@ -107,7 +108,15 @@ class Socket extends Emitter
             echo('packet received with closed socket');
         }
     } 
-    
+   
+    public function check()
+    {
+        if('polling' == $this->transport->name && $this->transport->writable)
+        {
+            $this->transport->send(array(array('type' => 'noop')));
+        }
+    }
+ 
     public function onError($err) 
     {
       $this->onClose('transport error', $err);
@@ -128,7 +137,7 @@ class Socket extends Emitter
         Timer::del($this->pingTimeoutTimer);
     }
     
-    public function onClose($reason, $description = null)
+    public function onClose($reason = '', $description = null)
     {
         if ('closed' != $this->readyState) {
             Timer::del($this->pingTimeoutTimer);

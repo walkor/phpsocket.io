@@ -14,6 +14,25 @@ class Engine extends Emitter
     public $allowUpgrades = array();
     public $allowRequest = array();
     public $clients = array();
+    public static $allowTransports = array(
+       'polling' => 'polling',
+       'websocket' => 'websocket'
+    );
+
+    public static $errorMessages = array(
+        'Transport unknown',
+        'Session ID unknown',
+        'Bad handshake method',
+        'Bad request'
+    );
+
+    const ERROR_UNKNOWN_TRANSPORT = 0;
+
+    const ERROR_UNKNOWN_SID = 1;
+
+    const ERROR_BAD_HANDSHAKE_METHOD = 2;
+
+    const ERROR_BAD_REQUEST = 3;
 
     public function __construct($opts = array())
     {
@@ -38,6 +57,17 @@ class Engine extends Emitter
     {
         $this->prepare($req);
         $req->res = $res;
+        $this->verify($req, false, array($this, 'dealRequest'));
+    }
+
+    public function dealRequest($err, $success, $req)
+    {
+        if (!$success)
+        {
+            self::sendErrorMessage($req, $req->res, $err);
+            return;
+        }
+
         if(isset($req->_query['sid']))
         {
             $this->clients[$req->_query['sid']]->transport->onRequest($req);
@@ -46,6 +76,57 @@ class Engine extends Emitter
         {
             $this->handshake($req->_query['transport'], $req);
         }
+    }
+
+    protected function sendErrorMessage($req, $res, $code)
+    {
+        $headers = array('Content-Type'=> 'application/json');
+
+        if(isset($req->headers['origin']))
+        {
+            $headers['Access-Control-Allow-Credentials'] = 'true';
+            $headers['Access-Control-Allow-Origin'] = $req->headers['origin'];
+        } 
+        else 
+        {
+            $headers['Access-Control-Allow-Origin'] = '*';
+        }
+        $res->writeHead(400, '', $headers);
+        $res->end(json_encode(array(
+            'code' => $code,
+            'message' => self::$errorMessages[$code]
+        )));
+    }
+
+    protected function verify($req, $upgrade, $fn)
+    {
+        if(!isset($req->_query['transport']) || !isset(self::$allowTransports[$req->_query['transport']]))
+        {
+            return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req);
+        }
+        $transport = $req->_query['transport'];
+        $sid = isset($req->_query['sid']) ? $req->_query['sid'] : '';
+        if($sid)
+        {
+            if(!isset($this->clients[$sid]))
+            {
+                return call_user_func($fn, self::ERROR_UNKNOWN_SID, false, $req);
+            }
+            if($this->clients[$sid]->upgraded && $this->clients[$sid]->transport->name !== $transport)
+            {
+                //return call_user_func($fn, self::ERROR_BAD_REQUEST, false, $req);
+                echo "in--------------------\n";
+                return $this->clients[$sid]->transport->send(array(array('type' => 'noop')));
+            }
+        }
+        else
+        {
+           if('GET' !== $req->method)
+           {
+              return call_user_func($fn, ERROR_BAD_HANDSHAKE_METHOD, false, $req);
+           }
+        }
+        call_user_func($fn, null, true, $req);
     }
 
     protected function prepare($req)
