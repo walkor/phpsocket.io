@@ -20,37 +20,14 @@ spl_autoload_register(function($name){
 class_alias('\Engine\Protocols\Http', "Protocols\\Http");
 $io = new Worker('Http://0.0.0.0:8888');
 $io->onMessage = 'test';
-/*$io->onConnect = function($connection)
-{
-    $connection->onRequest = function($req, $res)
-    {
-        $req->onEnd = function($req){echo "end\n";};
-        $req->onData = function($req, $data){echo $data;};
-        $res->write('ok');
-        $res->write(var_export($req->headers, true));
-        $res->write('yeeh');
-        $res->end();
-    };
-};
-*/
-//$engine = new Engine();
-//$engine->attach($io);
-
 $o = new SocketIO();
 $o->attach($io);
-/*
-io.on('connection', function(socket){
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
-  });
-});
-
-
-*/
 $o->on('connection', function($socket)use($o){
-    $socket->on('chat message', function($msg)use($o)
+    $socket->on('chat message', function($msg)use($o,$socket)
     {
         $o->emit('chat message', $msg);
+        $socket->emit('chat message', 'this is test');
+        $socket->broadcast->emit('chat message', 'hello');
     });
 });
 

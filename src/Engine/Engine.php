@@ -112,11 +112,9 @@ class Engine extends Emitter
             {
                 return call_user_func($fn, self::ERROR_UNKNOWN_SID, false, $req);
             }
-            if($this->clients[$sid]->upgraded && $this->clients[$sid]->transport->name !== $transport)
+            if(!$upgrade && $this->clients[$sid]->transport->name !== $transport)
             {
-                //return call_user_func($fn, self::ERROR_BAD_REQUEST, false, $req);
-                echo "in--------------------\n";
-                return $this->clients[$sid]->transport->send(array(array('type' => 'noop')));
+                return call_user_func($fn, self::ERROR_BAD_REQUEST, false, $req);
             }
         }
         else

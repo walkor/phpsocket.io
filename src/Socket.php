@@ -63,19 +63,31 @@ class Socket extends Emitter
             'query' => $query,
        );
     }
-    
+   
+    public function __get($name)
+    {
+        if($name === 'broadcast')
+        {
+            $this->flags['broadcast'] = true;
+        }
+        return $this;
+    }
+ 
     public function emit($ev)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev]))
         {
             call_user_func_array(array($this, 'parent::emit'), $args);
-        } else {
+        }
+        else
+        {
             $packet = array();
-            $packet['type'] = hasBin($args) ? Parser::BINARY_EVENT : Parser::EVENT;
+            // todo check
+            //$packet['type'] = hasBin($args) ? Parser::BINARY_EVENT : Parser::EVENT;
+            $packet['type'] = Parser::EVENT;
             $packet['data'] = $args;
             $flags = $this->flags;
-    
             // access last argument to see if it's an ACK callback
             if (is_callable(end($args))) 
             {
@@ -88,19 +100,18 @@ class Socket extends Emitter
                 $packet->id = $this->nsp->ids++;
             }
     
-            if ($this->_rooms || $flags['broadcast']) 
+            if ($this->_rooms || !empty($flags['broadcast'])) 
             {
                 $this->adapter->broadcast($packet, array(
-                    'except' => array($this->id),
+                    'except' => array($this->id => $this->id),
                     'rooms'=> $this->_rooms,
                     'flags' => $flags
                 ));
-            } else {
+            }
+            else
+            {
                 // dispatch packet
-                $this->packet($packet, array(
-                    'volatile'=>$flags['volatile'],
-                    'compress' => $flags['compress']
-                ));
+                $this->packet($packet);
             }
     
             // reset flags

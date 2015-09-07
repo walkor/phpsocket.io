@@ -49,9 +49,13 @@ class Parser
     return encodeArrayBuffer(packet, supportsBinary, callback);
   }
 */
-        if(strlen($data)>1)
+        if(is_string($data) && strlen($data) > 1)
         {
             return self::encodeBuffer($packet, $supportsBinary, $callback);
+        }
+        elseif(is_array($data))
+        {
+            return self::encodeArrayBuffer($packet, $supportsBinary, $callback);
         }
 
         // Sending data as a utf-8 string
@@ -72,7 +76,7 @@ class Parser
     
     public static function encodeArrayBuffer($packet, $supportsBinary, $callback) 
     {
-        $data = isset($packet['data'])  ? 'undefined' : $packet['data'];
+        $data = isset($packet['data']) ? '' : $packet['data'];
         if (!$supportsBinary) 
         {
             return self::encodeBase64Packet($packet, $callback);

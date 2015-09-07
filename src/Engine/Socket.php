@@ -29,10 +29,54 @@ class Socket extends Emitter
     
     public function maybeUpgrade($transport)
     {
-        $this->upgraded = true;
-        $this->clearTransport();
-        $this->setTransport($transport);
-        $this->emit('upgrade', $transport);
+        $this->upgradeTimeoutTimer = Timer::add(
+            $this->server->upgradeTimeout, 
+            array($this, 'upgradeTimeoutCallback'),
+            array($transport), false
+        );
+        $self = $this;
+        $transport->on('packet', function($packet)use($transport, $self)
+        {
+            if('ping' === $packet['type'] && 'probe' === $packet['data'])
+            {
+                $transport->send(array(array('type'=> 'pong', 'data'=> 'probe')));
+                Timer::del($self->checkIntervalTimer);
+                $self->checkIntervalTimer = Timer::add(0.1, array($this, 'check'));
+            }
+            else if ('upgrade' === $packet['type'] && $self->readyState !== 'closed')
+            {
+                $self->upgraded = true;
+                $self->clearTransport();
+                $transport->removeAllListeners('packet');
+                $self->setTransport($transport);
+                $self->emit('upgrade', $transport);
+                $self->setPingTimeout();
+                $self->flush();
+                Timer::del($self->checkIntervalTimer);
+                $self->checkIntervalTimer = null;
+                Timer::del($self->upgradeTimeoutTimer);
+                if($self->readyState === 'closing') 
+                {
+                    $transport->close(function () {
+                        $self->onClose('forced close');
+                    });
+                }
+            }
+            else
+            {
+                $transport->close();
+            }
+        });
+    }
+
+    public function upgradeTimeoutCallback($transport)
+    {
+        echo("client did not complete upgrade - closing transport\n");
+        $this->checkIntervalTimer = null;
+        if('open' == $transport->readyState)
+        {
+             $transport->close();
+        }
     }
     
     public function setTransport($transport)
@@ -76,17 +120,6 @@ class Socket extends Emitter
             switch ($packet['type']) {
         
                 case 'ping':
-                    if(isset($packet['data']) && $packet['data'] === 'probe')
-                    {
-                        $this->transport->send(array(
-                                array(
-                                   'type' => 'pong', 
-                                   'data'=> 'probe', 
-                                   'options'=>array( 'compress'=> true )
-                        )));
-                        //Timer::add(0.1, array($this, 'check'), array(), false);
-                        break;
-                    }
                     $this->sendPacket('pong');
                     $this->emit('heartbeat');
                     break;
@@ -98,8 +131,6 @@ class Socket extends Emitter
                 case 'message':
                     $this->emit('data', $packet['data']);
                     $this->emit('message', $packet['data']);
-                    break;
-                case 'upgrade':
                     break;
             }
         } 
