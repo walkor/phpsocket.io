@@ -94,7 +94,7 @@ class Parser
     
     public static function encodeBase64Packet($packet, $callback)
     {
-        $data = isset($packet['data'])  ? 'undefined' : $packet['data'];
+        $data = isset($packet['data'])  ? '' : $packet['data'];
         $message = 'b' . self::$packets[$packet['type']] . base64_encode($packet['data']);
         return call_user_func($callback, $message);
     }
@@ -178,7 +178,7 @@ class Parser
             return call_user_func($callback, '0:');
         }
         
-        self::map($packets, '\Engine\Parser::encodeOne', function($err, $results)
+        self::map($packets, '\Engine\Parser::encodeOne', function($err, $results) use($callback)
         {
             return call_user_func($callback, implode('', $results));
         });
@@ -186,12 +186,12 @@ class Parser
     
     public static function setLengthHeader($message) 
     {
-        return strlen(message) . ':' . $message;
+        return strlen($message) . ':' . $message;
     }
     
     public static function encodeOne($packet, $doneCallback, $supportsBinary = null, $result = null) 
     {
-        self::encodePacket($packet, $supportsBinary, true, function($message) 
+        self::encodePacket($packet, $supportsBinary, true, function($message)use($doneCallback) 
         {
             call_user_func($doneCallback, null, self::setLengthHeader($message));
         });

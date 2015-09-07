@@ -121,7 +121,7 @@ class Engine extends Emitter
         {
            if('GET' !== $req->method)
            {
-              return call_user_func($fn, ERROR_BAD_HANDSHAKE_METHOD, false, $req);
+              return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req);
            }
         }
         call_user_func($fn, null, true, $req);
@@ -144,7 +144,7 @@ class Engine extends Emitter
         $id = rand(1, 100000000);
         if (isset($req->_query['j'])) 
         {
-            $transport = '\\Engine\\Transport\\PollingJSONP';
+            $transport = '\\Engine\\Transport\\PollingJsonp';
         } 
         else 
         {
@@ -152,9 +152,10 @@ class Engine extends Emitter
         }
 
         $transport = new $transport($req);
-
+        
         $transport->supportsBinary = !isset($req->_query['b64']);
- 
+var_dump($req->url);
+
         $socket = new Socket($id, $this, $transport, $req);
 
         $transport->on('headers', function(&$headers)use($id)
