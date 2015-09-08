@@ -22,7 +22,7 @@ class PollingJsonp extends Polling
         /*data = data.replace(rSlashes, function(match, slashes) {
           return slashes ? match : '\n';
         });*/
-        call_user_func(array($this, 'parent::onData'), preg_replace('/(\\)?\\n/', '\\n', $data));
+        call_user_func(array($this, 'parent::onData'), preg_replace('/\\\\n/', '\\n', $data));
     }
 
     public function doWrite($data)

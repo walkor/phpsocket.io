@@ -42,21 +42,6 @@ class Parser
         }
         // todo $packet['data']['buffer'] ???
         $data = !isset($packet['data']) ? '' : $packet['data'];
-/*
-  if (Buffer.isBuffer(data)) {
-    return encodeBuffer(packet, supportsBinary, callback);
-  } else if (data instanceof ArrayBuffer) {
-    return encodeArrayBuffer(packet, supportsBinary, callback);
-  }
-*/
-        if(is_string($data) && strlen($data) > 1)
-        {
-            return self::encodeBuffer($packet, $supportsBinary, $callback);
-        }
-        elseif(is_array($data))
-        {
-            return self::encodeArrayBuffer($packet, $supportsBinary, $callback);
-        }
 
         // Sending data as a utf-8 string
         $encoded = self::$packets[$packet['type']].$data;
@@ -239,7 +224,7 @@ class Parser
     
     public static function decodePayload($data, $binaryType = null, $callback = null) 
     {
-        //if (!is_string($data))
+        if(!preg_match('/^\d+:\d/',$data))
         {
             return self::decodePayloadAsBinary($data, $binaryType, $callback);
         }

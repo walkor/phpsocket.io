@@ -1,0 +1,65 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "46392654aa4dedacb57fc16e818a17cf",
+    "packages": [
+        {
+            "name": "workerman/workerman",
+            "version": "v3.1.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/walkor/Workerman.git",
+                "reference": "5fe60a2c43b4bbcf8a2c665f89c193ad699e55d2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/walkor/Workerman/zipball/5fe60a2c43b4bbcf8a2c665f89c193ad699e55d2",
+                "reference": "5fe60a2c43b4bbcf8a2c665f89c193ad699e55d2",
+                "shasum": ""
+            },
+            "require": {
+                "ext-sockets": "*",
+                "php": ">=5.3"
+            },
+            "suggest": {
+                "ext-libevent": "For better performance."
+            },
+            "type": "project",
+            "autoload": {
+                "psr-4": {
+                    "Workerman\\": "./"
+                }
+            },
+            "notification-url": "http://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "walkor",
+                    "email": "walkor@workerman.net",
+                    "homepage": "http://www.workerman.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "An asynchronous event driven PHP framework for easily building fast, scalable network applications.",
+            "homepage": "http://www.workerman.net",
+            "keywords": [
+                "asynchronous",
+                "event-loop"
+            ],
+            "time": "2015-07-28 16:15:07"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

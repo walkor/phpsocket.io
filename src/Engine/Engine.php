@@ -154,7 +154,6 @@ class Engine extends Emitter
         $transport = new $transport($req);
         
         $transport->supportsBinary = !isset($req->_query['b64']);
-var_dump($req->url);
 
         $socket = new Socket($id, $this, $transport, $req);
 
