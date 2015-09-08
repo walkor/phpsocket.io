@@ -1,7 +1,8 @@
 <?php
 use Workerman\Worker;
+use Workerman\WebServer;
 use Workerman\Autoloader;
-use \Engine\Engine;
+use Engine\Engine;
 include __DIR__ . '/../vendor/workerman/workerman/Autoloader.php';
 spl_autoload_register(function($name){
     $path = str_replace('\\', DIRECTORY_SEPARATOR ,$name);
@@ -12,9 +13,7 @@ spl_autoload_register(function($name){
         {
             return true;
         }
-        echo $name."\n";
     }
-    echo $class_file;
     return false;
 });
 class_alias('\Engine\Protocols\Http', "Protocols\\Http");
@@ -26,9 +25,10 @@ $o->on('connection', function($socket)use($o){
     $socket->on('chat message', function($msg)use($o,$socket)
     {
         $o->emit('chat message', $msg);
-        $socket->emit('chat message', 'this is test');
-        $socket->broadcast->emit('chat message', 'hello');
+        //$socket->emit('chat message', 'this is test');
+        //$socket->broadcast->emit('chat message', 'hello');
     });
 });
+
 
 Worker::runAll();
