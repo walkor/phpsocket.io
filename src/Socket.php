@@ -69,8 +69,9 @@ class Socket extends Emitter
         if($name === 'broadcast')
         {
             $this->flags['broadcast'] = true;
+            return $this;
         }
-        return $this;
+        return null;
     }
  
     public function emit($ev)
@@ -410,7 +411,6 @@ class Socket extends Emitter
      public function onclose($reason)
      {
         if (!$this->connected) return $this;
-        echo('closing socket - reason ' . $reason);
         $this->leaveAll();
         $this->nsp->remove($this);
         $this->client->remove($this);
