@@ -3,21 +3,13 @@ use Workerman\Worker;
 use Workerman\WebServer;
 use Workerman\Autoloader;
 use Engine\Engine;
-include __DIR__ . '/../../vendor/autoload.php';
-spl_autoload_register(function($name){
-    $path = str_replace('\\', DIRECTORY_SEPARATOR ,$name);
-    if(is_file($class_file = __DIR__ . "/../../src/$path.php"))
-    {
-        require_once($class_file);
-        if(class_exists($name, false))
-        {
-            return true;
-        }
-    }
-    return false;
-});
-class_alias('\Engine\Protocols\Http', "Protocols\\Http");
-$worker = new Worker('Http://0.0.0.0:2020');
+
+include __DIR__ . '/../../src/autoload.php';    // for SocketIO class
+include __DIR__ . '/../../vendor/autoload.php'; // for workerman class
+
+class_alias('\Engine\Protocols\Http', 'Protocols\SocketIO');
+
+$worker = new Worker('SocketIO://0.0.0.0:2020');
 $io = new SocketIO();
 $io->attach($worker);
 $io->on('connection', function($socket){
@@ -83,5 +75,7 @@ $io->on('connection', function($socket){
     
 });
 
+$web = new WebServer('http://0.0.0.0:2022');
+$web->addRoot('localhost', __DIR__ . '/public');
 
 Worker::runAll();

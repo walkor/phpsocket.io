@@ -116,7 +116,7 @@ class Client
             unset($this->sockets[$socket->id]);
             unset($this->nsps[$nsp]);
         } else {
-            echo('ignoring remove for '. $socket->id);
+            //echo('ignoring remove for '. $socket->id);
         }
     }
 
