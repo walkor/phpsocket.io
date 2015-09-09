@@ -11,7 +11,7 @@
  * @link http://www.workerman.net/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Engine\Protocols\WebSocket;
+namespace Protocols\WebSocket;
 
 use Workerman\Connection\ConnectionInterface;
 

@@ -1,5 +1,5 @@
 <?php
-namespace Engine\Protocols\Http;
+namespace Protocols\Http;
 
 class Response
 {

@@ -1,11 +1,11 @@
 <?php
-namespace Engine\Protocols;
-use \Engine\Protocols\WebSocket;
+namespace Protocols;
+use Protocols\WebSocket;
 
-use \Engine\Protocols\Http\Request;
-use \Engine\Protocols\Http\Response;
+use \Protocols\Http\Request;
+use \Protocols\Http\Response;
 use \Workerman\Connection\TcpConnection;
-class Http
+class SocketIO 
 {
     public static function input($http_buffer, $connection)
     {
@@ -48,9 +48,9 @@ class Http
             }
 
             // POST
-            if('\Protocols\Http::onData' !== $connection->onMessage)
+            if('\Protocols\SocketIO::onData' !== $connection->onMessage)
             {
-                $connection->onMessage = '\Protocols\Http::onData';
+                $connection->onMessage = '\Protocols\SocketIO::onData';
             }
             if(!$raw_body)
             {

@@ -7,7 +7,7 @@ use Engine\Engine;
 include __DIR__ . '/../../src/autoload.php';    // for SocketIO class
 include __DIR__ . '/../../vendor/autoload.php'; // for workerman class
 
-class_alias('\Engine\Protocols\Http', 'Protocols\SocketIO');
+//class_alias('\Engine\Protocols\Http', 'Protocols\SocketIO');
 
 $worker = new Worker('SocketIO://0.0.0.0:2020');
 $io = new SocketIO();
