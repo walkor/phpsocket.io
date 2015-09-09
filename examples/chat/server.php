@@ -3,8 +3,7 @@ use Workerman\Worker;
 use Workerman\WebServer;
 use Workerman\Autoloader;
 use Engine\Engine;
-//include __DIR__ . '/vendor/workerman/workerman/Autoloader.php';
-include __DIR__ . '/vendor/autoload.php';
+include __DIR__ . '/../../vendor/autoload.php';
 spl_autoload_register(function($name){
     $path = str_replace('\\', DIRECTORY_SEPARATOR ,$name);
     if(is_file($class_file = __DIR__ . "/../../src/$path.php"))
@@ -19,16 +18,9 @@ spl_autoload_register(function($name){
 });
 class_alias('\Engine\Protocols\Http', "Protocols\\Http");
 $worker = new Worker('Http://0.0.0.0:2020');
-$worker->onMessage = 'test';
 $io = new SocketIO();
 $io->attach($worker);
 $io->on('connection', function($socket){
-    $socket->on('chat message', function($msg)use($socket)
-    {
-        //$o->emit('chat message', $msg);
-        //$socket->emit('chat message', 'this is test');
-        //$socket->broadcast->emit('chat message', 'hello');
-        
         $socket->addedUser = false;
 
         // when the client emits 'new message', this listens and executes
@@ -87,8 +79,8 @@ $io->on('connection', function($socket){
                    'numUsers' => $numUsers
                 ));
             }
-        });
-    });
+       });
+    
 });
 
 

@@ -57,8 +57,8 @@ class Nsp extends Emitter
         }
         call_user_func($last_fn, null);
     }
-
-    public function add($client, $fn)
+/*
+    public function add($client, $nsp, $fn)
     {
         $socket = new Socket($this, $client);
         $self = $this;
@@ -76,28 +76,29 @@ class Nsp extends Emitter
                 echo('next called after client was closed - ignoring socket');
             }
         });
-        /*
-        Timer::add(0.000000001, function($client, $self, $socket){
-           if ('open' === $client->conn->readyState) {
-               // track socket
-               $self->sockets[]=$socket;
-
-               // it's paramount that the internal `onconnect` logic
-               // fires before user-set events to prevent state order
-               // violations (such as a disconnection before the connection
-               // logic is complete)
-               $socket->onconnect();
-               if (!empty($fn)) call_user_func($fn);
-
-               // fire user-set events
-               $self->emit('connect', $socket);
-               $self->emit('connection', $socket);
-           } else {
-               echo('next called after client was closed - ignoring socket');
-           }}, array($client, $self, $socket), false);
-       });
-       */
-       return $socket;
+        return $socket;
+    }
+*/
+    public function add($client, $nsp, $fn)
+    {
+        $socket = new Socket($this, $client);
+        $self = $this;
+        $this->run($socket, function($err)use($client, $self, $socket, $fn, $nsp)
+        {
+            if('open' === $client->conn->readyState)
+            {
+                $self->sockets[]=$socket;
+                $socket->onconnect();
+                if (!empty($fn)) call_user_func($fn, $socket, $nsp);
+                $self->emit('connect', $socket);
+                $self->emit('connection', $socket);
+            }
+            else
+            {
+                echo('next called after client was closed - ignoring socket');
+            }
+        });
+        return $socket;
     }
     
     /**

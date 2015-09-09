@@ -4,9 +4,9 @@ use Parser\Parser;
 class Client
 {
     public $server = null;
-    public $con = null;
+    public $conn = null;
     public $encoder = null;
-    public $decode = null;
+    public $decoder = null;
     public $id = null;
     public $request = null;
     public $nsps = array();
@@ -29,11 +29,6 @@ class Client
  */
 
     public function setup(){
-        /*$this->onclose = this.onclose.bind(this);
-          this.ondata = this.ondata.bind(this);
-          this.onerror = this.onerror.bind(this);
-          this.ondecoded = this.ondecoded.bind(this);
-         */
          $this->decoder->on('decoded', array($this,'ondecoded'));
          $this->conn->on('data', array($this,'ondata'));
          $this->conn->on('error', array($this, 'onerror'));
@@ -59,7 +54,7 @@ class Client
             $this->connectBuffer[$name] = $name;
             return;
         }
-        $self = $this;
+        /*$self = $this;
         $socket = $nsp->add($this, function($socket)use($nsp, $self){
             $self->sockets[] = $socket;
             $self->nsps[$nsp->name] = $socket;
@@ -71,8 +66,25 @@ class Client
                 }
                 $self->connectBuffer = array();
             }
-       });
+       });*/
+       $socket = $nsp->add($this, $nsp, array($this, 'nspAdd'));
     }
+
+    public function nspAdd($socket, $nsp)
+    {
+        $this->sockets[] = $socket;
+        $this->nsps[$nsp->name] = $socket;
+        if ('/' === $nsp->name && $this->connectBuffer)
+        {
+            foreach($this->connectBuffer as $name)
+            {
+                $this->connect($name);
+            }
+            $this->connectBuffer = array();
+        }
+    }
+
+
 
 /**
  * Disconnects from all namespaces and closes transport.
@@ -236,7 +248,7 @@ class Client
             $socket->onclose($reason);
         }
         $this->sockets = null;
-        $this->decoder->destroy(); // clean up decoder
+        //$this->decoder->destroy(); // clean up decoder
     }
 
 /**
@@ -251,5 +263,6 @@ class Client
         $this->conn->onError = null;
         $this->conn->onClose = null;
         $this->decoder->removeListener('decoded', array($this, 'ondecoded'));
+        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
     }
 }

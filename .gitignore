@@ -2,3 +2,5 @@
 .project
 .settings/org.eclipse.php.core.prefs
 vendor
+examples/vendor
+composer.lock
