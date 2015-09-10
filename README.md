@@ -7,12 +7,12 @@ An alternative implementation of [socket.io](https://github.com/socketio/socket.
 $io = new SocketIO(2021);
 $io->on('connection', function($socket){
   $socket->on('chat message', function($msg){
-    $io->emit('chat message', msg);
+    $io->emit('chat message', $msg);
   });
 });
 ```
 
-## Anather chat demo
+## Another chat demo
 ```php
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
