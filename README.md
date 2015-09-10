@@ -5,8 +5,8 @@ An alternative implementation of [socket.io](https://github.com/socketio/socket.
 ## Simple chat
 ```
 $io = new SocketIO(2021);
-$io->on('connection', function($socket){
-  $socket->on('chat message', function($msg){
+$io->on('connection', function($socket)use($io){
+  $socket->on('chat message', function($msg)use($io){
     $io->emit('chat message', $msg);
   });
 });
