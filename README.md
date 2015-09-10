@@ -16,6 +16,7 @@ $io->on('connection', function($socket)use($io){
 
 https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
 ```php
+// listen port 2020
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
