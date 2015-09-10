@@ -2,7 +2,7 @@
 ## start
 ```php server.php start``` for debug mode
 
-```php server.php start -d`` for daemon mode
+```php server.php start -d``` for daemon mode
 
 ## stop
 ```php server.php stop```
