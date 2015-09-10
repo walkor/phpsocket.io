@@ -1,7 +1,18 @@
 # phpsocket.io
 An alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).
 
-# Example
+# Examples
+## Simple chat
+```
+$io = new SocketIO(2021);
+$io->on('connection', function($socket){
+  $socket->on('chat message', function($msg){
+    $io->emit('chat message', msg);
+  });
+});
+```
+
+## Anather chat demo
 ```php
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
