@@ -7,9 +7,9 @@ use Engine\Engine;
 include __DIR__ . '/../../src/autoload.php';    // for SocketIO class
 include __DIR__ . '/../../vendor/autoload.php'; // for workerman class
 
-$worker = new Worker('SocketIO://0.0.0.0:2020');
-$io = new SocketIO();
-$io->attach($worker);
+//$worker = new Worker('SocketIO://0.0.0.0:2020');
+$io = new SocketIO(2020);
+//$io->attach($worker);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
 

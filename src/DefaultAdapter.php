@@ -63,9 +63,14 @@ class DefaultAdapter
         $rooms = isset($opts['rooms']) ? $opts['rooms'] : array();
         $except = isset($opts['except']) ? $opts['except'] : array();
         $flags = isset($opts['flags']) ? $opts['flags'] : array();
+        $packetOpts = array(
+            'preEncoded' => true,
+            'volatile' => isset($flags['volatile']) ?  $flags['volatile'] : null,
+            'compress' => isset($flags['compress']) ? $flags['compress'] : null
+        );
         $self = $this;
         $packet['nsp'] = $this->nsp->name;
-        $this->encoder->encode($packet, function($encodedPackets) use($self, $rooms, $except, $flags)
+        $this->encoder->encode($packet, function($encodedPackets) use($self, $rooms, $except, $flags, $packetOpts)
         {
             if($rooms) 
             {
@@ -84,8 +89,11 @@ class DefaultAdapter
                          {
                              continue;
                          }
-                         $socket = $self->nsp->connected[$id];
-                         $ids[$id] = true;
+                         if(isset($self->nsp->connected[$id]))
+                         {
+                             $ids[$id] = true;
+                             $self->nsp->connected[$id]->packet($encodedPackets, $packetOpts);
+                         }
                      }
                  }
             } else {
