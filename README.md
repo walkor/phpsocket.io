@@ -13,6 +13,8 @@ $io->on('connection', function($socket){
 ```
 
 ## Another chat demo
+
+https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
 ```php
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
