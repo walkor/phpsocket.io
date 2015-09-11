@@ -1,16 +1,25 @@
-<?php
-use Workerman\Worker;
-use Workerman\WebServer;
-use Workerman\Autoloader;
-use Engine\Engine;
+# phpsocket.io
+An alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).
 
-include __DIR__ . '/../../src/autoload.php';    // for SocketIO class
-include __DIR__ . '/../../vendor/autoload.php'; // for workerman class
+# Examples
+## Simple chat
+```
+$io = new SocketIO(2021);
+$io->on('connection', function($socket)use($io){
+  $socket->on('chat message', function($msg)use($io){
+    $io->emit('chat message', $msg);
+  });
+});
+```
 
+## Another chat demo
+
+https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
+```php
+// listen port 2020
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
-
     // when the client emits 'new message', this listens and executes
     $socket->on('new message', function ($data)use($socket){
         // we tell the client to execute 'new message'
@@ -19,7 +28,6 @@ $io->on('connection', function($socket){
             'message'=> $data
         ));
     });
-
     // when the client emits 'add user', this listens and executes
     $socket->on('add user', function ($username) use($socket){
         global $usernames, $numUsers;
@@ -38,21 +46,18 @@ $io->on('connection', function($socket){
             'numUsers' => $numUsers
         ));
     });
-
     // when the client emits 'typing', we broadcast it to others
     $socket->on('typing', function () use($socket) {
         $socket->broadcast->emit('typing', array(
             'username' => $socket->username
         ));
     });
-
     // when the client emits 'stop typing', we broadcast it to others
     $socket->on('stop typing', function () use($socket) {
         $socket->broadcast->emit('stop typing', array(
             'username' => $socket->username
         ));
     });
-
     // when the user disconnects.. perform this
     $socket->on('disconnect', function () use($socket) {
         global $usernames, $numUsers;
@@ -60,7 +65,6 @@ $io->on('connection', function($socket){
         if($socket->addedUser) {
             unset($usernames[$socket->username]);
             --$numUsers;
-
            // echo globally that this client has left
            $socket->broadcast->emit('user left', array(
                'username' => $socket->username,
@@ -68,10 +72,24 @@ $io->on('connection', function($socket){
             ));
         }
    });
-   
 });
+```
+# Livedemo
+[chat demo](http://www.workerman.net/demos/phpsocketio-chat/)
 
-$web = new WebServer('http://0.0.0.0:2022');
-$web->addRoot('localhost', __DIR__ . '/public');
+# Run chat example
+cd examples/chat
 
-Worker::runAll();
+## Start
+```php server.php start``` for debug mode
+
+```php server.php start -d ``` for daemon mode
+
+## Stop
+```php server.php stop```
+
+## Status
+```php server.php status```
+
+# License
+MIT

@@ -1,4 +1,5 @@
 <?php
+use Workerman\Worker;
 use Engine\Engine;
 class SocketIO
 {
@@ -9,7 +10,7 @@ class SocketIO
     public $_origins = array();
     public $_path = null;
     
-    public function __construct($srv = null, $opts = array())
+    public function __construct($port = null, $opts = array())
     {
         $path = isset($opts['path']) ? $opts['path'] : '/socket.io';
         $this->path($path);
@@ -18,7 +19,12 @@ class SocketIO
         $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
         $this->origins($origins);
         $this->sockets = $this->of('/');
-        if ($srv) $this->attach($srv, $opts);
+        if($port)
+        {
+            $worker = new Worker('SocketIO://0.0.0.0:'.$port);
+            $worker->name = 'PHPSocket.IO';
+            $this->attach($worker);
+        }
     }
     
     public function path($v = null)
