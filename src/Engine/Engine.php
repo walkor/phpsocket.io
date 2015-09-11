@@ -165,17 +165,13 @@ class Engine extends Emitter
         $transport->onRequest($req);
 
         $this->clients[$id] = $socket;
-        //$socket->once('close', array($this, 'onSocketClose')); 
-        $self = $this;
-        $socket->once('close', function()use($id, $self)
-        {
-           unset($self->clients[$id]);
-        });
+        $socket->once('close', array($this, 'onSocketClose')); 
         $this->emit('connection', $socket);
     }
 
     public function onSocketClose($id)
     {
+        var_dump(isset($this->clients[$id]));
         unset($this->clients[$id]);
     }
 
