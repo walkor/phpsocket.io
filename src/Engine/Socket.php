@@ -159,13 +159,12 @@ echo "new Socket\n";
     
     public function setPingTimeout()
     {
-        $self = $this;
         Timer::del($this->pingTimeoutTimer);
-        $this->pingTimeoutTimer = Timer::add($this->server->pingInterval + $this->server->pingTimeout ,
-         function ()use($self) {
-            $self->onClose('ping timeout');
-        }, null, false);
+        $this->pingTimeoutTimer = Timer::add(
+           $this->server->pingInterval + $this->server->pingTimeout ,
+           array($this, 'onClose'), null, false);
     }
+
     
     public function clearTransport()
     {
@@ -284,22 +283,25 @@ echo "new Socket\n";
     {
         $self = $this;
         //the message was sent successfully, execute the callback
-        $this->transport->on('drain', function()use($self) {
-            if ($self->sentCallbackFn) 
-            {
-                 $seqFn = array_shift($self->sentCallbackFn);//self.sentCallbackFn.splice(0,1)[0];
-                 if(is_callable($seqFn)) 
+        $this->transport->on('drain', array($this, 'onDrainCallback')); 
+    }
+
+    public function onDrainCallback()
+    {
+        if ($this->sentCallbackFn)
+        {
+             $seqFn = array_shift($this->sentCallbackFn);
+             if(is_callable($seqFn))
+             {
+                 echo('executing send callback');
+                 call_user_func($seqFn, $this->transport);
+             }else if (is_array($seqFn)) {
+                 echo('executing batch send callback');
+                 foreach($seqFn as $fn)
                  {
-                     echo('executing send callback');
-                     call_user_func($seqFn, $self->transport);
-                 }else if (is_array($seqFn)) {
-                     echo('executing batch send callback');
-                     foreach($seqFn as $fn)
-                     {
-                         call_user_func($fn, $self->transport);
-                     }
-                }
+                     call_user_func($fn, $this->transport);
+                 }
             }
-         });
+        }
     }
 }
