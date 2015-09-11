@@ -106,14 +106,23 @@ class SocketIO
         {
             return;
         }
-        try
+        else
         {
-            call_user_func($req->onClose, $req);
+            try
+            {
+                call_user_func($req->onClose, $req);
+            }
+            catch(\Exception $e)
+            {
+                echo $e;
+            }
         }
-        catch(\Exception $e)
-        {
-            echo $e;
-        }
+        self::cleanup($connection);
+    }
+
+    public static function cleanup($connection)
+    {
+        $connection->httpRequest = $connection->httpResponse = null;
     }
     
     public static function emitData($connection, $req, $data)
@@ -144,7 +153,7 @@ class SocketIO
                 echo $e;
             }
         }
-        $connection->httpRequest = $connection->httpResponse = null;
+        self::cleanup($connection);
     }
 
     public static function encode($buffer, $connection)

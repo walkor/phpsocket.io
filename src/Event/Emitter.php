@@ -41,9 +41,14 @@ class Emitter
         return $this;
     }
 
-    public function removeAllListeners($event_name)
+    public function removeAllListeners($event_name = null)
     {
         $this->emit('removeListener', $event_name);
+        if(null === $event_name)
+        {
+            $this->_eventListenerMap = array();
+            return $this;
+        }
         unset($this->_eventListenerMap[$event_name]);
         return $this;
     }
@@ -85,4 +90,5 @@ class Emitter
         }
         return true;
     }
+
 }

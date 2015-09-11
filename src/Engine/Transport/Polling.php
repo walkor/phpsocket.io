@@ -63,7 +63,9 @@ class Polling extends Transport
     
     public function pollRequestClean()
     {
-        $this->req->onClose = null;
+        $this->req->destroy();
+        $this->req->res->destroy();
+        $this->req->onClose = $this->req->res = null;
         $this->req = $this->res = null;
     }
 
@@ -89,7 +91,9 @@ class Polling extends Transport
     public function dataRequestCleanup()
     {
         $this->chunks = '';
-        $this->dataReq->onData = $this->dataReq->onEnd = $this->dataReq->onClose = null;
+        $this->dataReq->destroy();
+        $this->dataRes->destroy();
+        $this->dataReq->onData = $this->dataReq->onEnd = $this->dataReq->onClose = $this->dataReq->res = null;
         $this->dataReq = $this->dataRes = null;
     }
 

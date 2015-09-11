@@ -192,7 +192,7 @@ class Engine extends Emitter
         // clean
         $connection->onClose = function($connection)
         {
-            $connection->httpRequest = $connection->httpResponse = $connection->onRequest = null;
+            $connection->httpRequest = $connection->httpResponse = $connection->onRequest = $connection->onWebSocketConnect = null;
         };
     }
     

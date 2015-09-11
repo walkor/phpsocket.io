@@ -11,6 +11,7 @@ class WebSocket extends Transport
     public function __construct($req)
     {
         $this->socket = $req->connection;
+        $req->destroy();
         $this->socket->onMessage = array($this, 'onData2');
         $this->socket->onClose = array($this, 'onClose');
         $this->socket->onError = array($this, 'onError2');
@@ -42,6 +43,7 @@ class WebSocket extends Transport
     public function doClose($fn = null) 
     {
         $this->socket->close();
+        $this->socket = null;
         if(!empty($fn))
         {
             call_user_func($fn);

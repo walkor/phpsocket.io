@@ -259,10 +259,11 @@ class Client
 
     public function destroy()
     {
-        $this->conn->onData = null;
-        $this->conn->onError = null;
-        $this->conn->onClose = null;
-        $this->decoder->removeListener('decoded', array($this, 'ondecoded'));
-        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
+         /*$this->conn->removeListener('data', array($this,'ondata'));
+         $this->conn->removeListener('error', array($this, 'onerror'));
+         $this->conn->removeListener('close' ,array($this, 'onclose'));
+         $this->decoder->removeListener('decoded', array($this, 'ondecoded'));*/
+         $this->conn->removeAllListeners();
+         $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
     }
 }

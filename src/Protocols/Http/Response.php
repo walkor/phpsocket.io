@@ -5,8 +5,6 @@ class Response
 {
     public $statusCode = 200;
 
-    public $onDrain = null;
-
     protected $_statusPhrase = null;
 
     protected $_connection = null;
@@ -19,20 +17,6 @@ class Response
     public function __construct($connection)
     {
         $this->_connection = $connection;
-        $self = $this;
-        $connection->onBufferDrain = function($connection)use($self)
-        {
-            if($self->onDrain)
-            {
-                try{
-                    call_user_func($self->onDrain, $connection);
-                }
-                catch (\Exception $e)
-                {
-                    echo $e;
-                }
-            }
-        };
     }
 
     protected function initHeader()
@@ -144,6 +128,11 @@ class Response
             }
         }
         return true;
+    }
+    
+    public function destroy()
+    {
+        $this->_connection = null;
     }
     
     public static $codes = array(
