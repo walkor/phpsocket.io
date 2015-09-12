@@ -54,20 +54,7 @@ class Client
             $this->connectBuffer[$name] = $name;
             return;
         }
-        /*$self = $this;
-        $socket = $nsp->add($this, function($socket)use($nsp, $self){
-            $self->sockets[] = $socket;
-            $self->nsps[$nsp->name] = $socket;
-            if ('/' === $nsp->name && $self->connectBuffer) 
-            {
-                foreach($self->connectBuffer as $name)
-                {
-                    $self->connect($name);
-                }
-                $self->connectBuffer = array();
-            }
-       });*/
-       $socket = $nsp->add($this, $nsp, array($this, 'nspAdd'));
+        $socket = $nsp->add($this, $nsp, array($this, 'nspAdd'));
     }
 
     public function nspAdd($socket, $nsp)
@@ -145,17 +132,15 @@ class Client
  */
     public function packet($packet, $preEncoded = false, $volatile = false)
     {
-        $self = $this;
         if('open' === $this->conn->readyState) 
         {
             if (!$preEncoded) 
             {
                 // not broadcasting, need to encode
-                $this->encoder->encode($packet, function ($encodedPackets)use($self, $volatile) { // encode, then write results to engine
-                    $self->writeToEngine($encodedPackets, $volatile);
-                });
+                $encodedPackets = $this->encoder->encode($packet);
+                $this->writeToEngine($encodedPackets, $volatile);
             } else { // a broadcast pre-encodes a packet
-                 $self->writeToEngine($packet);
+                 $this->writeToEngine($packet);
             }
         } else {
              echo('ignoring packet write ' . $packet);

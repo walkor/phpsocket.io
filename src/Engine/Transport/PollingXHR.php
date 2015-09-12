@@ -2,6 +2,8 @@
 namespace Engine\Transport;
 class PollingXHR extends Polling
 {
+public function __construct(){echo "new XHR\n";}
+public function __destruct(){echo "XHR des\n";}
     public function onRequest($req)
     {
         if('OPTIONS' === $req->method)

@@ -185,7 +185,7 @@ echo "new Socket\n";
             $this->sentCallbackFn = array();
             $this->clearTransport();
             $this->readyState = 'closed';
-            $this->emit('close', $reason, $description);
+            $this->emit('close', $this->id, $reason, $description);
         }
     }
     

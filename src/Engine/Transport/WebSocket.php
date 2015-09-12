@@ -15,6 +15,7 @@ class WebSocket extends Transport
         $this->socket->onMessage = array($this, 'onData2');
         $this->socket->onClose = array($this, 'onClose');
         $this->socket->onError = array($this, 'onError2');
+echo "new WebSocket\n";
     }
     
     public function onData2($connection, $data) 
@@ -31,12 +32,9 @@ class WebSocket extends Transport
     {
         foreach($packets as $packet)
         {
-            $self = $this;
-            Parser::encodePacket($packet, $this->supportsBinary, function($data)use($self) 
-            {
-                $self->socket->send($data);
-                $self->emit('drain');
-            });
+            $data = Parser::encodePacket($packet, $this->supportsBinary);
+            $this->socket->send($data);
+            $this->emit('drain');
         }
     }
     
@@ -49,4 +47,5 @@ class WebSocket extends Transport
             call_user_func($fn);
         }
     }
+public function __destruct(){echo "WebSocket des\n";}
 }

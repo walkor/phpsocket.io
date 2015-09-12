@@ -19,7 +19,8 @@ class DefaultAdapter
         // todo next tick
         if ($fn) 
         {
-            call_user_func($fn, null, null);
+            //call_user_func($fn, null, null);
+            echo new \Exception('fn');
         }
     }
      
@@ -34,7 +35,7 @@ class DefaultAdapter
         // todo next tick
         if ($fn) 
         {
-            call_user_func($fn, null, null);
+           echo new \Exception('fn'); 
         }
     }
 
@@ -68,47 +69,44 @@ class DefaultAdapter
             'volatile' => isset($flags['volatile']) ?  $flags['volatile'] : null,
             'compress' => isset($flags['compress']) ? $flags['compress'] : null
         );
-        $self = $this;
         $packet['nsp'] = $this->nsp->name;
-        $this->encoder->encode($packet, function($encodedPackets) use($self, $rooms, $except, $flags, $packetOpts)
+        $encodedPackets = $this->encoder->encode($packet);
+        if($rooms) 
         {
-            if($rooms) 
-            {
-                 $ids = array();
-                 foreach($rooms as $i=>$room) 
+             $ids = array();
+             foreach($rooms as $i=>$room) 
+             {
+                 if(!isset($this->rooms[$room]))
                  {
-                     if(!isset($self->rooms[$room]))
-                     {
-                         continue;
-                     }
+                     continue;
+                 }
                    
-                     $room = $self->rooms[$room];
-                     foreach($room as $id=>$item)
-                     {
-                         if(isset($ids[$id]) || isset($except[$id]))
-                         {
-                             continue;
-                         }
-                         if(isset($self->nsp->connected[$id]))
-                         {
-                             $ids[$id] = true;
-                             $self->nsp->connected[$id]->packet($encodedPackets, $packetOpts);
-                         }
+                 $room = $this->rooms[$room];
+                 foreach($room as $id=>$item)
+                 {
+                    if(isset($ids[$id]) || isset($except[$id]))
+                    {
+                         continue;
+                    }
+                    if(isset($this->nsp->connected[$id]))
+                    {
+                         $ids[$id] = true;
+                         $this->nsp->connected[$id]->packet($encodedPackets, $packetOpts);
                      }
                  }
-            } else {
-                foreach($self->sids as $id=>$sid)
-                {
-                    if(isset($except[$id])) continue;
-                    if(isset($self->nsp->connected[$id]))
-                    {
-                        $socket = $self->nsp->connected[$id];
-                        $volatile = isset($flags['volatile']) ? $flags['volatile'] : null;
-                        $socket->packet($encodedPackets, true, $volatile);
-                    }
-                }
-            }
-        });
+             }
+         } else {
+             foreach($this->sids as $id=>$sid)
+             {
+                  if(isset($except[$id])) continue;
+                  if(isset($this->nsp->connected[$id]))
+                  {
+                      $socket = $this->nsp->connected[$id];
+                      $volatile = isset($flags['volatile']) ? $flags['volatile'] : null;
+                      $socket->packet($encodedPackets, true, $volatile);
+                  }
+              }
+         }
     }
 
 }

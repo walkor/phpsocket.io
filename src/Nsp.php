@@ -57,48 +57,34 @@ class Nsp extends Emitter
         }
         call_user_func($last_fn, null);
     }
-/*
+
     public function add($client, $nsp, $fn)
     {
         $socket = new Socket($this, $client);
-        $self = $this;
-        $this->run($socket, function($err)use($client, $self, $socket, $fn){
-            if('open' === $client->conn->readyState)
-            {
-                $self->sockets[]=$socket;
-                $socket->onconnect();
-                if (!empty($fn)) call_user_func($fn, $socket);
-                $self->emit('connect', $socket);
-                $self->emit('connection', $socket);
-            }
-            else
-            {
-                echo('next called after client was closed - ignoring socket');
-            }
-        });
+        if(!$this->fns) return $this->runCallback($client, $socket, $fn, $nsp);
+        $last_fn = array_pop($this->fns);
+        foreach($this->fns as $fn)
+        {
+            call_user_func($fn, $socket);
+        }
+        call_user_func($last_fn, null);
         return $socket;
     }
-*/
-    public function add($client, $nsp, $fn)
+
+    public function runCallback($client, $socket, $fn, $nsp)
     {
-        $socket = new Socket($this, $client);
-        $self = $this;
-        $this->run($socket, function($err)use($client, $self, $socket, $fn, $nsp)
+        if('open' === $client->conn->readyState)
         {
-            if('open' === $client->conn->readyState)
-            {
-                $self->sockets[]=$socket;
-                $socket->onconnect();
-                if (!empty($fn)) call_user_func($fn, $socket, $nsp);
-                $self->emit('connect', $socket);
-                $self->emit('connection', $socket);
-            }
-            else
-            {
-                echo('next called after client was closed - ignoring socket');
-            }
-        });
-        return $socket;
+            $this->sockets[]=$socket;
+            $socket->onconnect();
+            if(!empty($fn)) call_user_func($fn, $socket, $nsp);
+            $this->emit('connect', $socket);
+            $this->emit('connection', $socket);
+        }
+        else
+        {
+            echo('next called after client was closed - ignoring socket');
+        } 
     }
     
     /**

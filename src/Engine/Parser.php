@@ -27,48 +27,12 @@ class Parser
         'data' => 'parser error'
     );
 
-    public static function encodePacket($packet, $supportsBinary = null, $utf8encode = null, $callback = null)
+    public static function encodePacket($packet)
     {
-        if(is_callable($supportsBinary))
-        {
-            $callback = $supportsBinary;
-            $supportsBinary = null;
-        }
-
-        if (is_callable($utf8encode))
-        {
-            $callback = $utf8encode;
-            $utf8encode = null;
-        }
-        // todo $packet['data']['buffer'] ???
         $data = !isset($packet['data']) ? '' : $packet['data'];
-
-        // Sending data as a utf-8 string
-        $encoded = self::$packets[$packet['type']].$data;
-        return call_user_func($callback, $encoded);
+        return self::$packets[$packet['type']].$data;
     }
 
-    public static function encodeBuffer($packet, $supportsBinary, $callback) 
-    {
-        $data = $packet['data'];
-        if (!$supportsBinary) 
-        {
-            return self::encodeBase64Packet($packet, $callback);
-        }
-        $type_buffer = self::$packets[$packet['type']].$data;
-        return call_user_func($callback, $type_buffer);
-    }
-    
-    public static function encodeArrayBuffer($packet, $supportsBinary, $callback) 
-    {
-        $data = isset($packet['data']) ? '' : $packet['data'];
-        if (!$supportsBinary) 
-        {
-            return self::encodeBase64Packet($packet, $callback);
-        }
-        $result_buffer = self::$packets[$packet['type']].$data;
-        return call_user_func($callback, $result_buffer);
-    }
     
     /**
      * Encodes a packet with binary data in a base64 string
@@ -77,11 +41,10 @@ class Parser
      * @return {String} base64 encoded message
      */
     
-    public static function encodeBase64Packet($packet, $callback)
+    public static function encodeBase64Packet($packet)
     {
         $data = isset($packet['data'])  ? '' : $packet['data'];
-        $message = 'b' . self::$packets[$packet['type']] . base64_encode($packet['data']);
-        return call_user_func($callback, $message);
+        return $message = 'b' . self::$packets[$packet['type']] . base64_encode($packet['data']);
     }
     
     /**
@@ -145,100 +108,52 @@ class Parser
      * @api private
      */
     
-    public static function encodePayload($packets, $supportsBinary = null, $callback = null) 
+    public static function encodePayload($packets, $supportsBinary = null) 
     {
-        if (is_callable($supportsBinary))
-        {
-            $callback = $supportsBinary;
-            $supportsBinary = null;
-        }
-    
         if ($supportsBinary) 
         {
-            return self::encodePayloadAsBinary($packets, $callback);
+            return self::encodePayloadAsBinary($packets);
         }
     
         if (!$packets) 
         {
-            return call_user_func($callback, '0:');
+            return '0:';
         }
         
-        self::map($packets, '\Engine\Parser::encodeOne', function($err, $results) use($callback)
+        $results = '';
+        foreach($packets as $msg)
         {
-            return call_user_func($callback, implode('', $results));
-        });
+            $results .= self::encodeOne($msg, $supportsBinary);
+        }
+        return $results;
     }
     
-    public static function setLengthHeader($message) 
+    
+    public static function encodeOne($packet, $supportsBinary = null, $result = null) 
     {
+        $message = self::encodePacket($packet, $supportsBinary, true);
         return strlen($message) . ':' . $message;
     }
     
-    public static function encodeOne($packet, $doneCallback, $supportsBinary = null, $result = null) 
-    {
-        self::encodePacket($packet, $supportsBinary, true, function($message)use($doneCallback) 
-        {
-            call_user_func($doneCallback, null, self::setLengthHeader($message));
-        });
-    }
-    
-    
-    
-    /**
-     * Async array map using after
-     */
-    
-    public static function map($ary, $each, $done) 
-    {
-        $results = array();
-        $len = count($ary);
-        $ary = array_values($ary);
-        for($i = 0; $i < $len; $i++)
-        {
-            $msg = $ary[$i];
-            if($i === $len -1)
-            {
-                call_user_func($each, $msg, function($err, $msg)use(&$results, $done)
-                {
-                    $results[] = $msg;
-                    call_user_func($done, null, $results);
-                });
-            }
-            else
-            {
-                call_user_func($each, $msg, function($err, $msg)use(&$results)
-                {
-                    $results[] = $msg;
-                });
-            }
-        } 
-    }
     
     /*
      * Decodes data when a payload is maybe expected. Possible binary contents are
     * decoded from their base64 representation
     *
-    * @param {String} data, callback method
     * @api public
     */
     
-    public static function decodePayload($data, $binaryType = null, $callback = null) 
+    public static function decodePayload($data, $binaryType = null) 
     {
         if(!preg_match('/^\d+:\d/',$data))
         {
-            return self::decodePayloadAsBinary($data, $binaryType, $callback);
-        }
-    
-        if (is_callable($binaryType))
-        {
-            $callback = $binaryType;
-            $binaryType = null;
+            return self::decodePayloadAsBinary($data, $binaryType);
         }
     
         if ($data === '') 
         {
             // parser error - ignoring payload
-            return call_user_func($callback, self::err, 0, 1);
+            return self::$err;
         }
     
         $length = '';//, n, msg;
@@ -256,7 +171,7 @@ class Parser
                 if ('' == $length || ($length != ($n = intval($length)))) 
                 {
                     // parser error - ignoring payload
-                    return call_user_func($callback, self::$err, 0, 1);
+                    return self::$err;
                 }
     
                 $msg = substr($data, $i + 1, $n);
@@ -264,7 +179,7 @@ class Parser
                 if ($length != strlen($msg)) 
                 {
                     // parser error - ignoring payload
-                    return call_user_func($callback, self::$err, 0, 1);
+                    return self::$err;
                 }
     
                 if (isset($msg[0])) 
@@ -274,11 +189,10 @@ class Parser
                     if (self::$err['type'] == $packet['type'] && self::$err['data'] == $packet['data']) 
                     {
                         // parser error in individual packet - ignoring payload
-                        return call_user_func($callback, self::$err, 0, 1);
+                        return self::$err;
                     }
     
-                    $ret = call_user_func($callback, $packet,$i + $n, $l);
-                    if (false === $ret) return;
+                    return $packet;
                 }
     
                 // advance cursor
@@ -291,7 +205,7 @@ class Parser
         {
             // parser error - ignoring payload
             echo new \Exception('parser error');
-            return call_user_func($callback, self::$err, 0, 1);
+            return self::$err;
         }
     }
     
@@ -309,51 +223,39 @@ class Parser
      * @api private
      */
     
-    public static function encodePayloadAsBinary($packets, $callback) 
+    public static function encodePayloadAsBinary($packets) 
     {
-        if (!$packets) 
+        $results = '';
+        foreach($packets as $msg)
         {
-            return call_user_func($callback, '');
+            $results .= self::encodeOneAsBinary($msg);
         }
-    
-        self::map($packets, '\Engine\Parser::encodeOneAsBinary', function($err, $results)use($callback) 
-        {
-            return call_user_func($callback, implode('', $results));
-        });
+        return $results;
     }
     
-    public static function encodeOneAsBinary($p, $doneCallback) 
+    public static function encodeOneAsBinary($p) 
     {
         // todo is string or arraybuf
-        self::encodePacket($p, true, true, function($packet)use($doneCallback) 
+        $packet = self::encodePacket($p, true, true);
+        $encodingLength = ''.strlen($packet);
+        $sizeBuffer = chr(0);
+        for ($i = 0; $i < strlen($encodingLength); $i++)
         {
-            $encodingLength = ''.strlen($packet);
-            $sizeBuffer = chr(0);
-            for ($i = 0; $i < strlen($encodingLength); $i++) 
-            {
-                $sizeBuffer .= chr($encodingLength[$i]);
-            }
-            $sizeBuffer .= chr(255);
-            return call_user_func($doneCallback, null, $sizeBuffer.$packet);
-        });
+            $sizeBuffer .= chr($encodingLength[$i]);
+        }
+        $sizeBuffer .= chr(255);
+        return $sizeBuffer.$packet;
     }
     
     /*
      * Decodes data when a payload is maybe expected. Strings are decoded by
     * interpreting each byte as a key code for entries marked to start with 0. See
     * description of encodePayloadAsBinary
-    * @param {Buffer} data, callback method
     * @api public
     */
     
-    public static function decodePayloadAsBinary($data, $binaryType = null, $callback = null) 
+    public static function decodePayloadAsBinary($data, $binaryType = null) 
     {
-        if (is_callable($binaryType))
-        {
-            $callback = $binaryType;
-            $binaryType = null;
-        }
-    
         $bufferTail = $data;
         $buffers = array();
     
@@ -374,7 +276,7 @@ class Parser
                 }
                 $strLen .= $tail;
             }
-            if($numberTooLong) return call_user_func($callback, self::$err, 0, 1);
+            if($numberTooLong) return self::$err;
             $bufferTail = substr($bufferTail, strlen($strLen) + 1);
     
             $msgLength = intval($strLen, 10);
@@ -384,9 +286,11 @@ class Parser
             $bufferTail = substr($bufferTail, $msgLength + 1);
         }
         $total = count($buffers);
+        $packets = array();
         foreach($buffers as $i => $buffer)
         {
-            call_user_func($callback, self::decodePacket($buffer, $binaryType, true), $i, $total);
+            $packets[] = self::decodePacket($buffer, $binaryType, true);
         }
+        return $packets;
     }
 }

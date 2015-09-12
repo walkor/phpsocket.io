@@ -4,16 +4,17 @@ use \Parser\Parser;
 use \Event\Emitter;
 class Encoder extends Emitter 
 {
-    public function encode($obj, $callback)
+    public function encode($obj)
     {
         if(Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) 
         {
-            self::encodeAsBinary($obj, $callback);
+            echo new \Exception("not support BINARY_EVENT BINARY_ACK");
+            return array(); 
         }
         else 
         {
             $encoding = self::encodeAsString($obj);
-            call_user_func($callback, array($encoding));
+            return array($encoding);
         }
     }
 
@@ -59,33 +60,5 @@ class Encoder extends Emitter
 
         return $str;
     }
-
-
-    /**
- * Encode packet as 'buffer sequence' by removing blobs, and
- * deconstructing packet into object with placeholders and
- * a list of buffers.
- *
- * @param {Object} packet
- * @return {Buffer} encoded
- * @api private
- */
-/*
-    public static function encodeAsBinary($obj, $callback) 
-    {
-        binary.removeBlobs(obj, writeEncoding);
-    }
-
-    public static function writeEncoding($bloblessData)
-    {
-        deconstruction = binary.deconstructPacket(bloblessData);
-        pack = encodeAsString(deconstruction.packet);
-        buffers = deconstruction.buffers;
-        buffers.unshift(pack);
-        callback(buffers); 
-    }
-*/
-
-    
 
 }

@@ -193,26 +193,12 @@ class Socket extends Emitter
      * @api private
      */
     
-     public function join($room, $fn = null)
+     public function join($room)
      {
         $self = $this;
         if(isset($this->rooms[$room])) return $this;
-        $this->adapter->add($this->id, $room, function($err)use($room, $self)
-        {
-            if($err)
-            {
-                if($fn)
-                {
-                    return call_user_func($fn, $err);
-                }
-                return;
-            }
-            $self->rooms[$room] = $room;
-            if(!empty($fn))
-            {
-                call_user_func($fn, null);
-            }
-        });
+        $this->adapter->add($this->id, $room);
+        $self->rooms[$room] = $room;
         return $this;
     }
     
@@ -225,25 +211,11 @@ class Socket extends Emitter
      * @api private
      */
     
-    public function leave($room, $fn)
+    public function leave($room)
     {
         $self = $this;
-        $this->adapter->del($this->id, $room, function($err)use($room, $self)
-        {
-            if($err)
-            {
-                if($fn)
-                {
-                    return call_user_func($fn, $err);
-                }
-                return;
-            }
-            unset($self->rooms[$room]);
-            if($fn)
-            {
-                call_user_func($fn, null);
-            }
-        });
+        $this->adapter->del($this->id, $room);
+        unset($self->rooms[$room]);
         return this;
     }
     

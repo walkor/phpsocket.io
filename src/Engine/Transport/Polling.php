@@ -140,19 +140,15 @@ class Polling extends Transport
     
     public function onData($data)
     {
-        $self = $this;
-        $callback = function($packet)use($self) 
-        {
-            if ('close' === $packet['type']) 
-            {
-                echo('got xhr close packet');
-                $self->onClose();
-                return false;
-            }
-            $self->onPacket($packet);
-       };
-
-       Parser::decodePayload($data, $callback);
+       if(isset($packets['type']) && 'close' === $packets['type'])
+       {
+           $this->onClose();
+           return false;
+       }
+       foreach($packets as $packet)
+       {
+           $this->onPacket($packet);
+       }
     }
     
     public function onClose()
@@ -174,11 +170,8 @@ class Polling extends Transport
             call_user_func($this->shouldClose);
             $this->shouldClose = null;
         }
-        $self = $this;
-        Parser::encodePayload($packets, $this->supportsBinary, function($data)use($self)
-        {
-            $self->write($data);
-        });
+        $data = Parser::encodePayload($packets, $this->supportsBinary);
+        $this->write($data);
     }
 
     public function write($data) 
