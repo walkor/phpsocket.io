@@ -16,8 +16,8 @@ class Client
     {
         $this->server = $server;
         $this->conn = $conn;
-        $this->encoder = new \Parser\Encoder();
-        $this->decoder = new \Parser\Decoder();
+        $this->encoder = new \PHPSocketIO\Parser\Encoder();
+        $this->decoder = new \PHPSocketIO\Parser\Decoder();
         $this->id = $conn->id;
         $this->request = $conn->request;
         $this->setup();

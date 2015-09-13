@@ -144,11 +144,11 @@ class Engine extends Emitter
         $id = rand(1, 100000000);
         if (isset($req->_query['j'])) 
         {
-            $transport = '\\Engine\\Transport\\PollingJsonp';
+            $transport = '\\PHPSocketIO\\Engine\\Transports\\PollingJsonp';
         } 
         else 
         {
-            $transport = '\\Engine\\Transport\\PollingXHR';
+            $transport = '\\PHPSocketIO\\Engine\\Transports\\PollingXHR';
         }
 
         $transport = new $transport($req);

@@ -15,14 +15,15 @@ class SocketIO
     {
         $path = isset($opts['path']) ? $opts['path'] : '/socket.io';
         $this->path($path);
-        $adapter = isset($opts['adapter']) ? $opts['adapter'] : 'DefaultAdapter';
+        $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
         $this->adapter($adapter);
         $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
         $this->origins($origins);
         $this->sockets = $this->of('/');
-        if(class_exists('Protocols\SocketIO'))
+        if(!class_exists('Protocols\SocketIO'))
         {
-            class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
+echo "-------------\n";
+           var_dump( class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO'));
         }
         if($port)
         {

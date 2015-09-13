@@ -6,8 +6,9 @@ use PHPSocketIO\SocketIO;
 
 // composer autoload
 include __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/../../src/autoload.php';
 
-$io = new SocketIO(2020);
+$io = new SocketIO(3033);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
 
@@ -71,7 +72,7 @@ $io->on('connection', function($socket){
    
 });
 
-$web = new WebServer('http://0.0.0.0:2022');
+$web = new WebServer('http://0.0.0.0:3034');
 $web->addRoot('localhost', __DIR__ . '/public');
 
 Worker::runAll();
