@@ -8,6 +8,6 @@
         "workerman/workerman" : ">=3.1.8"
     },
     "autoload": {
-        "psr-0": {"\\PHPSocketIO": "./src"}
+        "psr-4": {"\\PHPSocketIO": "./src"}
     }
 }
