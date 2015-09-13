@@ -2,10 +2,10 @@
 use Workerman\Worker;
 use Workerman\WebServer;
 use Workerman\Autoloader;
-use Engine\Engine;
+use PHPSocketIO\SocketIO;
 
-include __DIR__ . '/../../src/autoload.php';    // for SocketIO class
-include __DIR__ . '/../../vendor/autoload.php'; // for workerman class
+// composer autoload
+include __DIR__ . '/../../vendor/autoload.php';
 
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){

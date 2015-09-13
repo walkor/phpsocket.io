@@ -1,6 +1,6 @@
 <?php
-namespace Engine;
-use \Event\Emitter;
+namespace PHPSocketIO\Engine;
+use \PHPSocketIO\Event\Emitter;
 
 class Transport extends Emitter
 {

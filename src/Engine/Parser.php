@@ -1,5 +1,5 @@
 <?php
-namespace Engine;
+namespace PHPSocketIO\Engine;
 class Parser
 {
     public static $packets=array(

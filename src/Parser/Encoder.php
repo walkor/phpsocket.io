@@ -1,7 +1,7 @@
 <?php
-namespace Parser;
-use \Parser\Parser;
-use \Event\Emitter;
+namespace PHPSocketIO\Parser;
+use \PHPSocketIO\Parser\Parser;
+use \PHPSocketIO\Event\Emitter;
 class Encoder extends Emitter 
 {
     public function encode($obj)

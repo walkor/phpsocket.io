@@ -1,9 +1,8 @@
 <?php
-namespace Protocols;
-use Protocols\WebSocket;
-
-use \Protocols\Http\Request;
-use \Protocols\Http\Response;
+namespace PHPSocketIO\Engine\Protocols;
+use \PHPSocketIO\Engine\Protocols\WebSocket;
+use \PHPSocketIO\Engine\Protocols\Http\Request;
+use \PHPSocketIO\Engine\Protocols\Http\Response;
 use \Workerman\Connection\TcpConnection;
 class SocketIO 
 {
@@ -48,9 +47,9 @@ class SocketIO
             }
 
             // POST
-            if('\Protocols\SocketIO::onData' !== $connection->onMessage)
+            if('\PHPSocketIO\Engine\Protocols\SocketIO::onData' !== $connection->onMessage)
             {
-                $connection->onMessage = '\Protocols\SocketIO::onData';
+                $connection->onMessage = '\PHPSocketIO\Engine\Protocols\SocketIO::onData';
             }
             if(!$raw_body)
             {
@@ -179,4 +178,3 @@ class SocketIO
         }
     }
 }
-

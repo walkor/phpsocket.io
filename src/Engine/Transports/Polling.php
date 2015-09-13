@@ -1,7 +1,7 @@
 <?php
-namespace Engine\Transport;
-use \Engine\Transport;
-use \Engine\Parser;
+namespace PHPSocketIO\Engine\Transports;
+use PHPSocketIO\Engine\Transport;
+use PHPSocketIO\Engine\Parser;
 class Polling extends Transport
 {
     public $name = 'polling';

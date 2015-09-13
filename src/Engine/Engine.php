@@ -1,9 +1,9 @@
 <?php
-namespace Engine;
-use \Engine\Transport\Polling;
-use \Engine\Transport\PollingXHR;
-use \Engine\Transport\WebSocket;
-use \Event\Emitter;
+namespace PHPSocketIO\Engine;
+use \PHPSocketIO\Engine\Transports\Polling;
+use \PHPSocketIO\Engine\Transports\PollingXHR;
+use \PHPSocketIO\Engine\Transports\WebSocket;
+use \PHPSocketIO\Event\Emitter;
 
 class Engine extends Emitter
 {

@@ -1,6 +1,6 @@
 <?php
-namespace Engine;
-use \Event\Emitter;
+namespace PHPSocketIO\Engine;
+use \PHPSocketIO\Event\Emitter;
 use \Workerman\Lib\Timer;
 class Socket extends Emitter
 {

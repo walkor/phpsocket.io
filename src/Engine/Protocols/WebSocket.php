@@ -11,11 +11,11 @@
  * @link http://www.workerman.net/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Protocols;
+namespace PHPSocketIO\Engine\Protocols;
 
-use \Protocols\Http\Request;
-use \Protocols\Http\Response;
-use \Protocols\WebSocket\RFC6455;
+use \PHPSocketIO\Engine\Protocols\Http\Request;
+use \PHPSocketIO\Engine\Protocols\Http\Response;
+use \PHPSocketIO\Engine\Protocols\WebSocket\RFC6455;
 use \Workerman\Connection\TcpConnection;
 
 /**
@@ -80,7 +80,7 @@ class WebSocket
             $res->end("Not support");
             return 0;
         }
-        $connection->protocol = '\Protocols\WebSocket\RFC6455';
+        $connection->protocol = 'PHPSocketIO\Engine\Protocols\WebSocket\RFC6455';
         return RFC6455::dealHandshake($connection, $req, $res);
     }
 }

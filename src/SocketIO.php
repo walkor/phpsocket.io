@@ -1,6 +1,7 @@
 <?php
+namespace PHPSocketIO;
 use Workerman\Worker;
-use Engine\Engine;
+use PHPSocketIO\Engine\Engine;
 class SocketIO
 {
     public $nsps = array();
@@ -19,6 +20,10 @@ class SocketIO
         $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
         $this->origins($origins);
         $this->sockets = $this->of('/');
+        if(class_exists('Protocols\SocketIO'))
+        {
+            class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
+        }
         if($port)
         {
             $worker = new Worker('SocketIO://0.0.0.0:'.$port);

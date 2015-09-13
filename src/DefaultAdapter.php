@@ -1,4 +1,5 @@
 <?php
+namespace PHPSocketIO;
 class DefaultAdapter
 {
 

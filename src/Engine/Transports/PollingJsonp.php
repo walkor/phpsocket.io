@@ -1,5 +1,5 @@
 <?php
-namespace Engine\Transport;
+namespace PHPSocketIO\Engine\Transports;
 class PollingJsonp extends Polling
 {
     public $head = null;

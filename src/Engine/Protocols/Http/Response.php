@@ -1,5 +1,5 @@
 <?php
-namespace Protocols\Http;
+namespace PHPSocketIO\Engine\Protocols\Http;
 
 class Response
 {

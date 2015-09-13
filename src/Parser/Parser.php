@@ -1,5 +1,5 @@
 <?php
-namespace Parser;
+namespace PHPSocketIO\Parser;
 class Parser 
 {
 /**

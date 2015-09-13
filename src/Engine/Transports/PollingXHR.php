@@ -1,5 +1,5 @@
 <?php
-namespace Engine\Transport;
+namespace PHPSocketIO\Engine\Transports;
 class PollingXHR extends Polling
 {
 public function __construct(){echo "new XHR\n";}

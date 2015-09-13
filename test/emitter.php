@@ -1,7 +1,7 @@
 <?php
 include __DIR__.'/../src/Event/Emitter.php';
 ini_set('display_errors', 'on');
-$emitter = new Event\Emitter;
+$emitter = new PHPSocketIO\Event\Emitter;
 $func = function($arg1, $arg2)
 {
     var_dump($arg1, $arg2);

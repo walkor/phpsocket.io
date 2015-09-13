@@ -1,5 +1,6 @@
 <?php
-use Parser\Parser;
+namespace PHPSocketIO;
+use PHPSocketIO\Parser\Parser;
 
 class Client
 {

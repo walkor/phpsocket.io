@@ -1,5 +1,5 @@
 <?php
-namespace Event;
+namespace PHPSocketIO\Event;
 class Emitter
 {
     /**

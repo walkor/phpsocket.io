@@ -1,6 +1,7 @@
 <?php
-use Event\Emitter;
-use Parser\Parser;
+namespace PHPSocketIO;
+use PHPSocketIO\Event\Emitter;
+use PHPSocketIO\Parser\Parser;
 class Nsp extends Emitter
 {
     public $name = null;
