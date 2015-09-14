@@ -1,9 +1,14 @@
 # phpsocket.io
 An alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).
 
+# Install
+composer require workerman\phpsocket.io
+
 # Examples
 ## Simple chat
 ```
+use PHPSocketIO\SocketIO;
+// listen port 2021 for socket.io client
 $io = new SocketIO(2021);
 $io->on('connection', function($socket)use($io){
   $socket->on('chat message', function($msg)use($io){
@@ -16,7 +21,8 @@ $io->on('connection', function($socket)use($io){
 
 https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
 ```php
-// listen port 2020
+use PHPSocketIO\SocketIO;
+// listen port 2020 for socket.io client
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
