@@ -120,7 +120,6 @@ echo "new Socket\n";
             // Reset ping timeout on any packet, incoming data is a good sign of
             // other side's liveness
             $this->setPingTimeout();
-        
             switch ($packet['type']) {
         
                 case 'ping':

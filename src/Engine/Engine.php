@@ -171,7 +171,6 @@ class Engine extends Emitter
 
     public function onSocketClose($id)
     {
-        var_dump(isset($this->clients[$id]));
         unset($this->clients[$id]);
     }
 

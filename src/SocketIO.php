@@ -22,8 +22,7 @@ class SocketIO
         $this->sockets = $this->of('/');
         if(!class_exists('Protocols\SocketIO'))
         {
-echo "-------------\n";
-           var_dump( class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO'));
+           class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
         }
         if($port)
         {

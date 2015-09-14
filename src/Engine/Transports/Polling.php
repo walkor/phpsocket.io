@@ -140,11 +140,20 @@ class Polling extends Transport
     
     public function onData($data)
     {
-       if(isset($packets['type']) && 'close' === $packets['type'])
+       $packets = Parser::decodePayload($data);
+       if(isset($packets['type']))
        {
-           $this->onClose();
-           return false;
+           if('close' === $packets['type'])
+           {
+               $this->onClose();
+               return false;
+           }
+           else
+           {
+               $packets = array($packets);
+           }
        }
+       
        foreach($packets as $packet)
        {
            $this->onPacket($packet);
