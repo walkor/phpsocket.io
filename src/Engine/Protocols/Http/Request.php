@@ -45,6 +45,7 @@ class Request
 
     public function destroy()
     {
+        $this->onData = $this->onEnd = $this->onClose = null;
         $this->connection = null;
     }
 }

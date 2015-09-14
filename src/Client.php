@@ -144,7 +144,8 @@ class Client
                  $this->writeToEngine($packet);
             }
         } else {
-             echo('ignoring packet write ' . $packet);
+            // todo check
+            // echo('ignoring packet write ' . var_export($packet, true));
         }
     }
 
@@ -224,7 +225,6 @@ class Client
 
     public function onclose($reason)
     {
-
         // ignore a potential subsequent `close` event
         $this->destroy();
 
@@ -234,7 +234,6 @@ class Client
             $socket->onclose($reason);
         }
         $this->sockets = null;
-        //$this->decoder->destroy(); // clean up decoder
     }
 
 /**
@@ -245,11 +244,9 @@ class Client
 
     public function destroy()
     {
-         /*$this->conn->removeListener('data', array($this,'ondata'));
-         $this->conn->removeListener('error', array($this, 'onerror'));
-         $this->conn->removeListener('close' ,array($this, 'onclose'));
-         $this->decoder->removeListener('decoded', array($this, 'ondecoded'));*/
          $this->conn->removeAllListeners();
+         $this->decoder->removeAllListeners();
+         $this->encoder->removeAllListeners();
          $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
     }
 }

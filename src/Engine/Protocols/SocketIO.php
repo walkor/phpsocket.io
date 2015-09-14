@@ -8,7 +8,7 @@ class SocketIO
 {
     public static function input($http_buffer, $connection)
     {
-        if(!empty($connection->httpRequest))
+        if(!empty($connection->hasReadedHead))
         {
             return strlen($http_buffer);
         }
@@ -29,6 +29,7 @@ class SocketIO
         $res = new Response($connection);
         $connection->httpRequest = $req;
         $connection->httpResponse = $res;
+        $connection->hasReadedHead = true;
         if(isset($req->headers['upgrade']) && $req->headers['upgrade'] = 'websocket')
         {
             $connection->consumeRecvBuffer(strlen($http_buffer));
@@ -39,7 +40,7 @@ class SocketIO
         {
             $connection->consumeRecvBuffer(strlen($http_buffer));
             self::emitRequest($connection, $req, $res);
-            
+            $connection->onClose = '\PHPSocketIO\Engine\Protocols\SocketIO::emitClose';            
             if($req->method === 'GET' || $req->method === 'OPTIONS')
             {
                 self::emitEnd($connection, $req);
@@ -99,13 +100,10 @@ class SocketIO
         }
     }
     
-    public static function emitClose($connection, $req)
+    public static function emitClose($connection)
     {
-        if(!$req->onClose)
-        {
-            return;
-        }
-        else
+        $req = $connection->httpRequest;
+        if(isset($req->onClose))
         {
             try
             {
@@ -116,12 +114,25 @@ class SocketIO
                 echo $e;
             }
         }
-        self::cleanup($connection);
+        $res = $connection->httpResponse;
+        if(isset($res->onClose))
+        {
+            try
+            {
+                call_user_func($res->onClose, $res);
+            }
+            catch(\Exception $e)
+            {
+                echo $e;
+            }
+        }
+
+        //self::cleanup($connection);
     }
 
     public static function cleanup($connection)
     {
-        $connection->httpRequest = $connection->httpResponse = null;
+        //$connection->httpRequest = $connection->httpResponse = null;
     }
     
     public static function emitData($connection, $req, $data)
@@ -152,6 +163,7 @@ class SocketIO
                 echo $e;
             }
         }
+        $connection->hasReadedHead = false;
         self::cleanup($connection);
     }
 

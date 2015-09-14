@@ -24,7 +24,7 @@ class Transport extends Emitter
         $this->doClose($fn);
     }
 
-    public function onError($msg, $desc)
+    public function onError($msg, $desc = '')
     {
         if ($this->listeners('error')) 
         {
@@ -52,7 +52,9 @@ class Transport extends Emitter
     
     public function onClose() 
     {
+        $this->req = $this->res = null;
         $this->readyState = 'closed';
         $this->emit('close');
+        $this->removeAllListeners();
     }
 }

@@ -172,6 +172,9 @@ echo "new Socket\n";
     
     public function onClose($reason = '', $description = null)
     {
+        $this->server = null;
+        $this->request = null;
+        $this->removeAllListeners();
         if ('closed' != $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
             Timer::del($this->checkIntervalTimer);
@@ -276,6 +279,7 @@ echo "new Socket\n";
     {
         //todo onClose.bind(this, 'forced close'));
         $this->transport->close(array($this, 'onClose'));
+        $this->transport = null;
     }
 
     public function setupSendCallback()

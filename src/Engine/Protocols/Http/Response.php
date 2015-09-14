@@ -116,22 +116,34 @@ class Response
         {
             if(null !== $data)
             {
-                return $this->_connection->send(dechex(strlen($data))."\r\n$data\r\n"."0\r\n\r\n", true);
+                $ret = $this->_connection->send(dechex(strlen($data))."\r\n$data\r\n"."0\r\n\r\n", true);
+                $this->destroy();
+                return $ret;
             }
-            return $this->_connection->send("0\r\n\r\n", true);
+            $ret = $this->_connection->send("0\r\n\r\n", true);
+            $this->destroy();
+            return $ret;
         }
         else
         {
             if(null !== $data)
             {
-                return $this->_connection->send($data, true);
+                $ret = $this->_connection->send($data, true);
+                $this->destroy();
+                return $ret;
             }
         }
+        $this->destroy();
         return true;
     }
     
     public function destroy()
     {
+        if($this->_connection->httpRequest)
+        {
+            $this->_connection->httpRequest->destroy();
+        }
+        $this->_connection->httpResponse = $this->_connection->httpRequest = null;
         $this->_connection = null;
     }
     
