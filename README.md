@@ -2,7 +2,7 @@
 An alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).
 
 # Install
-composer require workerman\phpsocket.io
+composer require workerman/phpsocket.io
 
 # Examples
 ## Simple chat
