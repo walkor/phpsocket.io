@@ -74,7 +74,7 @@ class SocketIO
     public function bind($engine)
     {
         $this->engine = $engine;
-        $this->engine->on('connection', array($this, 'onconnection'));
+        $this->engine->on('connection', array($this, 'onConnection'));
         return $this;
     }
  

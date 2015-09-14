@@ -58,12 +58,14 @@ class Polling extends Transport
 
     public function pollRequestOnClose()
     {
+        $this->pollRequestClean();
         $this->onError('poll connection closed prematurely');
     }
     
     public function pollRequestClean()
     {
         $this->req->res = null;
+        $this->req->onClose = $this->req->cleanup = null;
         $this->req = $this->res = null;
     }
 
@@ -90,6 +92,7 @@ class Polling extends Transport
     {
         $this->chunks = '';
         $this->dataReq->res = null;
+        $this->dataReq->onClose = $this->dataReq->onData = $this->dataReq->onEnd = null;
         $this->dataReq = $this->dataRes = null;
     }
 

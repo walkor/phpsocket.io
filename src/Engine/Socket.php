@@ -153,7 +153,7 @@ echo "new Socket\n";
  
     public function onError($err) 
     {
-      $this->onClose('transport error', $err);
+        $this->onClose('transport error', $err);
     }
     
     public function setPingTimeout()
@@ -172,9 +172,6 @@ echo "new Socket\n";
     
     public function onClose($reason = '', $description = null)
     {
-        $this->server = null;
-        $this->request = null;
-        $this->removeAllListeners();
         if ('closed' != $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
             Timer::del($this->checkIntervalTimer);
@@ -188,6 +185,13 @@ echo "new Socket\n";
             $this->clearTransport();
             $this->readyState = 'closed';
             $this->emit('close', $this->id, $reason, $description);
+            $this->server = null;
+            $this->request = null;
+            $this->upgradeTransport = null;
+            $this->removeAllListeners();
+            $this->transport->removeAllListeners();
+            $this->transport = null;
+           
         }
     }
     
@@ -279,6 +283,7 @@ echo "new Socket\n";
     {
         //todo onClose.bind(this, 'forced close'));
         $this->transport->close(array($this, 'onClose'));
+        $this->transport->removeAllListeners();
         $this->transport = null;
     }
 

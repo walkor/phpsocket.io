@@ -14,6 +14,7 @@ class Client
     public $connectBuffer = array();
     public function __construct($server, $conn)
     {
+        echo "new Client \n";
         $this->server = $server;
         $this->conn = $conn;
         $this->encoder = new \PHPSocketIO\Parser\Encoder();
@@ -22,6 +23,8 @@ class Client
         $this->request = $conn->request;
         $this->setup();
     }
+
+public function __destruct(){echo "Client des\n";}
 
 /**
  * Sets up event listeners.
@@ -55,12 +58,12 @@ class Client
             $this->connectBuffer[$name] = $name;
             return;
         }
-        $socket = $nsp->add($this, $nsp, array($this, 'nspAdd'));
+        $nsp->add($this, $nsp, array($this, 'nspAdd'));
     }
 
     public function nspAdd($socket, $nsp)
     {
-        $this->sockets[] = $socket;
+        $this->sockets[$socket->id] = $socket;
         $this->nsps[$nsp->name] = $socket;
         if ('/' === $nsp->name && $this->connectBuffer)
         {

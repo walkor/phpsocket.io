@@ -48,35 +48,13 @@ class Nsp extends Emitter
         return $this->to($name);
     }
 
-    public function run($socket, $fn)
-    {
-        if(!$this->fns) return call_user_func($fn, null);
-        $last_fn = array_pop($this->fns);
-        foreach($this->fns as $fn)
-        {
-            call_user_func($fn, $socket);
-        }
-        call_user_func($last_fn, null);
-    }
 
     public function add($client, $nsp, $fn)
     {
         $socket = new Socket($this, $client);
-        if(!$this->fns) return $this->runCallback($client, $socket, $fn, $nsp);
-        $last_fn = array_pop($this->fns);
-        foreach($this->fns as $fn)
-        {
-            call_user_func($fn, $socket);
-        }
-        call_user_func($last_fn, null);
-        return $socket;
-    }
-
-    public function runCallback($client, $socket, $fn, $nsp)
-    {
         if('open' === $client->conn->readyState)
         {
-            $this->sockets[]=$socket;
+            $this->sockets[$socket->id]=$socket;
             $socket->onconnect();
             if(!empty($fn)) call_user_func($fn, $socket, $nsp);
             $this->emit('connect', $socket);
@@ -85,8 +63,9 @@ class Nsp extends Emitter
         else
         {
             echo('next called after client was closed - ignoring socket');
-        } 
+        }
     }
+
     
     /**
  * Removes a client. Called by each `Socket`.

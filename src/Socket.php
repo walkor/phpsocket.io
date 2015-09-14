@@ -34,6 +34,7 @@ class Socket extends Emitter
     
     public function __construct($nsp, $client)
     {
+        echo "new IO Socket\n";
         $this->nsp = $nsp;
         $this->server = $nsp->server;
         $this->adapter = $this->nsp->adapter;
@@ -43,7 +44,7 @@ class Socket extends Emitter
         $this->conn = $client->conn;
         $this->handshake = $this->buildHandshake();
     }
-    
+    public function __destruct(){echo "IO Socket des\n";}
     public function buildHandshake()
     {
         //todo check this->request->_query
@@ -196,10 +197,9 @@ class Socket extends Emitter
     
      public function join($room)
      {
-        $self = $this;
         if(isset($this->rooms[$room])) return $this;
         $this->adapter->add($this->id, $room);
-        $self->rooms[$room] = $room;
+        $this->rooms[$room] = $room;
         return $this;
     }
     
@@ -214,9 +214,8 @@ class Socket extends Emitter
     
     public function leave($room)
     {
-        $self = $this;
         $this->adapter->del($this->id, $room);
-        unset($self->rooms[$room]);
+        unset($this->rooms[$room]);
         return this;
     }
     
@@ -391,6 +390,14 @@ class Socket extends Emitter
         $this->disconnected = true;
         unset($this->nsp->connected[$this->id]);
         $this->emit('disconnect', $reason);
+        // ....
+        $this->nsp = null;
+        $this->server = null;
+        $this->adapter = null;
+        $this->request = null;
+        $this->client = null;
+        $this->conn = null;
+        $this->removeAllListeners();
     }
     
     /**

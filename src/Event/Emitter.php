@@ -82,7 +82,7 @@ class Emitter
              if($item[1])
              {
                  unset($this->_eventListenerMap[$event_name][$key]);
-                 if(!$this->_eventListenerMap[$event_name])
+                 if(empty($this->_eventListenerMap[$event_name]))
                  {
                      unset($this->_eventListenerMap[$event_name]);
                  }
