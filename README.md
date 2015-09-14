@@ -6,8 +6,9 @@ composer require workerman\phpsocket.io
 
 # Examples
 ## Simple chat
-```
+```php
 use PHPSocketIO\SocketIO;
+
 // listen port 2021 for socket.io client
 $io = new SocketIO(2021);
 $io->on('connection', function($socket)use($io){
@@ -22,6 +23,7 @@ $io->on('connection', function($socket)use($io){
 https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
 ```php
 use PHPSocketIO\SocketIO;
+
 // listen port 2020 for socket.io client
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
