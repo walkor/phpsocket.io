@@ -11,11 +11,9 @@ class WebSocket extends Transport
     public function __construct($req)
     {
         $this->socket = $req->connection;
-        $req->destroy();
         $this->socket->onMessage = array($this, 'onData2');
         $this->socket->onClose = array($this, 'onClose');
         $this->socket->onError = array($this, 'onError2');
-echo "new WebSocket\n";
     }
     
     public function onData2($connection, $data) 
@@ -47,5 +45,4 @@ echo "new WebSocket\n";
             call_user_func($fn);
         }
     }
-public function __destruct(){echo "WebSocket des\n";}
 }

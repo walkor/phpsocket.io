@@ -27,7 +27,7 @@ class SocketIO
         if($port)
         {
             $worker = new Worker('SocketIO://0.0.0.0:'.$port);
-            $worker->name = 'PHPSocket.IO';
+            $worker->name = 'PHPSocketIO';
             $this->attach($worker);
         }
     }

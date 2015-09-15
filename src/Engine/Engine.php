@@ -37,7 +37,7 @@ class Engine extends Emitter
     public function __construct($opts = array())
     {
         $ops_map = array(
-            'pingTimeout',
+             'pingTimeout',
              'pingInterval',
              'upgradeTimeout',
              'transports',
@@ -187,7 +187,24 @@ class Engine extends Emitter
         // clean
         $connection->onClose = function($connection)
         {
-            $connection->httpRequest = $connection->httpResponse = $connection->onRequest = $connection->onWebSocketConnect = null;
+            if(!empty($connection->httpRequest))
+            {
+                $connection->httpRequest->destroy();
+                $connection->httpRequest = null;
+            }
+            if(!empty($connection->httpResponse))
+            {
+                $connection->httpResponse->destroy();
+                $connection->httpResponse = null;
+            }
+            if(!empty($connection->onRequest))
+            {
+                $connection->onRequest = null;
+            }
+            if(!empty($connection->onWebSocketConnect))
+            {
+                $connection->onWebSocketConnect = null;
+            }
         };
     }
     

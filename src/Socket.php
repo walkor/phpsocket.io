@@ -34,7 +34,6 @@ class Socket extends Emitter
     
     public function __construct($nsp, $client)
     {
-        echo "new IO Socket\n";
         $this->nsp = $nsp;
         $this->server = $nsp->server;
         $this->adapter = $this->nsp->adapter;
@@ -44,7 +43,7 @@ class Socket extends Emitter
         $this->conn = $client->conn;
         $this->handshake = $this->buildHandshake();
     }
-    public function __destruct(){echo "IO Socket des\n";}
+    
     public function buildHandshake()
     {
         //todo check this->request->_query

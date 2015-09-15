@@ -25,9 +25,8 @@ class Socket extends Emitter
         $this->remoteAddress = $req->connection->getRemoteIp().':'.$req->connection->getRemotePort();
         $this->setTransport($transport);
         $this->onOpen();
-echo "new Socket\n";
     }
-    public function __destruct(){echo "Socket des\n";}
+
     public function maybeUpgrade($transport)
     {
         $this->upgradeTimeoutTimer = Timer::add(

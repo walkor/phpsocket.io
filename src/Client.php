@@ -14,7 +14,6 @@ class Client
     public $connectBuffer = array();
     public function __construct($server, $conn)
     {
-        echo "new Client \n";
         $this->server = $server;
         $this->conn = $conn;
         $this->encoder = new \PHPSocketIO\Parser\Encoder();
@@ -24,7 +23,6 @@ class Client
         $this->setup();
     }
 
-public function __destruct(){echo "Client des\n";}
 
 /**
  * Sets up event listeners.

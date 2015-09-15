@@ -30,17 +30,18 @@ class SocketIO
         $connection->httpRequest = $req;
         $connection->httpResponse = $res;
         $connection->hasReadedHead = true;
+        $connection->onClose = '\PHPSocketIO\Engine\Protocols\SocketIO::emitClose';
         if(isset($req->headers['upgrade']) && $req->headers['upgrade'] = 'websocket')
         {
             $connection->consumeRecvBuffer(strlen($http_buffer));
             WebSocket::dealHandshake($connection, $req, $res);
+            self::cleanup($connection);
             return 0;
         }
         if(!empty($connection->onRequest))
         {
             $connection->consumeRecvBuffer(strlen($http_buffer));
             self::emitRequest($connection, $req, $res);
-            $connection->onClose = '\PHPSocketIO\Engine\Protocols\SocketIO::emitClose';            
             if($req->method === 'GET' || $req->method === 'OPTIONS')
             {
                 self::emitEnd($connection, $req);
@@ -126,13 +127,29 @@ class SocketIO
                 echo $e;
             }
         }
-
-        //self::cleanup($connection);
+        self::cleanup($connection);
     }
 
     public static function cleanup($connection)
     {
-        //$connection->httpRequest = $connection->httpResponse = null;
+        if(!empty($connection->onRequest))
+        {
+            $connection->onRequest = null;
+        }
+        if(!empty($connection->onWebSocketConnect))
+        {
+            $connection->onWebSocketConnect = null;
+        }
+        if(!empty($connection->httpRequest))
+        {
+            $connection->httpRequest->destroy();
+            $connection->httpRequest = null;
+        }
+        if(!empty($connection->httpResponse))
+        {
+            $connection->httpResponse->destroy();
+            $connection->httpResponse = null;
+        }
     }
     
     public static function emitData($connection, $req, $data)
@@ -164,7 +181,6 @@ class SocketIO
             }
         }
         $connection->hasReadedHead = false;
-        self::cleanup($connection);
     }
 
     public static function encode($buffer, $connection)
