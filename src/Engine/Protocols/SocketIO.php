@@ -30,6 +30,7 @@ class SocketIO
         $connection->httpRequest = $req;
         $connection->httpResponse = $res;
         $connection->hasReadedHead = true;
+        TcpConnection::$statistics['total_request']++;
         $connection->onClose = '\PHPSocketIO\Engine\Protocols\SocketIO::emitClose';
         if(isset($req->headers['upgrade']) && $req->headers['upgrade'] = 'websocket')
         {
