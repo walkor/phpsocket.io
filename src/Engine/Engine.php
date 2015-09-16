@@ -9,7 +9,7 @@ class Engine extends Emitter
 {
     public $pingTimeout = 60;
     public $pingInterval = 25;
-    public $upgradeTimeout = 10;
+    public $upgradeTimeout = 5;
     public $transports = array();
     public $allowUpgrades = array();
     public $allowRequest = array();

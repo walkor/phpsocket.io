@@ -35,7 +35,7 @@ class SocketIO
     public function path($v = null)
     {
         if($v === null) return $this->_path;
-        $this->_path = str_replace('/\/$/', '', $v);
+        $this->_path = preg_replace('/\/$/', '', $v);
         return $this;
     }
 

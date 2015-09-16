@@ -51,10 +51,11 @@ class Socket extends Emitter
         if('ping' === $packet['type'] && (isset($packet['data']) && 'probe' === $packet['data']))
         {
             $this->upgradeTransport->send(array(array('type'=> 'pong', 'data'=> 'probe')));
+            //$this->transport->shouldClose = function(){};
             Timer::del($this->checkIntervalTimer);
             $this->checkIntervalTimer = Timer::add(0.1, array($this, 'check'));
         }
-        else if ('upgrade' === $packet['type'] && $this->readyState !== 'closed')
+        else if('upgrade' === $packet['type'] && $this->readyState !== 'closed')
         {
             $this->cleanup();
             $this->upgraded = true;
@@ -80,6 +81,7 @@ class Socket extends Emitter
         }
        
     }
+
 
     public function cleanup()
     {
@@ -108,7 +110,7 @@ class Socket extends Emitter
     {
         echo("client did not complete upgrade - closing transport\n");
         $this->cleanup();
-        if('open' == $transport->readyState)
+        if('open' === $transport->readyState)
         {
              $transport->close();
         }
@@ -192,7 +194,13 @@ class Socket extends Emitter
         Timer::del($this->pingTimeoutTimer);
         $this->pingTimeoutTimer = Timer::add(
            $this->server->pingInterval + $this->server->pingTimeout ,
-           array($this, 'onClose'), null, false);
+           array($this, 'pingTimeoutCallback'), null, false);
+    }
+
+    public function pingTimeoutCallback()
+    {
+        $this->transport->close();
+        $this->onClose('ping timeout');
     }
 
     
@@ -204,7 +212,7 @@ class Socket extends Emitter
     
     public function onClose($reason = '', $description = null)
     {
-        if ('closed' != $this->readyState) {
+        if ('closed' !== $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
             Timer::del($this->checkIntervalTimer);
             $this->checkIntervalTimer = null;
@@ -263,7 +271,7 @@ class Socket extends Emitter
     
     public function flush() 
     {
-        if ('closed' != $this->readyState && $this->transport->writable
+        if ('closed' !== $this->readyState && $this->transport->writable
         && $this->writeBuffer) 
         {
             $this->emit('flush', $this->writeBuffer);
@@ -296,7 +304,7 @@ class Socket extends Emitter
 
     public function close()
     {
-        if ('open' != $this->readyState)
+        if ('open' !== $this->readyState)
         {
             return;
         }
