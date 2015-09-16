@@ -17,7 +17,7 @@ class Transport extends Emitter
         $this->req = $req;
     }
     
-    public function close($fn)
+    public function close($fn = null)
     {
         $this->readyState = 'closing';
         $fn = $fn ? $fn : array($this, 'noop');

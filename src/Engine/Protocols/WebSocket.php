@@ -76,7 +76,7 @@ class WebSocket
     {
         if(isset($req->headers['sec-websocket-key1']))
         {
-            $res->wirteHead(400);
+            $res->writeHead(400);
             $res->end("Not support");
             return 0;
         }

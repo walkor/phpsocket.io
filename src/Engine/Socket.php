@@ -36,11 +36,19 @@ class Socket extends Emitter
         );
         $this->upgradeTransport = $transport;
         $transport->on('packet', array($this, 'onUpgradePacket'));
+        $transport->once('close', array($this, 'onUpgradeTransportClose'));
+        $transport->once('error', array($this, 'onUpgradeTransportError'));
+        $this->once('close', array($this, 'onUpgradeTransportClose'));
     }
 
     public function onUpgradePacket($packet)
     {
-        if('ping' === $packet['type'] && 'probe' === $packet['data'])
+        if(empty($this->upgradeTransport))
+        {
+             $this->onError('upgradeTransport empty'); 
+             return;
+        }
+        if('ping' === $packet['type'] && (isset($packet['data']) && 'probe' === $packet['data']))
         {
             $this->upgradeTransport->send(array(array('type'=> 'pong', 'data'=> 'probe')));
             Timer::del($this->checkIntervalTimer);
@@ -48,17 +56,14 @@ class Socket extends Emitter
         }
         else if ('upgrade' === $packet['type'] && $this->readyState !== 'closed')
         {
+            $this->cleanup();
             $this->upgraded = true;
             $this->clearTransport();
-            $this->upgradeTransport->removeAllListeners('packet');
             $this->setTransport($this->upgradeTransport);
-            $this->upgradeTransport = null;
             $this->emit('upgrade', $this->upgradeTransport);
+            $this->upgradeTransport = null;
             $this->setPingTimeout();
             $this->flush();
-            Timer::del($this->checkIntervalTimer);
-            $this->checkIntervalTimer = null;
-            Timer::del($this->upgradeTimeoutTimer);
             if($this->readyState === 'closing')
             {
                 $this->transport->close(array($this, 'onClose'));
@@ -66,16 +71,43 @@ class Socket extends Emitter
         }
         else
         {
-            $this->upgradeTransport->close();
-            $this->upgradeTransport = null;
+            if(!empty($this->upgradeTransport))
+            {
+                $this->cleanup();
+                $this->upgradeTransport->close();
+                $this->upgradeTransport = null;
+            }
         }
        
+    }
+
+    public function cleanup()
+    {
+        Timer::del($this->checkIntervalTimer);
+        Timer::del($this->upgradeTimeoutTimer);
+        $this->upgradeTransport->removeListener('packet', array($this, 'onUpgradePacket'));
+        $this->upgradeTransport->removeListener('close', array($this, 'onUpgradeTransportClose'));
+        $this->upgradeTransport->removeListener('error', array($this, 'onUpgradeTransportError'));
+        $this->removeListener('close', array($this, 'onUpgradeTransportClose'));
+    }
+
+    public function onUpgradeTransportClose()
+    {
+        $this->onUpgradeTransportError('transport closed');
+    }
+
+    public function onUpgradeTransportError($err)
+    {
+        echo $err;
+        $this->cleanup();
+        $this->upgradeTransport->close();
+        $this->upgradeTransport = null;
     }
 
     public function upgradeTimeoutCallback($transport)
     {
         echo("client did not complete upgrade - closing transport\n");
-        $this->checkIntervalTimer = null;
+        $this->cleanup();
         if('open' == $transport->readyState)
         {
              $transport->close();
@@ -166,6 +198,7 @@ class Socket extends Emitter
     
     public function clearTransport()
     {
+        $this->transport->close();
         Timer::del($this->pingTimeoutTimer);
     }
     
@@ -282,8 +315,6 @@ class Socket extends Emitter
     {
         //todo onClose.bind(this, 'forced close'));
         $this->transport->close(array($this, 'onClose'));
-        $this->transport->removeAllListeners();
-        $this->transport = null;
     }
 
     public function setupSendCallback()

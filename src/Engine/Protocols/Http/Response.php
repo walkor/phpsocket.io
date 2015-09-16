@@ -13,6 +13,7 @@ class Response
 
     public $headersSent = false;
 
+    public $writable = true;
 
     public function __construct($connection)
     {
@@ -32,7 +33,6 @@ class Response
             echo "header has already send\n";
             return false;
         }
-
         $this->statusCode = $status_code;
         if($reason_phrase)
         {
@@ -112,6 +112,11 @@ class Response
      
     public function end($data = null)
     {
+        if(!$this->writable)
+        {
+            echo new \Exception('unwirtable');
+            return false;
+        }
         if(!isset($this->_headers['Content-Length']))
         {
             if(null !== $data)
@@ -145,6 +150,7 @@ class Response
         }
         $this->_connection->httpResponse = $this->_connection->httpRequest = null;
         $this->_connection = null;
+        $this->writable = false;
     }
     
     public static $codes = array(

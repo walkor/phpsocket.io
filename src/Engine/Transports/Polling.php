@@ -191,8 +191,7 @@ class Polling extends Transport
 
     public function doClose($fn) 
     {
-
-       if($this->dataReq) 
+       if(!empty($this->dataReq)) 
        {
            echo('aborting ongoing data request');
            $this->dataReq->destroy();

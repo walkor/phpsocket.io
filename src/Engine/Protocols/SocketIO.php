@@ -155,7 +155,7 @@ class SocketIO
     
     public static function emitData($connection, $req, $data)
     {
-        if($req->onData)
+        if(isset($req->onData))
         {
             try
             {
@@ -170,7 +170,7 @@ class SocketIO
     
     public static function emitEnd($connection, $req)
     {
-        if($req->onEnd)
+        if(isset($req->onEnd))
         {
             try
             {

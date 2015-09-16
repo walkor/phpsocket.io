@@ -57,10 +57,10 @@ class Engine extends Emitter
     {
         $this->prepare($req);
         $req->res = $res;
-        $this->verify($req, false, array($this, 'dealRequest'));
+        $this->verify($req, $res, false, array($this, 'dealRequest'));
     }
 
-    public function dealRequest($err, $success, $req)
+    public function dealRequest($err, $success, $req, $res)
     {
         if (!$success)
         {
@@ -98,11 +98,11 @@ class Engine extends Emitter
         )));
     }
 
-    protected function verify($req, $upgrade, $fn)
+    protected function verify($req, $res, $upgrade, $fn)
     {
         if(!isset($req->_query['transport']) || !isset(self::$allowTransports[$req->_query['transport']]))
         {
-            return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req);
+            return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req, $res);
         }
         $transport = $req->_query['transport'];
         $sid = isset($req->_query['sid']) ? $req->_query['sid'] : '';
@@ -110,21 +110,21 @@ class Engine extends Emitter
         {
             if(!isset($this->clients[$sid]))
             {
-                return call_user_func($fn, self::ERROR_UNKNOWN_SID, false, $req);
+                return call_user_func($fn, self::ERROR_UNKNOWN_SID, false, $req, $res);
             }
             if(!$upgrade && $this->clients[$sid]->transport->name !== $transport)
             {
-                return call_user_func($fn, self::ERROR_BAD_REQUEST, false, $req);
+                return call_user_func($fn, self::ERROR_BAD_REQUEST, false, $req, $res);
             }
         }
         else
         {
            if('GET' !== $req->method)
            {
-              return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req);
+              return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req, $res);
            }
         }
-        call_user_func($fn, null, true, $req);
+        call_user_func($fn, null, true, $req, $res);
     }
 
     protected function prepare($req)
@@ -211,7 +211,25 @@ class Engine extends Emitter
     public function onWebSocketConnect($connection, $req, $res)
     {
         $this->prepare($req);
-        $transport = new WebSocket($req);
-        $this->clients[$req->_query['sid']]->maybeUpgrade($transport);
+        $this->verify($req, $res, true, array($this, 'dealWebSocketConnect'));
+    }
+
+    public function dealWebSocketConnect($err, $success, $req, $res)
+    {
+        if (!$success)
+        {
+            self::sendErrorMessage($req, $res, $err);
+            return;
+        }
+
+        if(isset($req->_query['sid']))
+        {
+            $transport = new WebSocket($req);
+            $this->clients[$req->_query['sid']]->maybeUpgrade($transport);
+        }
+        else
+        {
+            $this->handshake($req->_query['transport'], $req);
+        }
     }
 }

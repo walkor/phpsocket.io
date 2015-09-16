@@ -286,6 +286,10 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             {
                 echo $e;
             }
+            if(!$res->writable)
+            {
+                return false;
+            }
         }
         
         if(isset($req->headers['sec-websocket-key']))

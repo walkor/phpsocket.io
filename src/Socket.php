@@ -161,7 +161,7 @@ class Socket extends Emitter
         return $this;
     }
     
-    public function wirte()
+    public function write()
     {
         $args = func_get_args();
         array_unshift($args, 'message');
