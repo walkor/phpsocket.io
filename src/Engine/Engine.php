@@ -80,10 +80,16 @@ class Engine extends Emitter
 
     protected function sendErrorMessage($req, $res, $code)
     {
-        $headers = array(
-            'Content-Type'=> 'application/json',
-            'Access-Control-Allow-Origin' => '*'
-        );
+        $headers = array('Content-Type'=> 'application/json');
+        if(isset($req->headers['origin']))
+        {
+            $headers['Access-Control-Allow-Credentials'] = 'true';
+            $headers['Access-Control-Allow-Origin'] = $req->headers['origin'];
+        } 
+        else 
+        {
+            $headers['Access-Control-Allow-Origin'] = '*';
+        }
 
         $res->writeHead(400, '', $headers);
         $res->end(json_encode(array(
