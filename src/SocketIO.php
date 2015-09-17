@@ -5,11 +5,11 @@ use PHPSocketIO\Engine\Engine;
 class SocketIO
 {
     public $nsps = array();
-    public $_adpter = null;
+    protected $_adapter = null;
     public $eio = null;
     public $engine = null;
-    public $_origins = array();
-    public $_path = null;
+    protected $_origins = array();
+    protected $_path = null;
     
     public function __construct($port = null, $opts = array())
     {
@@ -63,7 +63,7 @@ class SocketIO
          $this->eio = $engine->attach($srv, $opts);
 
          // Export http server
-         $this->httpServer = $srv;
+         $this->worker = $srv;
 
          // bind to engine events
          $this->bind($engine);
@@ -104,6 +104,11 @@ class SocketIO
 
     public function on()
     {
+        if(func_get_arg(0) === 'workerStart')
+        {
+           $this->worker->onWorkerStart = func_get_arg(1);
+           return;
+        }
         return call_user_func_array(array($this->sockets, 'on'), func_get_args());
     } 
 
