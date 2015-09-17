@@ -58,15 +58,18 @@ class Polling extends Transport
 
     public function pollRequestOnClose()
     {
-        $this->pollRequestClean();
         $this->onError('poll connection closed prematurely');
+        $this->pollRequestClean();
     }
     
     public function pollRequestClean()
     {
-        $this->req->res = null;
-        $this->req->onClose = $this->req->cleanup = null;
-        $this->req = $this->res = null;
+        if(isset($this->req))
+        {
+            $this->req->res = null;
+            $this->req->onClose = $this->req->cleanup = null;
+            $this->req = $this->res = null;
+        }
     }
 
     public function onDataRequest($req, $res) 
@@ -78,8 +81,6 @@ class Polling extends Transport
             $res->writeHead(500);
             return;
         }
-
-        $isBinary = 'application/octet-stream' == $req->headers['content-type'];
 
         $this->dataReq = $req;
         $this->dataRes = $res;
@@ -118,19 +119,10 @@ class Polling extends Transport
         $this->onData($this->chunks);
 
         $headers = array(
-            // text/html is required instead of text/plain to avoid an
-            // unwanted download dialog on certain user-agents (GH-43)
            'Content-Type'=> 'text/html',
-           'Content-Length'=> 2
+           'Content-Length'=> 2,
+           'X-XSS-Protection' => '0',
         );
-
-        // prevent XSS warnings on IE
-        // https://github.com/LearnBoost/socket.io/pull/1333
-        $ua = $this->dataReq->headers['user-agent'];
-        if ($ua && (strpos($ua, ';MSIE') || strpos($ua, 'Trident/'))) 
-        {
-            $headers['X-XSS-Protection'] = '0';
-        }
 
         $this->dataRes->writeHead(200, '', $this->headers($this->dataReq, $headers));
         $this->dataRes->end('ok');
@@ -170,7 +162,8 @@ class Polling extends Transport
     }
 
     public function send($packets) 
-    {
+    {   
+        $this->writable = false;
         if($this->shouldClose) 
         {
             echo('appending close packet to payload');
@@ -186,26 +179,25 @@ class Polling extends Transport
     {
         $this->doWrite($data);
         call_user_func($this->req->cleanup);
-        $this->writable = false;
     }
 
     public function doClose($fn) 
     {
        if(!empty($this->dataReq)) 
        {
-           echo('aborting ongoing data request');
+           //echo('aborting ongoing data request');
            $this->dataReq->destroy();
        }
 
        if($this->writable)
        {
-           echo('transport writable - closing right away');
+           //echo('transport writable - closing right away');
            $this->send(array(array('type'=> 'close')));
            call_user_func($fn);
        }
        else
        {
-           echo('transport not writable - buffering orderly close');
+           //echo("transport not writable - buffering orderly close\n");
            $this->shouldClose = $fn;
        }
     }

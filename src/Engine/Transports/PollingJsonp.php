@@ -39,7 +39,7 @@ class PollingJsonp extends Polling
             'Content-Length'=> strlen($data),
             'X-XSS-Protection'=>'0'
         );
-
+        if(empty($this->res)){echo new \Exception('empty $this->res');return;}
         $this->res->writeHead(200, '',$this->headers($this->req, $headers));
         $this->res->end($data);
     }

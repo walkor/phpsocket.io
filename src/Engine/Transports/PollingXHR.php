@@ -28,16 +28,10 @@ class PollingXHR extends Polling
         $content_length = strlen($data);
         $headers = array( 
             'Content-Type'=> $content_type,
-            'Content-Length'=> $content_length
+            'Content-Length'=> $content_length,
+            'X-XSS-Protection' => '0',
         );
-
-        // prevent XSS warnings on IE
-        // https://github.com/LearnBoost/socket.io/pull/1333
-        $ua = $this->req->headers['user-agent'];
-        if ($ua && (strpos($ua, ';MSIE') || strpos($ua, 'Trident/'))) 
-        {
-            $headers['X-XSS-Protection'] = '0';
-        }
+        if(empty($this->res)){echo new \Exception('empty this->res');return;}
         $this->res->writeHead(200, '', $this->headers($this->req, $headers));
         $this->res->end($data);
     }

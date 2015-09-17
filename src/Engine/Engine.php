@@ -80,17 +80,11 @@ class Engine extends Emitter
 
     protected function sendErrorMessage($req, $res, $code)
     {
-        $headers = array('Content-Type'=> 'application/json');
+        $headers = array(
+            'Content-Type'=> 'application/json',
+            'Access-Control-Allow-Origin' => '*'
+        );
 
-        if(isset($req->headers['origin']))
-        {
-            $headers['Access-Control-Allow-Credentials'] = 'true';
-            $headers['Access-Control-Allow-Origin'] = $req->headers['origin'];
-        } 
-        else 
-        {
-            $headers['Access-Control-Allow-Origin'] = '*';
-        }
         $res->writeHead(400, '', $headers);
         $res->end(json_encode(array(
             'code' => $code,
@@ -222,10 +216,27 @@ class Engine extends Emitter
             return;
         }
 
+
         if(isset($req->_query['sid']))
         {
+            if(!isset($this->clients[$req->_query['sid']]))
+            {
+                self::sendErrorMessage($req, $res, 'upgrade attempt for closed client');
+                return;
+            }
+            $client = $this->clients[$req->_query['sid']];
+            if($client->upgrading)
+            {
+                self::sendErrorMessage($req, $res, 'transport has already been trying to upgrade');
+                return;
+            }
+            if($client->upgraded)
+            {
+                self::sendErrorMessage($req, $res, 'transport had already been upgraded');
+                return;
+            }
             $transport = new WebSocket($req);
-            $this->clients[$req->_query['sid']]->maybeUpgrade($transport);
+            $client->maybeUpgrade($transport);
         }
         else
         {

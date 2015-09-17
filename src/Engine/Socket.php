@@ -6,6 +6,7 @@ class Socket extends Emitter
 {
     public $id = 0;
     public $server = null;
+    public $upgrading = false;
     public $upgraded = false;
     public $readyState = 'opening';
     public $writeBuffer = array();
@@ -29,6 +30,7 @@ class Socket extends Emitter
 
     public function maybeUpgrade($transport)
     {
+        $this->upgrading = true;
         $this->upgradeTimeoutTimer = Timer::add(
             $this->server->upgradeTimeout, 
             array($this, 'upgradeTimeoutCallback'),
@@ -53,11 +55,11 @@ class Socket extends Emitter
             $this->upgradeTransport->send(array(array('type'=> 'pong', 'data'=> 'probe')));
             //$this->transport->shouldClose = function(){};
             Timer::del($this->checkIntervalTimer);
-            $this->checkIntervalTimer = Timer::add(0.1, array($this, 'check'));
+            $this->checkIntervalTimer = Timer::add(0.5, array($this, 'check'));
         }
         else if('upgrade' === $packet['type'] && $this->readyState !== 'closed')
         {
-            $this->cleanup();
+            $this->upgradeCleanup();
             $this->upgraded = true;
             $this->clearTransport();
             $this->setTransport($this->upgradeTransport);
@@ -74,7 +76,7 @@ class Socket extends Emitter
         {
             if(!empty($this->upgradeTransport))
             {
-                $this->cleanup();
+                $this->upgradeCleanup();
                 $this->upgradeTransport->close();
                 $this->upgradeTransport = null;
             }
@@ -83,13 +85,17 @@ class Socket extends Emitter
     }
 
 
-    public function cleanup()
+    public function upgradeCleanup()
     {
+        $this->upgrading = false;
         Timer::del($this->checkIntervalTimer);
         Timer::del($this->upgradeTimeoutTimer);
-        $this->upgradeTransport->removeListener('packet', array($this, 'onUpgradePacket'));
-        $this->upgradeTransport->removeListener('close', array($this, 'onUpgradeTransportClose'));
-        $this->upgradeTransport->removeListener('error', array($this, 'onUpgradeTransportError'));
+        if(!empty($this->upgradeTransport))
+        {
+            $this->upgradeTransport->removeListener('packet', array($this, 'onUpgradePacket'));
+            $this->upgradeTransport->removeListener('close', array($this, 'onUpgradeTransportClose'));
+            $this->upgradeTransport->removeListener('error', array($this, 'onUpgradeTransportError'));
+        }
         $this->removeListener('close', array($this, 'onUpgradeTransportClose'));
     }
 
@@ -101,15 +107,18 @@ class Socket extends Emitter
     public function onUpgradeTransportError($err)
     {
         echo $err;
-        $this->cleanup();
-        $this->upgradeTransport->close();
-        $this->upgradeTransport = null;
+        $this->upgradeCleanup();
+        if($this->upgradeTransport)
+        {
+            $this->upgradeTransport->close();
+            $this->upgradeTransport = null;
+        }
     }
 
     public function upgradeTimeoutCallback($transport)
     {
-        echo("client did not complete upgrade - closing transport\n");
-        $this->cleanup();
+        //echo("client did not complete upgrade - closing transport\n");
+        $this->upgradeCleanup();
         if('open' === $transport->readyState)
         {
              $transport->close();
@@ -212,7 +221,8 @@ class Socket extends Emitter
     
     public function onClose($reason = '', $description = null)
     {
-        if ('closed' !== $this->readyState) {
+        if ('closed' !== $this->readyState) 
+        {
             Timer::del($this->pingTimeoutTimer);
             Timer::del($this->checkIntervalTimer);
             $this->checkIntervalTimer = null;
@@ -229,9 +239,11 @@ class Socket extends Emitter
             $this->request = null;
             $this->upgradeTransport = null;
             $this->removeAllListeners();
-            $this->transport->removeAllListeners();
-            $this->transport = null;
-           
+            if(empty($this->transport))
+            {
+                $this->transport->removeAllListeners();
+                $this->transport = null;
+            }
         }
     }
     
