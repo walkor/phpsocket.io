@@ -4,7 +4,7 @@ use \PHPSocketIO\Engine\Transports\Polling;
 use \PHPSocketIO\Engine\Transports\PollingXHR;
 use \PHPSocketIO\Engine\Transports\WebSocket;
 use \PHPSocketIO\Event\Emitter;
-
+use \PHPSocketIO\Debug;
 class Engine extends Emitter
 {
     public $pingTimeout = 60;
@@ -51,7 +51,13 @@ class Engine extends Emitter
                 $this->$key = $opts[$key];
             }
         }
+        Debug::debug('Engine __construct');
     }
+
+public function __destruct()
+{
+    Debug::debug('Engine __destruct');
+}
 
     public function handleRequest($req, $res)
     {

@@ -42,7 +42,13 @@ class Socket extends Emitter
         $this->client = $client;
         $this->conn = $client->conn;
         $this->handshake = $this->buildHandshake();
+        Debug::debug('IO Socket __construct');
     }
+
+public function __destruct()
+{
+    Debug::debug('IO Socket __destruct');
+}
     
     public function buildHandshake()
     {

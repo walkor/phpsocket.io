@@ -11,8 +11,12 @@ class DefaultAdapter
     {
          $this->nsp = $nsp;
          $this->encoder = new Parser\Encoder();
+         Debug::debug('DefaultAdapter __construct');
     }
-
+public function __destruct()
+{
+     Debug::debug('DefaultAdapter __destruct');
+}
     public function add($id, $room, $fn = null)
     {
         $this->sids[$id][$room] = true;

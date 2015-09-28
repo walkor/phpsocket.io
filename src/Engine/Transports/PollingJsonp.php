@@ -1,5 +1,6 @@
 <?php
 namespace PHPSocketIO\Engine\Transports;
+use \PHPSocketIO\Debug;
 class PollingJsonp extends Polling
 {
     public $head = null;
@@ -9,8 +10,12 @@ class PollingJsonp extends Polling
     {
         $j = isset($req->_query['j']) ? preg_replace('/[^0-9]/', '', $req->_query['j']) : '';
         $this->head = "___eio[ $j ](";
+        Debug::debug('PollingJsonp __construct');
     }
-
+public function __destruct()
+{
+    Debug::debug('PollingJsonp __destruct');
+}
     public function onData($data)
     {
         $parsed_data = null;

@@ -2,6 +2,7 @@
 namespace PHPSocketIO\Engine;
 use \PHPSocketIO\Event\Emitter;
 use \Workerman\Lib\Timer;
+use \PHPSocketIO\Debug;
 class Socket extends Emitter
 {
     public $id = 0;
@@ -26,8 +27,12 @@ class Socket extends Emitter
         $this->remoteAddress = $req->connection->getRemoteIp().':'.$req->connection->getRemotePort();
         $this->setTransport($transport);
         $this->onOpen();
+        Debug::debug('Engine/Socket __construct');
     }
-
+public function __destruct()
+{
+    Debug::debug('Engine/Socket __destruct');
+}
     public function maybeUpgrade($transport)
     {
         $this->upgrading = true;
@@ -62,6 +67,7 @@ class Socket extends Emitter
             $this->upgradeCleanup();
             $this->upgraded = true;
             $this->clearTransport();
+            $this->transport->destroy();
             $this->setTransport($this->upgradeTransport);
             $this->emit('upgrade', $this->upgradeTransport);
             $this->upgradeTransport = null;
@@ -239,7 +245,7 @@ class Socket extends Emitter
             $this->request = null;
             $this->upgradeTransport = null;
             $this->removeAllListeners();
-            if(empty($this->transport))
+            if(!empty($this->transport))
             {
                 $this->transport->removeAllListeners();
                 $this->transport = null;
@@ -305,7 +311,10 @@ class Socket extends Emitter
             $this->packetsFn = array();
             $this->transport->send($wbuf);
             $this->emit('drain');
-            $this->server->emit('drain', $this);
+            if($this->server)
+            {
+                $this->server->emit('drain', $this);
+            }
         }
     }
 

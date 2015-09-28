@@ -26,7 +26,13 @@ class Nsp extends Emitter
          $this->name = $name;
          $this->server = $server;
          $this->initAdapter();
+         Debug::debug('Nsp __construct');
     }
+
+public function __destruct()
+{
+    Debug::debug('Nsp __destruct');
+}
 
     public function initAdapter()
     {

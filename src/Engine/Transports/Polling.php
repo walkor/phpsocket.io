@@ -2,6 +2,7 @@
 namespace PHPSocketIO\Engine\Transports;
 use PHPSocketIO\Engine\Transport;
 use PHPSocketIO\Engine\Parser;
+use \PHPSocketIO\Debug;
 class Polling extends Transport
 {
     public $name = 'polling';

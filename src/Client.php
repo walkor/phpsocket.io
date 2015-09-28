@@ -21,8 +21,12 @@ class Client
         $this->id = $conn->id;
         $this->request = $conn->request;
         $this->setup();
+        Debug::debug('Client __construct');
     }
-
+public function __destruct()
+{
+    Debug::debug('Client __destruct');
+}
 
 /**
  * Sets up event listeners.

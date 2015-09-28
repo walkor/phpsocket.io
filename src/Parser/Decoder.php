@@ -2,8 +2,19 @@
 namespace PHPSocketIO\Parser;
 use \PHPSocketIO\Parser\Parser;
 use \PHPSocketIO\Event\Emitter;
+use \PHPSocketIO\Debug;
 class Decoder extends Emitter 
 {
+public function __construct()
+{
+    Debug::debug('Decoder __construct');
+}
+
+public function __destruct()
+{
+    Debug::debug('Decoder __destruct');
+}
+
     public function add($obj)
     {
       if (is_string($obj))
