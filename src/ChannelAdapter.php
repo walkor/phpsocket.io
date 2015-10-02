@@ -83,12 +83,12 @@ class ChannelAdapter extends DefaultAdapter
             return;
         }
         
-        if (empty($packet['nsp'])) 
+        if(empty($packet['nsp'])) 
         {
             $packet['nsp'] = '/';
         }
         
-        if ($packet['nsp'] != $this->nsp->name) 
+        if($packet['nsp'] != $this->nsp->name) 
         {
              echo "ignore different namespace {$packet['nsp']} != {$this->nsp->name}\n";
              return;
@@ -102,21 +102,31 @@ class ChannelAdapter extends DefaultAdapter
         parent::broadcast($packet, $opts);
         if (!$remote) 
         {
-              if(!empty($opts['rooms'])) 
+            if(empty($packet['nsp']))
+            {
+                $packet['nsp'] = '/';
+            }
+            
+            if($packet['nsp'] != $this->nsp->name)
+            {
+                echo "ignore different namespace {$packet['nsp']} != {$this->nsp->name}\n";
+                return;
+            }
+            if(!empty($opts['rooms'])) 
+            {
+              foreach($opts['rooms'] as $room)
               {
-                  foreach($opts['rooms'] as $room)
-                  {
-                      $chn = "socket.io#{$packet['nsp']}#$room#";
-                      $msg = array($this->_channelId, $packet, $opts);
-                      \Channel\Client::publish($chn, $msg);
-                  }
-              }
-              else
-              {
-                  $chn = "socket.io#{$packet['nsp']}#";
+                  $chn = "socket.io#{$packet['nsp']}#$room#";
                   $msg = array($this->_channelId, $packet, $opts);
                   \Channel\Client::publish($chn, $msg);
               }
+            }
+            else
+            {
+              $chn = "socket.io#{$packet['nsp']}#";
+              $msg = array($this->_channelId, $packet, $opts);
+              \Channel\Client::publish($chn, $msg);
+            }
         } 
     }
 }
