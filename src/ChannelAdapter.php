@@ -111,12 +111,12 @@ class ChannelAdapter extends DefaultAdapter
                       \Channel\Client::publish($chn, $msg);
                   }
               }
+              else
+              {
+                  $chn = "socket.io#{$packet['nsp']}#";
+                  $msg = array($this->_channelId, $packet, $opts);
+                  \Channel\Client::publish($chn, $msg);
+              }
         } 
-        else 
-        {
-              $chn = "socket.io#{$packet['nsp']}#";
-              $msg = array($this->_channelId, $packet, $opts);
-              \Channel\Client::publish($chn, $msg);
-         }
     }
 }
