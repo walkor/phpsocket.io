@@ -97,7 +97,7 @@ class ChannelAdapter extends DefaultAdapter
         $this->broadcast($packet, $opts, true);
     }
     
-    public function broadcast($packet, $opts, $remote)
+    public function broadcast($packet, $opts, $remote = null)
     {
         parent::broadcast($packet, $opts);
         if (!$remote) 
