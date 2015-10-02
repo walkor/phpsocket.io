@@ -13,6 +13,12 @@ class SocketIO
     
     public function __construct($port = null, $opts = array())
     {
+        $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
+        $this->adapter($adapter);
+        $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
+        $this->origins($origins);
+        $this->sockets = $this->of('/');
+        
         if(!class_exists('Protocols\SocketIO'))
         {
             class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
@@ -23,12 +29,6 @@ class SocketIO
             $worker->name = 'PHPSocketIO';
             $this->attach($worker);
         }
-        
-        $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
-        $this->adapter($adapter);
-        $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
-        $this->origins($origins);
-        $this->sockets = $this->of('/');
     }
     
     public function adapter($v = null)
