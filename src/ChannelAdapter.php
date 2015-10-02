@@ -12,9 +12,9 @@ class ChannelAdapter extends DefaultAdapter
     {
         parent::__construct($nsp);
         $this->_channelId = rand(1, 10000000) . "-" . posix_getpid();
-        Channel\Client::connect(self::$ip, self::$port);
-        Channel\Client::$onMessage = array($this, 'onChannelMessage');
-        Channel\Client::subscribe("socket.io#{$nsp->name}#");
+        \Channel\Client::connect(self::$ip, self::$port);
+        \Channel\Client::$onMessage = array($this, 'onChannelMessage');
+        \Channel\Client::subscribe("socket.io#{$nsp->name}#");
         Debug::debug('ChannelAdapter __construct');
     }
     
@@ -28,7 +28,7 @@ class ChannelAdapter extends DefaultAdapter
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
         $channel = "socket.io#{$this->nsp->name}#$room#";
-        Channel\Client::subscribe($channel);
+        \Channel\Client::subscribe($channel);
     }
     
     public function del($id, $room)
@@ -39,7 +39,7 @@ class ChannelAdapter extends DefaultAdapter
         {
             unset($this->rooms[$room]);
             $channel = "socket.io#{$this->nsp->name}#$room#";
-            Channel\Client::unsubscribe($channel);
+            \Channel\Client::unsubscribe($channel);
         }
     }
     
@@ -54,7 +54,7 @@ class ChannelAdapter extends DefaultAdapter
                 {
                     unset($this->rooms[$room][$id]);
                     $channel = "socket.io#{$this->nsp->name}#$room#";
-                    Channel\Client::unsubscribe($channel);
+                    \Channel\Client::unsubscribe($channel);
                 }
             }
         }
@@ -108,7 +108,7 @@ class ChannelAdapter extends DefaultAdapter
                   {
                       $chn = "socket.io#{$packet['nsp']}#$room#";
                       $msg = array($this->_channelId, $packet, $opts);
-                      Channel\Client::publish($chn, $msg);
+                      \Channel\Client::publish($chn, $msg);
                   }
               }
         } 
@@ -116,7 +116,7 @@ class ChannelAdapter extends DefaultAdapter
         {
               $chn = "socket.io#{$packet['nsp']}#";
               $msg = array($this->_channelId, $packet, $opts);
-              Channel\Client::publish($chn, $msg);
+              \Channel\Client::publish($chn, $msg);
          }
     }
 }
