@@ -17,34 +17,23 @@ public function __destruct()
 {
      Debug::debug('DefaultAdapter __destruct');
 }
-    public function add($id, $room, $fn = null)
+    public function add($id, $room)
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
-        // todo next tick
-        if ($fn) 
-        {
-            //call_user_func($fn, null, null);
-            echo new \Exception('fn');
-        }
     }
      
-    public function del($id, $room, $fn)
+    public function del($id, $room)
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
-        if(empty($this->rooms[$room]))
+        if(!empty($this->rooms[$room]))
         {
             unset($this->rooms[$room]);
         }
-        // todo next tick
-        if ($fn) 
-        {
-           echo new \Exception('fn'); 
-        }
     }
 
-    public function delAll($id, $fn = null)
+    public function delAll($id)
     {
         $rooms = isset($this->sids[$id]) ? $this->sids[$id] : array();
         if($rooms) 

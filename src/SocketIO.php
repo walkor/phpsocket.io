@@ -13,8 +13,6 @@ class SocketIO
     
     public function __construct($port = null, $opts = array())
     {
-        $path = isset($opts['path']) ? $opts['path'] : '/socket.io';
-        $this->path($path);
         $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
         $this->adapter($adapter);
         $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
@@ -32,20 +30,13 @@ class SocketIO
         }
     }
     
-    public function path($v = null)
-    {
-        if($v === null) return $this->_path;
-        $this->_path = preg_replace('/\/$/', '', $v);
-        return $this;
-    }
-
     public function adapter($v = null)
     {
          if (empty($v)) return $this->_adapter;
          $this->_adapter = $v;
          foreach($this->nsps as $nsp)
          {
-             $nsp.initAdapter();
+             $nsp->initAdapter();
          }
          return $this;
     }
@@ -120,11 +111,6 @@ class SocketIO
     public function to()
     {
         return call_user_func_array(array($this->sockets, 'to'), func_get_args());
-    }
-
-    public function used()
-    {
-        return call_user_func_array(array($this->sockets, 'used'), func_get_args());
     }
 
     public function emit()
