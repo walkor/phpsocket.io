@@ -69,7 +69,7 @@ class ChannelAdapter extends DefaultAdapter
     {
         if($this->_channelId === array_shift($msg))
         {
-            echo "ignore same channel_id \n";
+            //echo "ignore same channel_id \n";
             return;
         }
         
