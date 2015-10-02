@@ -53,7 +53,7 @@ public function __destruct()
         unset($this->sids[$id]);
     }
 
-    public function broadcast($packet, $opts)
+    public function broadcast($packet, $opts, $remote = false)
     {
         $rooms = isset($opts['rooms']) ? $opts['rooms'] : array();
         $except = isset($opts['except']) ? $opts['except'] : array();
