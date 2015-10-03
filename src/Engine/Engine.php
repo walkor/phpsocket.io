@@ -100,7 +100,7 @@ public function __destruct()
         $res->writeHead(400, '', $headers);
         $res->end(json_encode(array(
             'code' => $code,
-            'message' => self::$errorMessages[$code]
+            'message' => isset(self::$errorMessages[$code]) ? self::$errorMessages[$code] : $code
         )));
     }
 
