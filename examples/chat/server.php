@@ -72,7 +72,7 @@ $io->on('connection', function($socket){
    
 });
 
-$web = new WebServer('http://0.0.0.0:3034');
+$web = new WebServer('http://0.0.0.0:2022');
 $web->addRoot('localhost', __DIR__ . '/public');
 
 Worker::runAll();
