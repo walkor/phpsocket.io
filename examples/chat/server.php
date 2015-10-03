@@ -8,7 +8,7 @@ use PHPSocketIO\SocketIO;
 include __DIR__ . '/../../vendor/autoload.php';
 include __DIR__ . '/../../src/autoload.php';
 
-$io = new SocketIO(3033);
+$io = new SocketIO(2020);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
 
