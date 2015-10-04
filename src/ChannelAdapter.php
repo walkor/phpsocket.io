@@ -11,7 +11,7 @@ class ChannelAdapter extends DefaultAdapter
     public function __construct($nsp)
     {
         parent::__construct($nsp);
-        $this->_channelId = rand(1, 10000000) . "-" . posix_getpid();
+        $this->_channelId = rand(1, 10000000) . "-" . (function_exists('posix_getpid') ? posix_getpid(): 1);
         \Channel\Client::connect(self::$ip, self::$port);
         \Channel\Client::$onMessage = array($this, 'onChannelMessage');
         \Channel\Client::subscribe("socket.io#{$nsp->name}#");
