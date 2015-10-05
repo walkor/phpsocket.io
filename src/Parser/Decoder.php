@@ -84,32 +84,35 @@ public function __destruct()
             $p['nsp'] = '';
             while (++$i)
             {
+                if ($i == strlen($str)) break;
                 $c = $str[$i];
                 if (',' == $c) break;
                 $p['nsp'] .= $c;
-                if ($i == strlen($str)) break;
             }
         } else {
             $p['nsp'] = '/';
         }
 
         // look up id
-        $next = $str[$i+1];
-        if ('' !== $next && strval((int)$next) === strval($next))
+        if(isset($str[$i+1]))
         {
-            $p['id'] = '';
-            while (++$i)
+            $next = $str[$i+1];
+            if ('' !== $next && strval((int)$next) === strval($next))
             {
-                $c = $str[$i];
-                if (null == $c || strval((int)$c) != strval($c))
+                $p['id'] = '';
+                while (++$i)
                 {
-                    --$i;
-                    break;
+                    $c = $str[$i];
+                    if (null == $c || strval((int)$c) != strval($c))
+                    {
+                        --$i;
+                        break;
+                    }
+                    $p['id'] .= $str[$i];
+                    if($i == strlen($str)) break;
                 }
-                $p['id'] .= $str[$i];
-                if($i == strlen($str)) break;
+                $p['id'] = (int)$p['id'];
             }
-            $p['id'] = (int)$p['id'];
         }
 
         // look up json data
