@@ -142,12 +142,21 @@ public function __destruct()
             {
                 parse_str($info['query'], $req->_query);
             }
+            
+            if(isset($info['path']))
+            {
+                $req->path = $info['path'];
+            }
+            else
+            {
+                $req->path = '/';
+            }
         }
     }
 
     public function handshake($transport, $req)
     {
-        $id = rand(1, 100000000);
+        $id = microtime(true) . rand(1, 100000000);
         if (isset($req->_query['j'])) 
         {
             $transport = '\\PHPSocketIO\\Engine\\Transports\\PollingJsonp';
@@ -162,16 +171,18 @@ public function __destruct()
         $transport->supportsBinary = !isset($req->_query['b64']);
 
         $socket = new Socket($id, $this, $transport, $req);
+        
+        $socket->path = $req->path;
 
-        $transport->on('headers', function(&$headers)use($id)
+        /* $transport->on('headers', function(&$headers)use($id)
         {
             $headers['Set-Cookie'] = "io=$id";
-        });
+        }); */
 
         $transport->onRequest($req);
 
         $this->clients[$id] = $socket;
-        $socket->once('close', array($this, 'onSocketClose')); 
+        $socket->once('close', array($this, 'onSocketClose'));
         $this->emit('connection', $socket);
     }
 

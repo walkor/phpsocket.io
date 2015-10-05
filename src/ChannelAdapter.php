@@ -14,7 +14,7 @@ class ChannelAdapter extends DefaultAdapter
         $this->_channelId = rand(1, 10000000) . "-" . (function_exists('posix_getpid') ? posix_getpid(): 1);
         \Channel\Client::connect(self::$ip, self::$port);
         \Channel\Client::$onMessage = array($this, 'onChannelMessage');
-        \Channel\Client::subscribe("socket.io#{$nsp->name}#");
+        \Channel\Client::subscribe("socket.io#/#");
         Debug::debug('ChannelAdapter __construct');
     }
     
@@ -27,7 +27,7 @@ class ChannelAdapter extends DefaultAdapter
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
-        $channel = "socket.io#{$this->nsp->name}#$room#";
+        $channel = "socket.io#/#$room#";
         \Channel\Client::subscribe($channel);
     }
     
@@ -38,7 +38,7 @@ class ChannelAdapter extends DefaultAdapter
         if(!empty($this->rooms[$room]))
         {
             unset($this->rooms[$room]);
-            $channel = "socket.io#{$this->nsp->name}#$room#";
+            $channel = "socket.io#/#$room#";
             \Channel\Client::unsubscribe($channel);
         }
     }
@@ -53,7 +53,7 @@ class ChannelAdapter extends DefaultAdapter
                 if(isset($this->rooms[$room][$id]))
                 {
                     unset($this->rooms[$room][$id]);
-                    $channel = "socket.io#{$this->nsp->name}#$room#";
+                    $channel = "socket.io#/#$room#";
                     \Channel\Client::unsubscribe($channel);
                 }
             }
@@ -102,28 +102,20 @@ class ChannelAdapter extends DefaultAdapter
         parent::broadcast($packet, $opts);
         if (!$remote) 
         {
-            if(empty($packet['nsp']))
-            {
-                $packet['nsp'] = '/';
-            }
+            $packet['nsp'] = '/';
             
-            if($packet['nsp'] != $this->nsp->name)
-            {
-                echo "ignore different namespace {$packet['nsp']} != {$this->nsp->name}\n";
-                return;
-            }
             if(!empty($opts['rooms'])) 
             {
               foreach($opts['rooms'] as $room)
               {
-                  $chn = "socket.io#{$packet['nsp']}#$room#";
+                  $chn = "socket.io#/#$room#";
                   $msg = array($this->_channelId, $packet, $opts);
                   \Channel\Client::publish($chn, $msg);
               }
             }
             else
             {
-              $chn = "socket.io#{$packet['nsp']}#";
+              $chn = "socket.io#/#";
               $msg = array($this->_channelId, $packet, $opts);
               \Channel\Client::publish($chn, $msg);
             }

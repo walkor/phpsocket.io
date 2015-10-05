@@ -8,6 +8,7 @@ class Socket extends Emitter
     public $server = null;
     public $adapter = null;
     public $id = null;
+    public $path = '/';
     public $request = null;
     public $client = null;
     public $conn = null;
@@ -38,6 +39,7 @@ class Socket extends Emitter
         $this->server = $nsp->server;
         $this->adapter = $this->nsp->adapter;
         $this->id = $client->id;
+        $this->path = $client->path;
         $this->request = $client->request;
         $this->client = $client;
         $this->conn = $client->conn;
