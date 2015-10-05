@@ -142,15 +142,6 @@ public function __destruct()
             {
                 parse_str($info['query'], $req->_query);
             }
-            
-            if(isset($info['path']))
-            {
-                $req->path = $info['path'];
-            }
-            else
-            {
-                $req->path = '/';
-            }
         }
     }
 
@@ -172,8 +163,6 @@ public function __destruct()
 
         $socket = new Socket($id, $this, $transport, $req);
         
-        $socket->path = $req->path;
-
         /* $transport->on('headers', function(&$headers)use($id)
         {
             $headers['Set-Cookie'] = "io=$id";

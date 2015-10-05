@@ -6,7 +6,6 @@ use \PHPSocketIO\Debug;
 class Socket extends Emitter
 {
     public $id = 0;
-    public $path = '/';
     public $server = null;
     public $upgrading = false;
     public $upgraded = false;
