@@ -39,7 +39,6 @@ class Socket extends Emitter
         $this->server = $nsp->server;
         $this->adapter = $this->nsp->adapter;
         $this->id = $client->id;
-        $this->path = $client->path;
         $this->request = $client->request;
         $this->client = $client;
         $this->conn = $client->conn;

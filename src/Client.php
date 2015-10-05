@@ -195,10 +195,9 @@ public function __destruct()
         {
             $this->connect($packet->nsp);
         } else {
-            $socket = $this->nsps[$packet['nsp']];
-            if ($socket) 
+            if(isset($this->nsps[$packet['nsp']])) 
             {
-                 $socket->onpacket($packet);
+                 $this->nsps[$packet['nsp']]->onpacket($packet);
             } else {
                 echo('no socket for namespace ' . $packet['nsp']);
             }
