@@ -9,6 +9,7 @@ class Client
     public $encoder = null;
     public $decoder = null;
     public $id = null;
+    public $path = '/';
     public $request = null;
     public $nsps = array();
     public $connectBuffer = array();
@@ -19,6 +20,7 @@ class Client
         $this->encoder = new \PHPSocketIO\Parser\Encoder();
         $this->decoder = new \PHPSocketIO\Parser\Decoder();
         $this->id = $conn->id;
+        $this->path = $conn->path;
         $this->request = $conn->request;
         $this->setup();
         Debug::debug('Client __construct');
