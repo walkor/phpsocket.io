@@ -125,14 +125,23 @@ class Response
         {
             $this->write($data);
         }
+        
+        if(!$this->headersSent)
+        {
+            $head_buffer = $this->getHeadBuffer();
+            $this->_buffer = $head_buffer;
+            $this->headersSent = true;
+        }
+        
         if(!isset($this->_headers['Content-Length']))
         {
             $ret = $this->_connection->send($this->_buffer . "0\r\n\r\n", true);
             $this->destroy();
             return $ret;
         }
+        $ret = $this->_connection->send($this->_buffer, true);
         $this->destroy();
-        return true;
+        return $ret;
     }
     
     public function destroy()
