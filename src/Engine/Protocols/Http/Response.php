@@ -14,6 +14,8 @@ class Response
     public $headersSent = false;
 
     public $writable = true;
+    
+    protected $_buffer = '';
 
     public function __construct($connection)
     {
@@ -45,8 +47,7 @@ class Response
                 $this->_headers[$key] = $val;
             }
         }
-        $head_buffer = $this->getHeadBuffer();
-        $this->_connection->send($head_buffer, true);
+        $this->_buffer = $this->getHeadBuffer();
         $this->headersSent = true;
     }
 
@@ -104,10 +105,13 @@ class Response
         if(!$this->headersSent)
         {
             $head_buffer = $this->getHeadBuffer();
-            $chunk = $head_buffer . $chunk;
+            $this->_buffer = $head_buffer . $chunk;
             $this->headersSent = true;
         }
-        $this->_connection->send($chunk, true);
+        else
+        {
+            $this->_buffer .= $chunk;
+        }
     }
      
     public function end($data = null)
@@ -117,26 +121,15 @@ class Response
             echo new \Exception('unwirtable');
             return false;
         }
+        if($data !== null)
+        {
+            $this->write($data);
+        }
         if(!isset($this->_headers['Content-Length']))
         {
-            if(null !== $data)
-            {
-                $ret = $this->_connection->send(dechex(strlen($data))."\r\n$data\r\n"."0\r\n\r\n", true);
-                $this->destroy();
-                return $ret;
-            }
-            $ret = $this->_connection->send("0\r\n\r\n", true);
+            $ret = $this->_connection->send($this->_buffer . "0\r\n\r\n", true);
             $this->destroy();
             return $ret;
-        }
-        else
-        {
-            if(null !== $data)
-            {
-                $ret = $this->_connection->send($data, true);
-                $this->destroy();
-                return $ret;
-            }
         }
         $this->destroy();
         return true;

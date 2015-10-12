@@ -23,6 +23,7 @@ class Client
         $this->setup();
         Debug::debug('Client __construct');
     }
+    
 public function __destruct()
 {
     Debug::debug('Client __destruct');
