@@ -1,3 +1,12 @@
+## 安装
+请使用composer集成phpsocket.io。
+
+脚本中引用vendor中的autoload.php实现SocketIO相关类的加载。例如
+```php
+require_once '/你的vendor路径/autoload.php';
+```
+下面服务端的代码略去了这段代码。
+
 ### 服务端和客户端连接
 创建一个SocketIO服务端
 ```php
@@ -29,7 +38,7 @@ socket.io主要是通过事件来进行通讯交互的。
 
 除了自带的connect，message，disconnect三个事件以外，用户可以自定义事件。
 
-例如下面的代码定义了一个```chat message```事件，事件参数为```$msg```。
+例如下面的代码在服务端定义了一个```chat message```事件，事件参数为```$msg```。
 ```php
 use PHPSocketIO\SocketIO;
 $io = new SocketIO(2021);
@@ -44,7 +53,6 @@ $io->on('connection', function($socket)use($io){
 ```
 
 客户端通过下面的方法触发服务端的chat message事件。
-客户端
 ```javascript
 <script src='//cdn.bootcss.com/socket.io/1.3.7/socket.io.js'></script>
 <script>
@@ -58,3 +66,5 @@ socket.on('chat message from server', function(msg){
 });
 </script>
 ```
+
+
