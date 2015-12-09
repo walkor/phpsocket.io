@@ -14,7 +14,7 @@ use PHPSocketIO\SocketIO;
 // 创建socket.io服务端，监听2021端口
 $io = new SocketIO(2021);
 // 当有客户端连接时打印一行文字
-$io->on('connection', function($socket)use($io){
+$io->on('connection', function($connection)use($io){
   echo "new connection coming\n";
 });
 ```
@@ -34,18 +34,18 @@ socket.on('connect', function(){
 ### 自定义事件
 socket.io主要是通过事件来进行通讯交互的。
 
-服务端和客户端都可以定义自己的事件，服务端和客户端都通过emit方法触发对方的事件。
+除了自带的connect，message，disconnect三个事件以外，在服务端和客户端用户可以自定义事件。
 
-除了自带的connect，message，disconnect三个事件以外，用户可以自定义事件。
+服务端和客户端都通过emit方法触发对端的事件。
 
 例如下面的代码在服务端定义了一个```chat message```事件，事件参数为```$msg```。
 ```php
 use PHPSocketIO\SocketIO;
 $io = new SocketIO(2021);
 // 当有客户端连接时
-$io->on('connection', function($socket)use($io){
+$io->on('connection', function($connection)use($io){
   // 定义chat message事件回调函数
-  $socket->on('chat message', function($msg)use($io){
+  $connection->on('chat message', function($msg)use($io){
     // 触发所有客户端定义的chat message from server事件
     $io->emit('chat message from server', $msg);
   });
@@ -67,4 +67,17 @@ socket.on('chat message from server', function(msg){
 </script>
 ```
 
-
+## 向客户端发送事件的各种方法
+$io是SocketIO对象。$connection是客户端连接
+1、向当前客户端发送事件
+```php
+$connection->emit('event name', $data);
+```
+2、向所有客户端发送事件
+```php
+$io->emit('event name', $data);
+```
+3、向所有客户端发送事件，但不包括当前连接。
+```php
+$connection->sockets->emit('event name', $data);
+```
