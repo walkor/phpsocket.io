@@ -67,6 +67,17 @@ socket.on('chat message from server', function(msg){
 </script>
 ```
 
+### 分组
+socket.io提供分组功能，允许向某个分组发送事件，例如向某个房间广播数据。
+1、加入分组（一个连接可以加入多个分组）
+```php
+$connection->join('group name');
+```
+2、离开分组（连接断开时会自动从分组中离开）
+```php
+$connection->leave('group name');
+```
+
 ## 向客户端发送事件的各种方法
 $io是SocketIO对象。$connection是客户端连接
 1、向当前客户端发送事件
@@ -80,4 +91,8 @@ $io->emit('event name', $data);
 3、向所有客户端发送事件，但不包括当前连接。
 ```php
 $connection->sockets->emit('event name', $data);
+```
+4、向某个分组的所有客户端发送事件
+```php
+$io->to('group name')->emit('event name', $data);
 ```
