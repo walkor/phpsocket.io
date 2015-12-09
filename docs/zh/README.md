@@ -85,6 +85,7 @@ $io是SocketIO对象。$connection是客户端连接
 $data可以是数字和字符串，也可以是数组。当$data是数组时，客户端会自动转换为javascript对象。
 
 同理如果客户端向服务端emit某个事件传递的是一个javascript对象，在服务端接收时会自动转换为php数组。
+
 1、向当前客户端发送事件
 ```php
 $connection->emit('event name', $data);
