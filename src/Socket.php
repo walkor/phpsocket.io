@@ -374,7 +374,7 @@ public function __destruct()
         } 
         else 
         {
-            echo('Missing error handler on `socket`.');
+            //echo('Missing error handler on `socket`.');
         }
     }
     
