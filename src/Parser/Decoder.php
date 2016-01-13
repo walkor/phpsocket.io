@@ -119,7 +119,7 @@ public function __destruct()
         if (isset($str[++$i]))
         {
             // todo try
-            $p['data'] = json_decode(substr($str, $i));
+            $p['data'] = json_decode(substr($str, $i), true);
         }
 
         return $p;
