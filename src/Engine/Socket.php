@@ -112,7 +112,7 @@ public function __destruct()
 
     public function onUpgradeTransportError($err)
     {
-        echo $err;
+        //echo $err;
         $this->upgradeCleanup();
         if($this->upgradeTransport)
         {
