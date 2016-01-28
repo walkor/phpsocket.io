@@ -27,7 +27,7 @@ public function __destruct()
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
-        if(!empty($this->rooms[$room]))
+        if(empty($this->rooms[$room]))
         {
             unset($this->rooms[$room]);
         }
@@ -35,20 +35,10 @@ public function __destruct()
 
     public function delAll($id)
     {
-        $rooms = isset($this->sids[$id]) ? $this->sids[$id] : array();
-        if($rooms) 
+        $rooms = array_keys(isset($this->sids[$id]) ? $this->sids[$id] : []);
+        foreach($rooms as $room)
         {
-            foreach($rooms as $room)
-            {
-                if(isset($this->rooms[$room][$id]))
-                {
-                    unset($this->rooms[$room][$id]);
-                }
-            }
-        }
-        if(empty($this->rooms[$room]))
-        {
-            unset($this->rooms[$room]);
+            $this->del($id, $room);
         }
         unset($this->sids[$id]);
     }
