@@ -18,9 +18,9 @@ class WebSocket extends Transport
         Debug::debug('WebSocket __construct');
     }
     public function __destruct()
-{
-    Debug::debug('WebSocket __destruct');
-}
+    {
+        Debug::debug('WebSocket __destruct');
+    }
     public function onData2($connection, $data) 
     {
         call_user_func(array($this, 'parent::onData'), $data);
@@ -43,11 +43,14 @@ class WebSocket extends Transport
     
     public function doClose($fn = null) 
     {
-        $this->socket->close();
-        $this->socket = null;
-        if(!empty($fn))
+        if($this->socket)
         {
-            call_user_func($fn);
+            $this->socket->close();
+            $this->socket = null;
+            if(!empty($fn))
+            {
+                call_user_func($fn);
+            }
         }
     }
 }
