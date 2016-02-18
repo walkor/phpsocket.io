@@ -35,7 +35,7 @@ public function __destruct()
 
     public function delAll($id)
     {
-        $rooms = array_keys(isset($this->sids[$id]) ? $this->sids[$id] : []);
+        $rooms = array_keys(isset($this->sids[$id]) ? $this->sids[$id] : array());
         foreach($rooms as $room)
         {
             $this->del($id, $room);

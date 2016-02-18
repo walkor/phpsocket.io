@@ -79,14 +79,14 @@ public function __destruct()
         }
 
         // look up namespace (if any)
-        if('/' == $str[$i + 1])
+        if(isset($str[$i + 1]) && '/' === $str[$i + 1])
         {
             $p['nsp'] = '';
             while (++$i)
             {
-                if ($i == strlen($str)) break;
+                if ($i === strlen($str)) break;
                 $c = $str[$i];
-                if (',' == $c) break;
+                if (',' === $c) break;
                 $p['nsp'] .= $c;
             }
         } else {

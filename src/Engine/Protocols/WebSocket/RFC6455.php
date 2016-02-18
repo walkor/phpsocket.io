@@ -303,15 +303,6 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             return 0;
         }
         
-        $sec_websocket_accept = base64_encode(sha1($sec_websocket_key.'258EAFA5-E914-47DA-95CA-C5AB0DC85B11',true));
-        $headers['Content-Length'] = 0;
-        $headers['Upgrade'] = 'websocket';
-        $headers['Sec-WebSocket-Version'] = 13;
-        $headers['Connection'] = 'Upgrade';
-        $headers['Sec-WebSocket-Accept'] = $sec_websocket_accept;
-        $res->writeHead(101, '', $headers);
-        $res->end();
-        
         // 标记已经握手
         $connection->websocketHandshake = true;
         // 缓冲fin为0的包，直到fin为1
@@ -320,6 +311,17 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
         $connection->websocketCurrentFrameLength = 0;
         // 当前帧的数据缓冲
         $connection->websocketCurrentFrameBuffer = '';
+        // blob or arraybuffer
+        $connection->websocketType = self::BINARY_TYPE_BLOB;
+        
+        $sec_websocket_accept = base64_encode(sha1($sec_websocket_key.'258EAFA5-E914-47DA-95CA-C5AB0DC85B11',true));
+        $headers['Content-Length'] = 0;
+        $headers['Upgrade'] = 'websocket';
+        $headers['Sec-WebSocket-Version'] = 13;
+        $headers['Connection'] = 'Upgrade';
+        $headers['Sec-WebSocket-Accept'] = $sec_websocket_accept;
+        $res->writeHead(101, '', $headers);
+        $res->end();
             
         // 握手后有数据要发送
         if(!empty($connection->websocketTmpData))
@@ -327,9 +329,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             $connection->send($connection->websocketTmpData, true);
             $connection->websocketTmpData = '';
         }
-        // blob or arraybuffer
-        $connection->websocketType = self::BINARY_TYPE_BLOB; 
-        // 如果有设置onWebSocketConnect回调，尝试执行
+        
         return 0;
     }
 }
