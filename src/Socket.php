@@ -222,7 +222,7 @@ public function __destruct()
     {
         $this->adapter->del($this->id, $room);
         unset($this->rooms[$room]);
-        return this;
+        return $this;
     }
     
     /**
