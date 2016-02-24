@@ -93,7 +93,7 @@ public function __destruct()
  * @api public
  */
 
-    public function emit($ev)
+    public function emit($ev = null)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev]))
