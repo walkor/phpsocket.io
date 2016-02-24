@@ -80,7 +80,7 @@ public function __destruct()
 
     public function emit($event_name)
     {
-        if(empty($this->_eventListenerMap[$event_name]))
+        if(empty($event_name) || empty($this->_eventListenerMap[$event_name]))
         {
             return false;
         }
