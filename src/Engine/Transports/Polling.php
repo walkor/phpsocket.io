@@ -179,7 +179,10 @@ class Polling extends Transport
     public function write($data) 
     {
         $this->doWrite($data);
-        call_user_func($this->req->cleanup);
+        if(!empty($this->req->cleanup))
+        {
+            call_user_func($this->req->cleanup);
+        }
     }
 
     public function doClose($fn) 
