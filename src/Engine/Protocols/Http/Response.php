@@ -146,7 +146,7 @@ class Response
     
     public function destroy()
     {
-        if($this->_connection->httpRequest)
+        if(!empty($this->_connection->httpRequest))
         {
             $this->_connection->httpRequest->destroy();
         }
