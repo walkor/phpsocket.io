@@ -54,20 +54,20 @@ public function __destruct()
     public function buildHandshake()
     {
         //todo check this->request->_query
-        $info = parse_url($this->request->url);
+        $info = !empty($this->request->url) ?  parse_url($this->request->url) : array();
         $query = array();
         if(isset($info['query']))
         {
             parse_str($info['query'], $query);
         }
         return array(
-            'headers' => $this->request->headers,
+            'headers' => isset($this->request->headers) ? $this->request->headers : array(),
             'time'=> date('D M d Y H:i:s') . ' GMT',
             'address'=> $this->conn->remoteAddress,
             'xdomain'=> isset($this->request->headers['origin']),
             'secure' => !empty($this->request->connection->encrypted),
             'issued' => time(),
-            'url' => $this->request->url,
+            'url' => isset($this->request->url) ? $this->request->url : '',
             'query' => $query,
        );
     }
