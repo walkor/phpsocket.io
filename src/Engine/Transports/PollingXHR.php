@@ -9,9 +9,9 @@ class PollingXHR extends Polling
     }
 
     public function __destruct()
-{
-    Debug::debug('PollingXHR __destruct');
-}
+    {
+        Debug::debug('PollingXHR __destruct');
+    }
 
     public function onRequest($req)
     {
@@ -35,7 +35,7 @@ class PollingXHR extends Polling
         //$content_type = $isString
         //    ? 'text/plain; charset=UTF-8'
         //    : 'application/octet-stream';
-        $content_type = 'application/octet-stream';
+        $content_type = preg_match('/\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';
         $content_length = strlen($data);
         $headers = array( 
             'Content-Type'=> $content_type,
