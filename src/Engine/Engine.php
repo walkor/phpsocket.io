@@ -14,6 +14,7 @@ class Engine extends Emitter
     public $allowUpgrades = array();
     public $allowRequest = array();
     public $clients = array();
+    public $origins = '*:*';
     public static $allowTransports = array(
        'polling' => 'polling',
        'websocket' => 'websocket'
@@ -66,7 +67,7 @@ public function __destruct()
         $this->verify($req, $res, false, array($this, 'dealRequest'));
     }
 
-    public function dealRequest($err, $success, $req, $res)
+    public function dealRequest($err, $success, $req)
     {
         if (!$success)
         {
@@ -125,12 +126,48 @@ public function __destruct()
         }
         else
         {
-           if('GET' !== $req->method)
-           {
-              return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req, $res);
-           }
+            if('GET' !== $req->method)
+            {
+               return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req, $res);
+            }
+            return $this->checkRequest($req, $fn);
         }
         call_user_func($fn, null, true, $req, $res);
+    }
+
+    public function checkRequest($req, $fn)
+    {
+        if ($this->origins === "*:*" || empty($this->origins))
+        {
+            return call_user_func($fn, null, true, $req);
+        }
+        $origin = null;
+        if (isset($req->headers['origin']))
+        {
+            $origin = $req->headers['origin'];
+        }
+        else if(isset($req->headers['referer']))
+        {
+            $origin = $req->headers['referer'];
+        }
+
+        // file:// URLs produce a null Origin which can't be authorized via echo-back
+        if ('null' === $origin || null === $origin) {
+            return call_user_func($fn, null, true, $req);
+        }
+
+        if ($origin)
+        {
+            $parts = parse_url($origin);
+            $defaultPort = 'https:' === $parts['scheme'] ? 443 : 80;
+            $parts['port'] = isset($parts['port']) ? $parts['port'] : $defaultPort;
+            $ok =
+                $this->origins === $parts['host'] . ':' . $parts['port'] ||
+                $this->origins === $parts['host'] . ':*' ||
+                $this->origins === '*:' + $parts['port'];
+            return call_user_func($fn, null, $ok, $req);
+        }
+        call_user_func($fn, null, false, $req);
     }
 
     protected function prepare($req)

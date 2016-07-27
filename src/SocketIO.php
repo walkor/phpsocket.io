@@ -8,15 +8,18 @@ class SocketIO
     protected $_adapter = null;
     public $eio = null;
     public $engine = null;
-    protected $_origins = array();
+    protected $_origins = '*:*';
     protected $_path = null;
     
     public function __construct($port = null, $opts = array())
     {
         $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
         $this->adapter($adapter);
-        $origins = isset($opts['origins']) ? $opts['origins'] : '*:*';
-        $this->origins($origins);
+        if(isset($opts['origins']))
+        {
+            $this->origins($opts['origins']);
+        }
+
         $this->sockets = $this->of('/');
         
         if(!class_exists('Protocols\SocketIO'))
@@ -46,6 +49,9 @@ class SocketIO
     {
         if ($v === null) return $this->_origins;
         $this->_origins = $v;
+        if(isset($this->engine)) {
+            $this->engine->origins = $this->_origins;
+        }
         return $this;
     }
 
@@ -67,6 +73,7 @@ class SocketIO
     {
         $this->engine = $engine;
         $this->engine->on('connection', array($this, 'onConnection'));
+        $this->engine->origins = $this->_origins;
         return $this;
     }
  
