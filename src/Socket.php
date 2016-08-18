@@ -100,13 +100,13 @@ public function __destruct()
             // access last argument to see if it's an ACK callback
             if (is_callable(end($args))) 
             {
-                if ($this->_rooms || $flags['broadcast']) 
+                if ($this->_rooms || isset($flags['broadcast']))
                 {
                     throw new Exception('Callbacks are not supported when broadcasting');
                 }
                 echo('emitting packet with ack id ' . $this->nsp->ids);
                 $this->acks[$this->nsp->ids] = array_pop($args);
-                $packet->id = $this->nsp->ids++;
+                $packet['id'] = $this->nsp->ids++;
             }
     
             if ($this->_rooms || !empty($flags['broadcast'])) 
