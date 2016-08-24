@@ -7,6 +7,7 @@ composer require workerman/phpsocket.io
 # Examples
 ## Simple chat
 ```php
+use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
 // listen port 2021 for socket.io client
@@ -16,12 +17,15 @@ $io->on('connection', function($socket)use($io){
     $io->emit('chat message', $msg);
   });
 });
+
+Worker::runAll();
 ```
 
 ## Another chat demo
 
 https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
 ```php
+use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
 // listen port 2020 for socket.io client
@@ -81,6 +85,8 @@ $io->on('connection', function($socket){
         }
    });
 });
+
+Worker::runAll();
 ```
 
 # 手册
