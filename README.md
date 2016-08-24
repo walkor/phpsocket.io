@@ -1,5 +1,6 @@
 # phpsocket.io
 A server side alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).
+Only support socket.io v1.3.0 or greater.
 
 # Install
 composer require workerman/phpsocket.io
