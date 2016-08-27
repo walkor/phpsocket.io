@@ -1,7 +1,7 @@
 <?php
 namespace PHPSocketIO;
 
-class debug 
+class Debug 
 {
     public static function debug($var)
     {
