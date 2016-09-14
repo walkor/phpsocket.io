@@ -162,8 +162,9 @@ public function __destruct()
             $defaultPort = 'https:' === $parts['scheme'] ? 443 : 80;
             $parts['port'] = isset($parts['port']) ? $parts['port'] : $defaultPort;
             $ok =
-                $this->origins === $parts['host'] . ':' . $parts['port'] ||
-                $this->origins === $parts['host'] . ':*' ||
+                $this->origins === $parts['scheme'] . '://' . $parts['host'] . ':' . $parts['port'] ||
+                $this->origins === $parts['scheme'] . '://' . $parts['host'] ||
+                $this->origins === $parts['scheme'] . '://' . $parts['host'] . ':*' ||
                 $this->origins === '*:' . $parts['port'];
             return call_user_func($fn, null, $ok, $req);
         }
