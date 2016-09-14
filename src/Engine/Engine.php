@@ -164,7 +164,7 @@ public function __destruct()
             $ok =
                 $this->origins === $parts['host'] . ':' . $parts['port'] ||
                 $this->origins === $parts['host'] . ':*' ||
-                $this->origins === '*:' + $parts['port'];
+                $this->origins === '*:' . $parts['port'];
             return call_user_func($fn, null, $ok, $req);
         }
         call_user_func($fn, null, false, $req);
