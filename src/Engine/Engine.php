@@ -188,7 +188,7 @@ public function __destruct()
 
     public function handshake($transport, $req)
     {
-        $id = microtime(true) . rand(1, 100000000);
+        $id = microtime(true) . (function_exists('random_int') ? random_int(1, 100000000): rand(1, 100000000));
         if (isset($req->_query['j'])) 
         {
             $transport = '\\PHPSocketIO\\Engine\\Transports\\PollingJsonp';
