@@ -428,7 +428,7 @@ public function __destruct()
      * @api public
      */
     
-    public function disconnect($close)
+    public function disconnect( $close = false )
     {
         if (!$this->connected) return $this;
         if ($close) 
