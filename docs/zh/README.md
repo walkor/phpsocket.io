@@ -96,7 +96,7 @@ $io->emit('event name', $data);
 ```
 3、向所有客户端发送事件，但不包括当前连接。
 ```php
-$connection->sockets->emit('event name', $data);
+$connection->broadcast->emit('event name', $data);
 ```
 4、向某个分组的所有客户端发送事件
 ```php
