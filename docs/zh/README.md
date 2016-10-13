@@ -67,7 +67,7 @@ socket.on('chat message from server', function(msg){
 </script>
 ```
 
-### 分组
+## 分组
 socket.io提供分组功能，允许向某个分组发送事件，例如向某个房间广播数据。
 
 1、加入分组（一个连接可以加入多个分组）
@@ -102,3 +102,12 @@ $connection->broadcast->emit('event name', $data);
 ```php
 $io->to('group name')->emit('event name', $data);
 ```
+
+## 获取客户端ip
+```php
+$io->on('connection', function($socket)use($io){
+        var_dump($socket->conn->remoteAddress);
+});
+```
+
+
