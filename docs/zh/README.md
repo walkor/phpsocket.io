@@ -12,7 +12,7 @@ require_once '/你的vendor路径/autoload.php';
 ```php
 use PHPSocketIO\SocketIO;
 // 创建socket.io服务端，监听2021端口
-$io = new SocketIO(2021);
+$io = new SocketIO(3120);
 // 当有客户端连接时打印一行文字
 $io->on('connection', function($connection)use($io){
   echo "new connection coming\n";
@@ -41,7 +41,7 @@ socket.io主要是通过事件来进行通讯交互的。
 例如下面的代码在服务端定义了一个```chat message```事件，事件参数为```$msg```。
 ```php
 use PHPSocketIO\SocketIO;
-$io = new SocketIO(2021);
+$io = new SocketIO(3120);
 // 当有客户端连接时
 $io->on('connection', function($connection)use($io){
   // 定义chat message事件回调函数
