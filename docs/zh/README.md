@@ -5,7 +5,6 @@
 ```php
 require_once '/你的vendor路径/autoload.php';
 ```
-下面服务端的代码略去了这段代码。
 
 ### 服务端和客户端连接
 创建一个SocketIO服务端
