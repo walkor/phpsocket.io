@@ -10,13 +10,19 @@ require_once '/你的vendor路径/autoload.php';
 ### 服务端和客户端连接
 创建一个SocketIO服务端
 ```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use Workerman\Worker;
 use PHPSocketIO\SocketIO;
+
 // 创建socket.io服务端，监听2021端口
 $io = new SocketIO(3120);
 // 当有客户端连接时打印一行文字
 $io->on('connection', function($connection)use($io){
   echo "new connection coming\n";
 });
+
+Worker::runAll();
 ```
 客户端
 ```javascript
@@ -40,7 +46,11 @@ socket.io主要是通过事件来进行通讯交互的。
 
 例如下面的代码在服务端定义了一个```chat message```事件，事件参数为```$msg```。
 ```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use Workerman\Worker;
 use PHPSocketIO\SocketIO;
+
 $io = new SocketIO(3120);
 // 当有客户端连接时
 $io->on('connection', function($connection)use($io){
