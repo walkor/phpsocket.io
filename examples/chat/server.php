@@ -5,8 +5,7 @@ use Workerman\Autoloader;
 use PHPSocketIO\SocketIO;
 
 // composer autoload
-include __DIR__ . '/../../vendor/autoload.php';
-include __DIR__ . '/../../src/autoload.php';
+include __DIR__ . '/../../../../../vendor/autoload.php';
 
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
