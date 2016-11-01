@@ -1,6 +1,6 @@
 {
     "name"  : "workerman/phpsocket.io",
-    "type"  : "project",
+    "type"  : "library",
     "keywords": ["socket.io"],
     "homepage": "http://www.workerman.net",
     "license" : "MIT",
