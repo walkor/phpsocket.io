@@ -71,6 +71,6 @@ $io->on('connection', function($socket){
    
 });
 
-if (!defined(GLOBAL_START)) {
+if (!defined('GLOBAL_START')) {
     Worker::runAll();
 }
