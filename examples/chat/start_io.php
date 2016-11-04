@@ -5,7 +5,7 @@ use Workerman\Autoloader;
 use PHPSocketIO\SocketIO;
 
 // composer autoload
-include __DIR__ . '/../../../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../../../vendor/autoload.php';
 
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
@@ -71,7 +71,6 @@ $io->on('connection', function($socket){
    
 });
 
-$web = new WebServer('http://0.0.0.0:2022');
-$web->addRoot('localhost', __DIR__ . '/public');
-
-Worker::runAll();
+if (!defined(GLOBAL_START)) {
+    Worker::runAll();
+}
