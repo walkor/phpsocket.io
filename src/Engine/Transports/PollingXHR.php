@@ -35,7 +35,7 @@ class PollingXHR extends Polling
         //$content_type = $isString
         //    ? 'text/plain; charset=UTF-8'
         //    : 'application/octet-stream';
-        $content_type = preg_match('/\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';
+        $content_type = preg_match('/^\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';
         $content_length = strlen($data);
         $headers = array( 
             'Content-Type'=> $content_type,
