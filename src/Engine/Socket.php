@@ -59,7 +59,9 @@ public function __destruct()
         {
             $this->upgradeTransport->send(array(array('type'=> 'pong', 'data'=> 'probe')));
             //$this->transport->shouldClose = function(){};
-            Timer::del($this->checkIntervalTimer);
+            if ($this->checkIntervalTimer) {
+		        Timer::del($this->checkIntervalTimer);
+	        }
             $this->checkIntervalTimer = Timer::add(0.5, array($this, 'check'));
         }
         else if('upgrade' === $packet['type'] && $this->readyState !== 'closed')
