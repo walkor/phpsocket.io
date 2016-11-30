@@ -206,7 +206,9 @@ public function __destruct()
     
     public function setPingTimeout()
     {
-        Timer::del($this->pingTimeoutTimer);
+        if ($this->pingTimeoutTimer) {
+            Timer::del($this->pingTimeoutTimer);
+        }
         $this->pingTimeoutTimer = Timer::add(
            $this->server->pingInterval + $this->server->pingTimeout ,
            array($this, 'pingTimeoutCallback'), null, false);
