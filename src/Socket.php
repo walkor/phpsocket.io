@@ -186,6 +186,7 @@ public function __destruct()
     
     public function packet($packet, $preEncoded = false)
     {
+        if (!$this->nsp || !$this->client) return;
         $packet['nsp'] = $this->nsp->name;
         //$volatile = !empty(self::$flagsMap['volatile']);
         $volatile = false;
