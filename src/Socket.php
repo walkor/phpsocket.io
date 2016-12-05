@@ -318,7 +318,7 @@ public function __destruct()
     {
         $self = $this;
         $sent = false;
-        return function()use(&$sent){
+        return function()use(&$sent, $id, $self){
             // prevent double callbacks
             if ($sent) return;
             $args = func_get_args();
@@ -390,13 +390,13 @@ public function __destruct()
      public function onclose($reason)
      {
         if (!$this->connected) return $this;
+        $this->emit('disconnect', $reason);
         $this->leaveAll();
         $this->nsp->remove($this);
         $this->client->remove($this);
         $this->connected = false;
         $this->disconnected = true;
         unset($this->nsp->connected[$this->id]);
-        $this->emit('disconnect', $reason);
         // ....
         $this->nsp = null;
         $this->server = null;
