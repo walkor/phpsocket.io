@@ -122,9 +122,10 @@ public function __destruct()
 
     public function close()
     {
+        if (empty($this->conn)) return;
         if('open' === $this->conn->readyState) 
         {
-             echo('forcing transport close');
+             //echo('forcing transport close');
              $this->conn->close();
              $this->onclose('forced server close');
         }
@@ -200,7 +201,7 @@ public function __destruct()
             {
                  $this->nsps[$packet['nsp']]->onpacket($packet);
             } else {
-                echo('no socket for namespace ' . $packet['nsp']);
+                //echo('no socket for namespace ' . $packet['nsp']);
             }
         }
     }
@@ -230,6 +231,7 @@ public function __destruct()
 
     public function onclose($reason)
     {
+        if (empty($this->conn)) return;
         // ignore a potential subsequent `close` event
         $this->destroy();
 
@@ -249,9 +251,10 @@ public function __destruct()
 
     public function destroy()
     {
-         $this->conn->removeAllListeners();
-         $this->decoder->removeAllListeners();
-         $this->encoder->removeAllListeners();
-         $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
+        if (!$this->conn) return;
+        $this->conn->removeAllListeners();
+        $this->decoder->removeAllListeners();
+        $this->encoder->removeAllListeners();
+        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
     }
 }
