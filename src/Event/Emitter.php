@@ -78,7 +78,7 @@ public function __destruct()
         return $listeners;
     }
 
-    public function emit($event_name)
+    public function emit($event_name = null)
     {
         if(empty($event_name) || empty($this->_eventListenerMap[$event_name]))
         {
