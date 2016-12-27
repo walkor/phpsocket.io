@@ -55,10 +55,10 @@ class Engine extends Emitter
         Debug::debug('Engine __construct');
     }
 
-public function __destruct()
-{
-    Debug::debug('Engine __destruct');
-}
+    public function __destruct()
+    {
+        Debug::debug('Engine __destruct');
+    }
 
     public function handleRequest($req, $res)
     {

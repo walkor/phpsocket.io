@@ -5,15 +5,15 @@ use \PHPSocketIO\Event\Emitter;
 use \PHPSocketIO\Debug;
 class Encoder extends Emitter 
 {
-public function __construct()
-{
-    Debug::debug('Encoder __construct');
-}
+    public function __construct()
+    {
+        Debug::debug('Encoder __construct');
+    }
 
-public function __destruct()
-{
-    Debug::debug('Encoder __destruct');
-}
+    public function __destruct()
+    {
+        Debug::debug('Encoder __destruct');
+    }
 
 
     public function encode($obj)

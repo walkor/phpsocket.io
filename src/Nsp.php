@@ -29,10 +29,10 @@ class Nsp extends Emitter
          Debug::debug('Nsp __construct');
     }
 
-public function __destruct()
-{
-    Debug::debug('Nsp __destruct');
-}
+    public function __destruct()
+    {
+        Debug::debug('Nsp __destruct');
+    }
 
     public function initAdapter()
     {
@@ -74,10 +74,10 @@ public function __destruct()
 
     
     /**
- * Removes a client. Called by each `Socket`.
- *
- * @api private
- */
+     * Removes a client. Called by each `Socket`.
+     *
+     * @api private
+     */
 
     public function remove($socket)
     {
@@ -86,12 +86,12 @@ public function __destruct()
     }
 
 
-/**
- * Emits to all clients.
- *
- * @return {Namespace} self
- * @api public
- */
+    /**
+     * Emits to all clients.
+     *
+     * @return {Namespace} self
+     * @api public
+     */
 
     public function emit($ev = null)
     {

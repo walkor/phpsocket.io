@@ -46,10 +46,10 @@ class Socket extends Emitter
         Debug::debug('IO Socket __construct');
     }
 
-public function __destruct()
-{
-    Debug::debug('IO Socket __destruct');
-}
+    public function __destruct()
+    {
+        Debug::debug('IO Socket __destruct');
+    }
     
     public function buildHandshake()
     {
@@ -82,7 +82,7 @@ public function __destruct()
         return null;
     }
  
-    public function emit($ev)
+    public function emit($ev = null)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev]))

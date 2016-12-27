@@ -29,10 +29,12 @@ class Socket extends Emitter
         $this->onOpen();
         Debug::debug('Engine/Socket __construct');
     }
-public function __destruct()
-{
-    Debug::debug('Engine/Socket __destruct');
-}
+
+    public function __destruct()
+    {
+        Debug::debug('Engine/Socket __destruct');
+    }
+
     public function maybeUpgrade($transport)
     {
         $this->upgrading = true;

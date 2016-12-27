@@ -9,14 +9,14 @@ class Transport extends Emitter
     public $res = null;
     
     public function __construct()
-{
-    Debug::debug('Transport __construct no access !!!!');
-}
+    {
+        Debug::debug('Transport __construct no access !!!!');
+    }
 
-public function __destruct()
-{
-    Debug::debug('Transport __destruct');
-}
+    public function __destruct()
+    {
+        Debug::debug('Transport __destruct');
+    }
 
     public function noop()
     {
