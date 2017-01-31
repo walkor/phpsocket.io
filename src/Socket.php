@@ -98,8 +98,8 @@ class Socket extends Emitter
             $packet['data'] = $args;
             $flags = $this->flags;
             // access last argument to see if it's an ACK callback
-            if (is_callable(end($args))) 
-            {
+            //if (is_callable(end($args))) 
+            //{
                 if ($this->_rooms || isset($flags['broadcast']))
                 {
                     throw new Exception('Callbacks are not supported when broadcasting');
@@ -107,7 +107,7 @@ class Socket extends Emitter
                 echo('emitting packet with ack id ' . $this->nsp->ids);
                 $this->acks[$this->nsp->ids] = array_pop($args);
                 $packet['id'] = $this->nsp->ids++;
-            }
+            //}
     
             if ($this->_rooms || !empty($flags['broadcast'])) 
             {
@@ -300,7 +300,7 @@ class Socket extends Emitter
     public function onevent($packet)
     {
         $args = isset($packet['data']) ? $packet['data'] : array();
-        if (!empty($packet['id']))
+        if (!empty($packet['id']) || (isset($packet['id']) && $packet['id'] === 0))
         {
             $args[] = $this->ack($packet['id']);
         }
@@ -322,7 +322,7 @@ class Socket extends Emitter
             // prevent double callbacks
             if ($sent) return;
             $args = func_get_args();
-            $type = hasBin($args) ? Parser::BINARY_ACK : Parser::ACK;
+            $type = $this->hasBin($args) ? Parser::BINARY_ACK : Parser::ACK;
             $self->packet(array(
                 'id' => $id,
                 'type' => $type,
@@ -456,5 +456,17 @@ class Socket extends Emitter
     {
         $this->flags['compress'] = $compress;
         return $this;
+    }
+
+    protected function hasBin($args) {
+        $hasBin = false;
+
+        array_walk_recursive($args, function($item, $key) use ($hasBin) {
+            if (!ctype_print($item)) {
+                $hasBin = true;
+            }
+        });
+
+        return $hasBin;
     }
 }
