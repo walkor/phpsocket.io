@@ -181,13 +181,13 @@ class Parser
                     return self::$err;
                 }
     
-                $msg = substr($data, $i + 1, $n);
+                $msg = substr($data, $i + 1/*, $n*/);
     
-                if ($length != strlen($msg)) 
+                /*if ($length != strlen($msg)) 
                 {
                     // parser error - ignoring payload
                     return self::$err;
-                }
+                }*/
     
                 if (isset($msg[0])) 
                 {
