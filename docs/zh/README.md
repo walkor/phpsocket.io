@@ -188,5 +188,8 @@ Worker::runAll();
 ```
 注意：证书是要验证域名的，所以客户端链接时要指定域名才能顺利的建立链接。链接是要指定https类似下面这样。
 ```javascript
+<script>
 var socket = io('https://yoursite.com:3120');
+//.....
+</script>
 ```
