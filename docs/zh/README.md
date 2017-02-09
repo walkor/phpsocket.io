@@ -59,6 +59,7 @@ $io->on('connection', function($connection)use($io){
     $io->emit('chat message from server', $msg);
   });
 });
+Worker::runAll();
 ```
 
 客户端通过下面的方法触发服务端的chat message事件。
@@ -84,17 +85,21 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
-$io = new SocketIO(3120);
-$io->on('workerStart', function()use($io){
-    // 监听一个http端口
-    $inner_http_worker = new Worker('http://0.0.0.0:2121');
-    $inner_http_worker->onMessage = function($http_connection, $data)use($io) {
+$io = new SocketIO(9120);
+
+// 监听一个http端口，通过http协议访问这个端口可以向所有客户端推送数据(url类似http://ip:9191?msg=xxxx)
+$io->on('workerStart', function()use($io) {
+    $inner_http_worker = new Worker('http://0.0.0.0:9191');
+    $inner_http_worker->onMessage = function($http_connection, $data)use($io){
+        if(!isset($_GET['msg'])) {
+            return $http_connection->send('fail, $_GET["msg"] not found');
+        }
+        $io->emit('chat message', $_GET['msg']);
         $http_connection->send('ok');
-        $io->emit('chat message','admin broadcast test');
     };
     $inner_http_worker->listen();
 });
-    
+
 // 当有客户端连接时
 $io->on('connection', function($connection)use($io){
   // 定义chat message事件回调函数
@@ -103,6 +108,8 @@ $io->on('connection', function($connection)use($io){
     $io->emit('chat message from server', $msg);
   });
 });
+
+Worker::runAll();
 ```
 phpsocket.io启动后开内部http端口通过phpsocket.io向客户端推送数据参考 [web-msg-sender](http://www.workerman.net/web-sender)。
 
