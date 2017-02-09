@@ -163,6 +163,8 @@ $connection->disconnect();
 ```
 
 ## 支持SSL(https wss)
+SSL 要求workerman>=3.3.7 phpsocket.io>=1.1.1
+
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
