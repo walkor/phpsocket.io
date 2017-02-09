@@ -6,8 +6,8 @@
 require_once '/你的vendor路径/autoload.php';
 ```
 
-### 服务端和客户端连接
-创建一个SocketIO服务端
+## 服务端和客户端连接
+**创建一个SocketIO服务端**
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
@@ -23,7 +23,7 @@ $io->on('connection', function($connection)use($io){
 
 Worker::runAll();
 ```
-客户端
+**客户端**
 ```javascript
 <script src='//cdn.bootcss.com/socket.io/1.3.7/socket.io.js'></script>
 <script>
@@ -36,10 +36,10 @@ socket.on('connect', function(){
 </script>
 ```
 
-### 自定义事件
+## 自定义事件
 socket.io主要是通过事件来进行通讯交互的。
 
-除了自带的connect，message，disconnect三个事件以外，在服务端和客户端用户可以自定义事件。
+除了自带的connect，message，disconnect三个事件以外，在服务端和客户端开发者可以自定义其它事件。
 
 服务端和客户端都通过emit方法触发对端的事件。
 
@@ -76,6 +76,36 @@ socket.on('chat message from server', function(msg){
 </script>
 ```
 
+## workerStart事件
+phpsocket.io提供了workerStart事件回调，也就是当进程启动后准备好接受客户端链接时触发的回调。
+一个进程生命周期只会触发一次。可以在这里设置一些全局的事情，比如开一个新的Worker端口等等。
+```php
+require_once __DIR__ . '/vendor/autoload.php';
+use Workerman\Worker;
+use PHPSocketIO\SocketIO;
+
+$io = new SocketIO(3120);
+$io->on('workerStart', function()use($io){
+    // 监听一个http端口
+    $inner_http_worker = new Worker('http://0.0.0.0:2121');
+    $inner_http_worker->onMessage = function($http_connection, $data)use($io) {
+        $http_connection->send('ok');
+        $io->emit('chat message','admin broadcast test');
+    };
+    $inner_http_worker->listen();
+});
+    
+// 当有客户端连接时
+$io->on('connection', function($connection)use($io){
+  // 定义chat message事件回调函数
+  $connection->on('chat message', function($msg)use($io){
+    // 触发所有客户端定义的chat message from server事件
+    $io->emit('chat message from server', $msg);
+  });
+});
+```
+phpsocket.io启动后开内部http端口通过phpsocket.io向客户端推送数据参考 [web-msg-sender](http://www.workerman.net/web-sender)。
+
 ## 分组
 socket.io提供分组功能，允许向某个分组发送事件，例如向某个房间广播数据。
 
@@ -107,6 +137,7 @@ $io->emit('event name', $data);
 ```php
 $connection->broadcast->emit('event name', $data);
 ```
+
 4、向某个分组的所有客户端发送事件
 ```php
 $io->to('group name')->emit('event name', $data);
@@ -119,4 +150,34 @@ $io->on('connection', function($socket)use($io){
 });
 ```
 
+## 关闭链接
+```php
+$connection->disconnect();
+```
 
+## 支持SSL(https wss)
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use Workerman\Worker;
+use PHPSocketIO\SocketIO;
+
+// 传入ssl选项，包含证书的路径
+$context = array(
+    'ssl' => array(
+        'local_cert' => '/your/path/of/server.pem',
+        'local_pk'   => '/your/path/of/server.key',
+    )
+);
+$io = new SocketIO(2021, $context);
+
+$io->on('connection', function($connection)use($io){
+  echo "new connection coming\n";
+});
+
+Worker::runAll();
+```
+注意：证书是要验证域名的，所以客户端链接时要指定域名才能顺利的建立链接。链接是要指定https类似下面这样。
+```javascript
+var socket = io('https://yoursite.com:3120');
+```
