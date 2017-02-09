@@ -95,6 +95,30 @@ $io->on('connection', function($socket){
 Worker::runAll();
 ```
 
+## Enable SSL for https 
+**```(phpsocket.io>=1.1.1 && workerman>=3.3.7 required)```**
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use Workerman\Worker;
+use PHPSocketIO\SocketIO;
+
+// ssl context
+$context = array(
+    'ssl' => array(
+        'local_cert' => '/your/path/of/server.pem',
+        'local_pk'   => '/your/path/of/server.key',
+    )
+);
+$io = new SocketIO(2021, $context);
+
+$io->on('connection', function($connection)use($io){
+  echo "new connection coming\n";
+});
+
+Worker::runAll();
+```
+
 # 手册
 [中文手册](https://github.com/walkor/phpsocket.io/tree/master/docs/zh)
 
