@@ -98,7 +98,7 @@ class Polling extends Transport
         $this->dataReq = $this->dataRes = null;
     }
 
-    public function dataRequestClose()
+    public function dataRequestOnClose()
     {
         $this->dataRequestCleanup();
         $this->onError('data request connection closed prematurely');
