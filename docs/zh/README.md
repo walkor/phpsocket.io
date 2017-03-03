@@ -174,8 +174,9 @@ use PHPSocketIO\SocketIO;
 // 传入ssl选项，包含证书的路径
 $context = array(
     'ssl' => array(
-        'local_cert' => '/your/path/of/server.pem',
-        'local_pk'   => '/your/path/of/server.key',
+        'local_cert'  => '/your/path/of/server.pem',
+        'local_pk'    => '/your/path/of/server.key',
+        'verify_peer' => false,
     )
 );
 $io = new SocketIO(2021, $context);
