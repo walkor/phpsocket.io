@@ -35,7 +35,7 @@ class ChannelAdapter extends DefaultAdapter
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
-        if(!empty($this->rooms[$room]))
+        if(empty($this->rooms[$room]))
         {
             unset($this->rooms[$room]);
             $channel = "socket.io#/#$room#";
