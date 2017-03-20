@@ -34,7 +34,7 @@ class Decoder extends Emitter
                $this->emit('decoded', $packet);
            }
        }
-       else if (isBuf(obj) || !empty($obj['base64']))
+       else if (isBuf($obj) || !empty($obj['base64']))
        { // raw binary data
             if (!$this->reconstructor) 
             {
