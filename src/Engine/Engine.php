@@ -130,16 +130,16 @@ class Engine extends Emitter
             {
                return call_user_func($fn, self::ERROR_BAD_HANDSHAKE_METHOD, false, $req, $res);
             }
-            return $this->checkRequest($req, $fn);
+            return $this->checkRequest($req, $res, $fn);
         }
         call_user_func($fn, null, true, $req, $res);
     }
 
-    public function checkRequest($req, $fn)
+    public function checkRequest($req, $res, $fn)
     {
         if ($this->origins === "*:*" || empty($this->origins))
         {
-            return call_user_func($fn, null, true, $req);
+            return call_user_func($fn, null, true, $req, $res);
         }
         $origin = null;
         if (isset($req->headers['origin']))
@@ -153,7 +153,7 @@ class Engine extends Emitter
 
         // file:// URLs produce a null Origin which can't be authorized via echo-back
         if ('null' === $origin || null === $origin) {
-            return call_user_func($fn, null, true, $req);
+            return call_user_func($fn, null, true, $req, $res);
         }
 
         if ($origin)
@@ -168,10 +168,10 @@ class Engine extends Emitter
                     $allow_origin === $parts['scheme'] . '://' . $parts['host'] ||
                     $allow_origin === $parts['scheme'] . '://' . $parts['host'] . ':*' ||
                     $allow_origin === '*:' . $parts['port'];
-                return call_user_func($fn, null, $ok, $req);
+                return call_user_func($fn, null, $ok, $req, $res);
             }
         }
-        call_user_func($fn, null, false, $req);
+        call_user_func($fn, null, false, $req, $res);
     }
 
     protected function prepare($req)
@@ -189,7 +189,10 @@ class Engine extends Emitter
     public function handshake($transport, $req)
     {
         $id = bin2hex(pack('d', microtime(true)).pack('N', function_exists('random_int') ? random_int(1, 100000000): rand(1, 100000000)));
-        if (isset($req->_query['j'])) 
+        if ($transport == 'websocket') {
+            $transport = '\\PHPSocketIO\\Engine\\Transports\\WebSocket';
+        }
+        elseif (isset($req->_query['j']))
         {
             $transport = '\\PHPSocketIO\\Engine\\Transports\\PollingJsonp';
         } 
