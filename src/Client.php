@@ -140,7 +140,7 @@ public function __destruct()
  */
     public function packet($packet, $preEncoded = false, $volatile = false)
     {
-        if('open' === $this->conn->readyState) 
+        if(!empty($this->conn) && 'open' === $this->conn->readyState) 
         {
             if (!$preEncoded) 
             {
