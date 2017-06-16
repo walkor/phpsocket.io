@@ -187,7 +187,7 @@ $io->on('connection', function($connection)use($io){
 
 Worker::runAll();
 ```
-注意：<br>
+**注意：**<br>
 1、证书是要验证域名的，所以客户端链接时要指定域名才能顺利的建立链接。<br>
 2、客户端连接时不能再用http方式，要改成https类似下面这样。
 ```javascript
