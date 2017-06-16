@@ -17,7 +17,7 @@ use PHPSocketIO\SocketIO;
 // 创建socket.io服务端，监听2021端口
 $io = new SocketIO(3120);
 // 当有客户端连接时打印一行文字
-$io->on('connection', function($connection)use($io){
+$io->on('connection', function($socket)use($io){
   echo "new connection coming\n";
 });
 
@@ -39,7 +39,7 @@ socket.on('connect', function(){
 ## 自定义事件
 socket.io主要是通过事件来进行通讯交互的。
 
-除了自带的connect，message，disconnect三个事件以外，在服务端和客户端开发者可以自定义其它事件。
+socket连接除了自带的connect，message，disconnect三个事件以外，在服务端和客户端开发者可以自定义其它事件。
 
 服务端和客户端都通过emit方法触发对端的事件。
 
@@ -52,9 +52,9 @@ use PHPSocketIO\SocketIO;
 
 $io = new SocketIO(3120);
 // 当有客户端连接时
-$io->on('connection', function($connection)use($io){
+$io->on('connection', function($socket)use($io){
   // 定义chat message事件回调函数
-  $connection->on('chat message', function($msg)use($io){
+  $socket->on('chat message', function($msg)use($io){
     // 触发所有客户端定义的chat message from server事件
     $io->emit('chat message from server', $msg);
   });
@@ -101,9 +101,9 @@ $io->on('workerStart', function()use($io) {
 });
 
 // 当有客户端连接时
-$io->on('connection', function($connection)use($io){
+$io->on('connection', function($socket)use($io){
   // 定义chat message事件回调函数
-  $connection->on('chat message', function($msg)use($io){
+  $socket->on('chat message', function($msg)use($io){
     // 触发所有客户端定义的chat message from server事件
     $io->emit('chat message from server', $msg);
   });
@@ -118,15 +118,15 @@ socket.io提供分组功能，允许向某个分组发送事件，例如向某�
 
 1、加入分组（一个连接可以加入多个分组）
 ```php
-$connection->join('group name');
+$socket->join('group name');
 ```
 2、离开分组（连接断开时会自动从分组中离开）
 ```php
-$connection->leave('group name');
+$socket->leave('group name');
 ```
 
 ## 向客户端发送事件的各种方法
-$io是SocketIO对象。$connection是客户端连接
+$io是SocketIO对象。$socket是客户端连接
 
 $data可以是数字和字符串，也可以是数组。当$data是数组时，客户端会自动转换为javascript对象。
 
@@ -134,7 +134,7 @@ $data可以是数字和字符串，也可以是数组。当$data是数组时，�
 
 1、向当前客户端发送事件
 ```php
-$connection->emit('event name', $data);
+$socket->emit('event name', $data);
 ```
 2、向所有客户端发送事件
 ```php
@@ -142,7 +142,7 @@ $io->emit('event name', $data);
 ```
 3、向所有客户端发送事件，但不包括当前连接。
 ```php
-$connection->broadcast->emit('event name', $data);
+$socket->broadcast->emit('event name', $data);
 ```
 
 4、向某个分组的所有客户端发送事件
@@ -159,7 +159,7 @@ $io->on('connection', function($socket)use($io){
 
 ## 关闭链接
 ```php
-$connection->disconnect();
+$socket->disconnect();
 ```
 
 ## 支持SSL(https wss)
@@ -181,7 +181,7 @@ $context = array(
 );
 $io = new SocketIO(2021, $context);
 
-$io->on('connection', function($connection)use($io){
+$io->on('connection', function($socket)use($io){
   echo "new connection coming\n";
 });
 
