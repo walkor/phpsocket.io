@@ -1,17 +1,20 @@
 # For chat demo
 ## start
-```php server.php start``` for debug mode
+```php start.php start``` for debug mode
 
-```php server.php start -d``` for daemon mode
+```php start.php start -d``` for daemon mode
 
 ## stop
-```php server.php stop```
+```php start.php stop```
 
 ## satus 
-```php server.php status```
+```php start.php status```
 
 ## restart
-``` php server.php restart```
+``` php start.php restart```
 
 ## reload
-``` php server.php reload```
+``` php start.php reload```
+
+## connections
+``` php start.php connections```
