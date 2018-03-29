@@ -18,7 +18,7 @@ class Socket extends Emitter
     public $acks = array();
     public $connected = true;
     public $disconnected = false;
-    
+
     public static $events = array(
         'error'=>'error',
         'connect' => 'connect',
@@ -26,19 +26,19 @@ class Socket extends Emitter
         'newListener' => 'newListener',
         'removeListener' => 'removeListener'
     );
-    
+
     public static $flagsMap = array(
         'json' => 'json',
         'volatile' => 'volatile',
         'broadcast' => 'broadcast'
     );
-    
+
     public function __construct($nsp, $client)
     {
         $this->nsp = $nsp;
         $this->server = $nsp->server;
         $this->adapter = $this->nsp->adapter;
-        $this->id = $client->id;
+        $this->id = ($nsp->name !== '/') ? $nsp->name .'#' .$client->id : $client->id;
         $this->request = $client->request;
         $this->client = $client;
         $this->conn = $client->conn;
@@ -50,7 +50,7 @@ class Socket extends Emitter
     {
         Debug::debug('IO Socket __destruct');
     }
-    
+
     public function buildHandshake()
     {
         //todo check this->request->_query
@@ -71,7 +71,7 @@ class Socket extends Emitter
             'query' => $query,
        );
     }
-   
+
     public function __get($name)
     {
         if($name === 'broadcast')
@@ -81,7 +81,7 @@ class Socket extends Emitter
         }
         return null;
     }
- 
+
     public function emit($ev = null)
     {
         $args = func_get_args();
@@ -98,7 +98,7 @@ class Socket extends Emitter
             $packet['data'] = $args;
             $flags = $this->flags;
             // access last argument to see if it's an ACK callback
-            if (is_callable(end($args))) 
+            if (is_callable(end($args)))
             {
                 if ($this->_rooms || isset($flags['broadcast']))
                 {
@@ -108,8 +108,8 @@ class Socket extends Emitter
                 $this->acks[$this->nsp->ids] = array_pop($args);
                 $packet['id'] = $this->nsp->ids++;
             }
-    
-            if ($this->_rooms || !empty($flags['broadcast'])) 
+
+            if ($this->_rooms || !empty($flags['broadcast']))
             {
                 $this->adapter->broadcast($packet, array(
                     'except' => array($this->id => $this->id),
@@ -122,15 +122,15 @@ class Socket extends Emitter
                 // dispatch packet
                 $this->packet($packet);
             }
-    
+
             // reset flags
             $this->_rooms = array();
             $this->flags = array();
         }
         return $this;
     }
-    
-    
+
+
     /**
      * Targets a room when broadcasting.
      *
@@ -138,7 +138,7 @@ class Socket extends Emitter
      * @return {Socket} self
      * @api public
      */
-    
+
     public function to($name)
     {
         if(!isset($this->_rooms[$name]))
@@ -147,19 +147,19 @@ class Socket extends Emitter
         }
         return $this;
     }
-    
+
     public function in($name)
     {
         return $this->to($name);
     }
-    
+
     /**
      * Sends a `message` event.
      *
      * @return {Socket} self
      * @api public
      */
-    
+
     public function send()
     {
         $args = func_get_args();
@@ -167,7 +167,7 @@ class Socket extends Emitter
         call_user_func_array(array($this, 'emit'), $args);
         return $this;
     }
-    
+
     public function write()
     {
         $args = func_get_args();
@@ -175,7 +175,7 @@ class Socket extends Emitter
         call_user_func_array(array($this, 'emit'), $args);
         return $this;
     }
-    
+
     /**
      * Writes a packet.
      *
@@ -183,7 +183,7 @@ class Socket extends Emitter
      * @param {Object} options
      * @api private
      */
-    
+
     public function packet($packet, $preEncoded = false)
     {
         if (!$this->nsp || !$this->client) return;
@@ -192,7 +192,7 @@ class Socket extends Emitter
         $volatile = false;
         $this->client->packet($packet, $preEncoded, $volatile);
     }
-    
+
     /**
      * Joins a room.
      *
@@ -201,7 +201,7 @@ class Socket extends Emitter
      * @return {Socket} self
      * @api private
      */
-    
+
      public function join($room)
      {
         if(isset($this->rooms[$room])) return $this;
@@ -209,7 +209,7 @@ class Socket extends Emitter
         $this->rooms[$room] = $room;
         return $this;
     }
-    
+
     /**
      * Leaves a room.
      *
@@ -218,33 +218,33 @@ class Socket extends Emitter
      * @return {Socket} self
      * @api private
      */
-    
+
     public function leave($room)
     {
         $this->adapter->del($this->id, $room);
         unset($this->rooms[$room]);
         return $this;
     }
-    
+
     /**
      * Leave all rooms.
      *
      * @api private
      */
-    
+
     public function leaveAll()
     {
         $this->adapter->delAll($this->id);
         $this->rooms = array();
     }
-    
+
     /**
      * Called by `Namespace` upon succesful
      * middleware execution (ie: authorization).
      *
      * @api private
      */
-    
+
     public function onconnect()
     {
         $this->nsp->connected[$this->id] = $this;
@@ -253,50 +253,50 @@ class Socket extends Emitter
             'type' => Parser::CONNECT)
          );
     }
-    
+
     /**
      * Called with each packet. Called by `Client`.
      *
      * @param {Object} packet
      * @api private
      */
-    
+
     public function onpacket($packet)
     {
-        switch ($packet['type']) 
+        switch ($packet['type'])
         {
             case Parser::EVENT:
                 $this->onevent($packet);
                 break;
-    
+
             case Parser::BINARY_EVENT:
                 $this->onevent($packet);
                 break;
-    
+
             case Parser::ACK:
                 $this->onack($packet);
                 break;
-    
+
             case Parser::BINARY_ACK:
                 $this->onack($packet);
                 break;
-    
+
             case Parser::DISCONNECT:
                 $this->ondisconnect();
                 break;
-    
+
             case Parser::ERROR:
                 $this->emit('error', $packet['data']);
         }
     }
-    
+
     /**
      * Called upon event packet.
      *
      * @param {Object} packet object
      * @api private
      */
-    
+
     public function onevent($packet)
     {
         $args = isset($packet['data']) ? $packet['data'] : array();
@@ -306,14 +306,14 @@ class Socket extends Emitter
         }
         call_user_func_array(array($this, 'parent::emit'), $args);
     }
-    
+
     /**
      * Produces an ack callback to emit with an event.
      *
      * @param {Number} packet id
      * @api private
      */
-    
+
     public function ack($id)
     {
         $self = $this;
@@ -330,17 +330,17 @@ class Socket extends Emitter
             ));
         };
     }
-    
+
     /**
      * Called upon ack packet.
      *
      * @api private
      */
-    
+
     public function onack($packet)
     {
         $ack = $this->acks[$packet['id']];
-        if (is_callable($ack)) 
+        if (is_callable($ack))
         {
             call_user_func($ack, $packet['data']);
             unset($this->acks[$packet['id']]);
@@ -348,37 +348,37 @@ class Socket extends Emitter
             echo ('bad ack '. packet.id);
         }
     }
-    
+
     /**
      * Called upon client disconnect packet.
      *
      * @api private
      */
-    
+
     public function ondisconnect()
     {
         echo('got disconnect packet');
         $this->onclose('client namespace disconnect');
     }
-    
+
     /**
      * Handles a client error.
      *
      * @api private
      */
-    
+
     public function onerror($err)
     {
-        if ($this->listeners('error')) 
+        if ($this->listeners('error'))
         {
             $this->emit('error', $err);
-        } 
-        else 
+        }
+        else
         {
             //echo('Missing error handler on `socket`.');
         }
     }
-    
+
     /**
      * Called upon closing. Called by `Client`.
      *
@@ -386,7 +386,7 @@ class Socket extends Emitter
      * @param {Error} optional error object
      * @api private
      */
-    
+
      public function onclose($reason)
      {
         if (!$this->connected) return $this;
@@ -406,21 +406,21 @@ class Socket extends Emitter
         $this->conn = null;
         $this->removeAllListeners();
     }
-    
+
     /**
      * Produces an `error` packet.
      *
      * @param {Object} error object
      * @api private
      */
-    
+
     public function error($err)
     {
         $this->packet(array(
             'type' => Parser::ERROR, 'data' => $err )
          );
     }
-    
+
     /**
      * Disconnects this client.
      *
@@ -428,11 +428,11 @@ class Socket extends Emitter
      * @return {Socket} self
      * @api public
      */
-    
+
     public function disconnect( $close = false )
     {
         if (!$this->connected) return $this;
-        if ($close) 
+        if ($close)
         {
             $this->client->disconnect();
         } else {
@@ -443,7 +443,7 @@ class Socket extends Emitter
         }
         return $this;
     }
-    
+
     /**
      * Sets the compress flag.
      *
@@ -451,7 +451,7 @@ class Socket extends Emitter
      * @return {Socket} self
      * @api public
      */
-    
+
     public function compress($compress)
     {
         $this->flags['compress'] = $compress;
