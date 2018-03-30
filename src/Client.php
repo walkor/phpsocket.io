@@ -193,9 +193,9 @@ public function __destruct()
 
     public function ondecoded($packet) 
     {
-        if(Parser::CONNECT === $packet['type'])
+        if(Parser::CONNECT == $packet['type'])
         {
-            $this->connect($packet->nsp);
+            $this->connect($packet['nsp']);
         } else {
             if(isset($this->nsps[$packet['nsp']])) 
             {
