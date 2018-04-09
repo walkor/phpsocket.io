@@ -18,7 +18,7 @@ class Nsp extends Emitter
         'connection' => 'connection',
         'newListener' => 'newListener'
     );
-    
+
     //public static $flags = array('json','volatile');
 
     public function __construct($server, $name)
@@ -57,7 +57,8 @@ class Nsp extends Emitter
 
     public function add($client, $nsp, $fn)
     {
-        $socket = new Socket($this, $client);
+        $socket_name = $this->server->socket();
+        $socket = new $socket_name($this, $client);
         if('open' === $client->conn->readyState)
         {
             $this->sockets[$socket->id]=$socket;
@@ -72,7 +73,7 @@ class Nsp extends Emitter
         }
     }
 
-    
+
     /**
      * Removes a client. Called by each `Socket`.
      *
@@ -100,16 +101,16 @@ class Nsp extends Emitter
         {
             call_user_func_array(array($this, 'parent::emit'), $args);
         }
-        else 
+        else
         {
             // set up packet object
-            
+
             $parserType = Parser::EVENT; // default
             //if (self::hasBin($args)) { $parserType = Parser::BINARY_EVENT; } // binary
 
             $packet = array('type'=> $parserType, 'data'=> $args );
 
-            if (is_callable(end($args))) 
+            if (is_callable(end($args)))
             {
                 echo('Callbacks are not supported when broadcasting');
                 return;
@@ -125,7 +126,7 @@ class Nsp extends Emitter
         }
         return $this;
     }
-    
+
     public function send()
     {
         $args = func_get_args();
@@ -139,13 +140,13 @@ class Nsp extends Emitter
         $args = func_get_args();
         return call_user_func_array(array($this, 'send'), $args);
     }
-    
+
     public function clients($fn)
     {
         $this->adapter->clients($this->rooms, $fn);
         return $this;
     }
-    
+
     /**
      * Sets the compress flag.
      *
@@ -153,7 +154,7 @@ class Nsp extends Emitter
      * @return {Socket} self
      * @api public
      */
-    
+
      public function compress($compress)
      {
         $this->flags['compress'] = $compress;
