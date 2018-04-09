@@ -5,14 +5,22 @@ use PHPSocketIO\Engine\Engine;
 class SocketIO
 {
     public $nsps = array();
+    protected $_nsp = null;
+    protected $_socket = null;
     protected $_adapter = null;
     public $eio = null;
     public $engine = null;
     protected $_origins = '*:*';
     protected $_path = null;
-    
+
     public function __construct($port = null, $opts = array())
     {
+        $nsp = isset($opts['nsp']) ? $opts['nsp'] : '\PHPSocketIO\Nsp';
+        $this->nsp($nsp);
+
+        $socket = isset($opts['socket']) ? $opts['socket'] : '\PHPSocketIO\Socket';
+        $this->socket($socket);
+
         $adapter = isset($opts['adapter']) ? $opts['adapter'] : '\PHPSocketIO\DefaultAdapter';
         $this->adapter($adapter);
         if(isset($opts['origins']))
@@ -21,7 +29,7 @@ class SocketIO
         }
 
         $this->sockets = $this->of('/');
-        
+
         if(!class_exists('Protocols\SocketIO'))
         {
             class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
@@ -38,7 +46,21 @@ class SocketIO
             $this->attach($worker);
         }
     }
-    
+
+    public function nsp($v = null)
+    {
+         if (empty($v)) return $this->_nsp;
+         $this->_nsp = $v;
+         return $this;
+    }
+
+    public function socket($v = null)
+    {
+         if (empty($v)) return $this->_socket;
+         $this->_socket = $v;
+         return $this;
+    }
+
     public function adapter($v = null)
     {
          if (empty($v)) return $this->_adapter;
@@ -81,7 +103,7 @@ class SocketIO
         $this->engine->origins = $this->_origins;
         return $this;
     }
- 
+
     public function of($name, $fn = null)
     {
         if($name[0] !== '/')
@@ -90,7 +112,8 @@ class SocketIO
         }
         if(empty($this->nsps[$name]))
         {
-            $this->nsps[$name] = new Nsp($this, $name);
+            $nsp_name = $this->nsp();
+            $this->nsps[$name] = new $nsp_name($this, $name);
         }
         if ($fn)
         {
@@ -98,7 +121,7 @@ class SocketIO
         }
         return $this->nsps[$name];
     }
-    
+
     public function onConnection($engine_socket)
     {
         $client = new Client($this, $engine_socket);
@@ -114,7 +137,7 @@ class SocketIO
            return;
         }
         return call_user_func_array(array($this->sockets, 'on'), func_get_args());
-    } 
+    }
 
     public function in()
     {
