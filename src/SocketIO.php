@@ -28,6 +28,8 @@ class SocketIO
             $this->origins($opts['origins']);
         }
 
+        unset($opts['nsp'], $opts['socket'], $opts['adapter'], $opts['origins']);
+
         $this->sockets = $this->of('/');
 
         if(!class_exists('Protocols\SocketIO'))

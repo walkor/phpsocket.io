@@ -99,7 +99,7 @@ class Nsp extends Emitter
         $args = func_get_args();
         if (isset(self::$events[$ev]))
         {
-            call_user_func_array(array($this, 'parent::emit'), $args);
+            call_user_func_array(array(__CLASS__, 'parent::emit'), $args);
         }
         else
         {
