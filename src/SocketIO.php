@@ -133,12 +133,15 @@ class SocketIO
 
     public function on()
     {
-        if(func_get_arg(0) === 'workerStart')
-        {
-           $this->worker->onWorkerStart = func_get_arg(1);
-           return;
+        $args = array_pad(func_get_args(), 2, null);
+
+        if ($args[0] === 'workerStart') {
+           $this->worker->onWorkerStart = $args[1];
+        } else if ($args[0] === 'workerStop') {
+           $this->worker->onWorkerStop = $args[1];
+        } else if ($args[0] !== null) {
+            return call_user_func_array(array($this->sockets, 'on'), $args);
         }
-        return call_user_func_array(array($this->sockets, 'on'), func_get_args());
     }
 
     public function in()
