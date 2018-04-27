@@ -29,7 +29,7 @@ Worker::runAll();
 
 ## Another chat demo
 
-https://github.com/walkor/phpsocket.io/blob/master/examples/chat/server.php
+https://github.com/walkor/phpsocket.io/blob/master/examples/chat/start_io.php
 ```php
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
