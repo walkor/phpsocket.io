@@ -3,7 +3,6 @@ A server side alternative implementation of [socket.io](https://github.com/socke
 
 # Notice
 Only support socket.io v1.3.0 or greater. <br>
-Namespace temporarily not implemented.<br>
 This project is just translate socket.io by [workerman](https://github.com/walkor/Workerman).<br>
 More api just see http://socket.io/docs/server-api/ 
 
