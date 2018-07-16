@@ -168,7 +168,11 @@ $socket->disconnect();
 $io = new SocketIO(2020);
 $io->origins('http://example.com:8080');
 ```
-注意：目前只能设置单域名，暂时不支持多域名
+多个域名时用空格分隔，类似
+```php
+$io = new SocketIO(2020);
+$io->origins('http://workerman.net http://www.workerman.net');
+```
 
 ## 支持SSL(https wss)
 SSL 要求workerman>=3.3.7 phpsocket.io>=1.1.1
