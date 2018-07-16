@@ -162,6 +162,19 @@ $io->on('connection', function($socket)use($io){
 $socket->disconnect();
 ```
 
+## 限制连接域名
+当我们想指定特定域名的页面才能连接，可以用$io->origins方法来设置域名白名单。
+```php
+$io = new SocketIO(2020);
+$io->origins('http://example.com:8080');
+```
+多个域名则用空格分隔，类似
+```php
+$io = new SocketIO(2020);
+$io->origins('http://example.com http://workerman.net http://www.workerman.net');
+```
+
+
 ## 支持SSL(https wss)
 SSL 要求workerman>=3.3.7 phpsocket.io>=1.1.1
 
