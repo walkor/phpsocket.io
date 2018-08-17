@@ -13,10 +13,12 @@ class DefaultAdapter
          $this->encoder = new Parser\Encoder();
          Debug::debug('DefaultAdapter __construct');
     }
-public function __destruct()
-{
-     Debug::debug('DefaultAdapter __destruct');
-}
+    
+    public function __destruct()
+    {
+        Debug::debug('DefaultAdapter __destruct');
+    }
+    
     public function add($id, $room)
     {
         $this->sids[$id][$room] = true;
@@ -91,6 +93,14 @@ public function __destruct()
                   }
               }
          }
+    }
+    
+    public function clients($rooms, $fn) {
+        $sids = array();
+        foreach ($rooms as $room) {
+            $sids = array_merge($sids, $this->rooms[$room]);
+        }
+        $fn();
     }
 
 }
