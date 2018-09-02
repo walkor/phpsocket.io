@@ -150,7 +150,10 @@ class Response
         {
             $this->_connection->httpRequest->destroy();
         }
-        $this->_connection->httpResponse = $this->_connection->httpRequest = null;
+        if(!empty($this->_connection))
+        {
+            $this->_connection->httpResponse = $this->_connection->httpRequest = null;
+        }
         $this->_connection = null;
         $this->writable = false;
     }
