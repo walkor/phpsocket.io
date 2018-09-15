@@ -1,6 +1,8 @@
 <?php
 namespace PHPSocketIO\Event;
-use \PHPSocketIO\Debug;
+
+use PHPSocketIO\Debug;
+
 class Emitter
 {
     public function __construct()

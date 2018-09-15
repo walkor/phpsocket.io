@@ -1,5 +1,8 @@
 <?php
-include __DIR__.'/../src/Event/Emitter.php';
+$rootPath = join(DIRECTORY_SEPARATOR, array(__DIR__,".."));
+include join(DIRECTORY_SEPARATOR, array($rootPath,"vendor","autoload.php"));
+include join(DIRECTORY_SEPARATOR, array($rootPath,"src","Event","Emitter.php"));
+
 ini_set('display_errors', 'on');
 $emitter = new PHPSocketIO\Event\Emitter;
 $func = function($arg1, $arg2)

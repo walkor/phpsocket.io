@@ -5,12 +5,11 @@ use Workerman\Autoloader;
 use PHPSocketIO\SocketIO;
 
 // composer autoload
-require_once join(DIRECTORY_SEPARATOR, [__DIR__, "..", "..", "vendor", "autoload.php"]);
+require_once join(DIRECTORY_SEPARATOR, array(__DIR__, "..", "..", "vendor", "autoload.php"));
 
 $io = new SocketIO(2020);
 $io->on('connection', function($socket){
     $socket->addedUser = false;
-
     // when the client emits 'new message', this listens and executes
     $socket->on('new message', function ($data)use($socket){
         // we tell the client to execute 'new message'
