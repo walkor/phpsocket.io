@@ -15,7 +15,7 @@ class SocketIO
         $pos = strpos($http_buffer, "\r\n\r\n"); 
         if(!$pos)
         {
-            if(strlen($http_buffer)>=TcpConnection::$maxPackageSize)
+            if(strlen($http_buffer) >= $connection->maxPackageSize)
             {
                 $connection->close("HTTP/1.1 400 bad request\r\n\r\nheader too long");
                 return 0;
