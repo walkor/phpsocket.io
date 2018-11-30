@@ -175,6 +175,8 @@ $io->origins('http://workerman.net http://www.workerman.net');
 ```
 
 ## 支持SSL(https wss)
+SSL支持有两种方法，workerman原生和nginx代理
+### workerman原生支持
 SSL 要求workerman>=3.3.7 phpsocket.io>=1.1.1
 
 ```php
@@ -191,7 +193,7 @@ $context = array(
         'verify_peer' => false,
     )
 );
-$io = new SocketIO(2021, $context);
+$io = new SocketIO(2120, $context);
 
 $io->on('connection', function($socket)use($io){
   echo "new connection coming\n";
@@ -204,7 +206,52 @@ Worker::runAll();
 2、客户端连接时不能再用http方式，要改成https类似下面这样。
 ```javascript
 <script>
-var socket = io('https://yoursite.com:3120');
+var socket = io('https://yoursite.com:2120');
 //.....
 </script>
 ```
+### nginx代理SSL
+
+**前提条件及准备工作：**
+
+1、已经安装nginx，版本不低于1.3
+
+2、假设phpsocket.io监听的是2120端口
+
+3、已经申请了证书（pem/crt文件及key文件）放在了/etc/nginx/conf.d/ssl下
+
+4、打算利用nginx开启443端口对外提供ssl代理服务（端口可以根据需要修改）
+
+**nginx配置类似如下：**
+```
+server {
+  listen 443;
+
+  ssl on;
+  ssl_certificate /etc/ssl/server.pem;
+  ssl_certificate_key /etc/ssl/server.key;
+  ssl_session_timeout 5m;
+  ssl_session_cache shared:SSL:50m;
+  ssl_protocols SSLv3 SSLv2 TLSv1 TLSv1.1 TLSv1.2;
+  ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+
+  location /socket.io
+  {
+    proxy_pass http://127.0.0.1:2120;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+
+  # location / {} 站点的其它配置...
+}
+```
+**注意：**<br>
+1、证书是要验证域名的，所以客户端链接时要指定域名才能顺利的建立链接。<br>
+2、客户端连接时不能再用http方式，要改成https类似下面这样。
+```javascript
+<script>
+var socket = io('https://yoursite.com');
+//.....
+</scrip
