@@ -20,16 +20,16 @@ public function __destruct()
      */
     protected $_eventListenerMap = array();
     
-    public function on($event_name, $listener)
+    public function on($event_name, $listener, $minParam = -1, $maxParam = -1)
     {
         $this->emit('newListener', $event_name, $listener);
-        $this->_eventListenerMap[$event_name][] = array($listener, 0); 
+        $this->_eventListenerMap[$event_name][] = array($listener, $minParam, $maxParam, false); 
         return $this;
     }
 
-    public function once($event_name, $listener)
+    public function once($event_name, $listener, $minParam = -1, $maxParam = -1)
     {
-        $this->_eventListenerMap[$event_name][] = array($listener, 1);
+        $this->_eventListenerMap[$event_name][] = array($listener, $minParam, $maxParam, true);
         return $this;
     }
    
@@ -90,16 +90,21 @@ public function __destruct()
         {
              $args = func_get_args();
              unset($args[0]);
-             call_user_func_array($item[0], $args);
-             // once ?
-             if($item[1])
+             // 判断参数数量是否正确
+             $argc = count($args);
+             if(($item[1] == -1 || $item[1] <= $argc) && (($item[2] == -1) || $item[2] >= $argc))
              {
-                 unset($this->_eventListenerMap[$event_name][$key]);
-                 if(empty($this->_eventListenerMap[$event_name]))
-                 {
-                     unset($this->_eventListenerMap[$event_name]);
-                 }
-             }
+                call_user_func_array($item[0], $args);
+                // once ?
+                if($item[3])
+                {
+                    unset($this->_eventListenerMap[$event_name][$key]);
+                    if(empty($this->_eventListenerMap[$event_name]))
+                    {
+                        unset($this->_eventListenerMap[$event_name]);
+                    }
+                }
+            }
         }
         return true;
     }
