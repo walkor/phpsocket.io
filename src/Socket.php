@@ -357,7 +357,7 @@ class Socket extends Emitter
 
     public function ondisconnect()
     {
-        echo('got disconnect packet');
+        //echo('got disconnect packet');
         $this->onclose('client namespace disconnect');
     }
 
