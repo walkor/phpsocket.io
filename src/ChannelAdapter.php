@@ -58,7 +58,7 @@ class ChannelAdapter extends DefaultAdapter
                 }
             }
         }
-        if(empty($this->rooms[$room]))
+        if(isset($this->rooms[$room]) && empty($this->rooms[$room]))
         {
             unset($this->rooms[$room]);
         }
