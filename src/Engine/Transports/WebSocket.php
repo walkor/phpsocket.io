@@ -36,8 +36,10 @@ class WebSocket extends Transport
         foreach($packets as $packet)
         {
             $data = Parser::encodePacket($packet, $this->supportsBinary);
-            $this->socket->send($data);
-            $this->emit('drain');
+            if ($this->socket) {
+                $this->socket->send($data);
+                $this->emit('drain');
+            }
         }
     }
     
