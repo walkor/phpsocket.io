@@ -1,0 +1,10 @@
+{
+  "name"  : "workerman/chat",
+  "type"  : "project",
+  "keywords": ["socket.io"],
+  "homepage": "http://www.workerman.net",
+  "license" : "MIT",
+  "require": {
+    "workerman/phpsocket.io" : ">1.0.0"
+  }
+}

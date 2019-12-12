@@ -126,18 +126,18 @@ Worker::runAll();
 [chat demo](http://www.workerman.net/demos/phpsocketio-chat/)
 
 # Run chat example
-cd examples/chat
+cd examples/chat && composer install
 
 ## Start
-```php server.php start``` for debug mode
+```php start.php start``` for debug mode
 
-```php server.php start -d ``` for daemon mode
+```php start.php start -d ``` for daemon mode
 
 ## Stop
-```php server.php stop```
+```php start.php stop```
 
 ## Status
-```php server.php status```
+```php start.php status```
 
 # License
 MIT
