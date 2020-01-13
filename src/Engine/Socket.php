@@ -261,7 +261,7 @@ class Socket extends Emitter
     
     public function send($data, $options, $callback)
     {
-        $this->sendPacket('message', $data, $options, $callback);
+        $this->sendPacket('message', $data, $callback);
         return $this;
     }
     
