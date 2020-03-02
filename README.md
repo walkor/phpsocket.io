@@ -11,6 +11,7 @@ composer require workerman/phpsocket.io
 
 # Examples
 ## Simple chat
+start.php
 ```php
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
@@ -96,6 +97,8 @@ Worker::runAll();
 
 ## Enable SSL for https 
 **```(phpsocket.io>=1.1.1 && workerman>=3.3.7 required)```**
+
+start.php
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
@@ -129,15 +132,15 @@ Worker::runAll();
 cd examples/chat
 
 ## Start
-```php server.php start``` for debug mode
+```php start.php start``` for debug mode
 
-```php server.php start -d ``` for daemon mode
+```php start.php start -d ``` for daemon mode
 
 ## Stop
-```php server.php stop```
+```php start.php stop```
 
 ## Status
-```php server.php status```
+```php start.php status```
 
 # License
 MIT
