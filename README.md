@@ -124,7 +124,7 @@ $context = array(
     'ssl' => array(
         'local_cert'  => '/your/path/of/server.pem',
         'local_pk'    => '/your/path/of/server.key',
-        'verify_peer' => false,
+        'verify_peer' => false
     )
 );
 $io = new SocketIO(2021, $context);
