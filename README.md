@@ -13,15 +13,16 @@ composer require workerman/phpsocket.io
 ## Simple chat
 start.php
 ```php
+
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
-// listen port 2021 for socket.io client
+// Listen port 2021 for socket.io client
 $io = new SocketIO(2021);
-$io->on('connection', function($socket)use($io){
-  $socket->on('chat message', function($msg)use($io){
-    $io->emit('chat message', $msg);
-  });
+$io->on('connection', function ($socket) use ($io) {
+    $socket->on('chat message', function ($msg) use ($io) {
+        $io->emit('chat message', $msg);
+    });
 });
 
 Worker::runAll();
@@ -31,60 +32,71 @@ Worker::runAll();
 
 https://github.com/walkor/phpsocket.io/blob/master/examples/chat/start_io.php
 ```php
+
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
-// listen port 2020 for socket.io client
+// Listen port 2020 for socket.io client
 $io = new SocketIO(2020);
-$io->on('connection', function($socket){
+$io->on('connection', function ($socket) {
     $socket->addedUser = false;
-    // when the client emits 'new message', this listens and executes
-    $socket->on('new message', function ($data)use($socket){
-        // we tell the client to execute 'new message'
+
+    // When the client emits 'new message', this listens and executes
+    $socket->on('new message', function ($data) use ($socket) {
+        // We tell the client to execute 'new message'
         $socket->broadcast->emit('new message', array(
-            'username'=> $socket->username,
-            'message'=> $data
+            'username' => $socket->username,
+            'message' => $data
         ));
     });
-    // when the client emits 'add user', this listens and executes
-    $socket->on('add user', function ($username) use($socket){
+
+    // When the client emits 'add user', this listens and executes
+    $socket->on('add user', function ($username) use ($socket) {
         global $usernames, $numUsers;
-        // we store the username in the socket session for this client
+
+        // We store the username in the socket session for this client
         $socket->username = $username;
-        // add the client's username to the global list
+        // Add the client's username to the global list
         $usernames[$username] = $username;
         ++$numUsers;
+
         $socket->addedUser = true;
         $socket->emit('login', array( 
             'numUsers' => $numUsers
         ));
+
         // echo globally (all clients) that a person has connected
         $socket->broadcast->emit('user joined', array(
             'username' => $socket->username,
             'numUsers' => $numUsers
         ));
     });
-    // when the client emits 'typing', we broadcast it to others
-    $socket->on('typing', function () use($socket) {
+
+    // When the client emits 'typing', we broadcast it to others
+    $socket->on('typing', function () use ($socket) {
         $socket->broadcast->emit('typing', array(
             'username' => $socket->username
         ));
     });
-    // when the client emits 'stop typing', we broadcast it to others
-    $socket->on('stop typing', function () use($socket) {
+
+    // When the client emits 'stop typing', we broadcast it to others
+    $socket->on('stop typing', function () use ($socket) {
         $socket->broadcast->emit('stop typing', array(
             'username' => $socket->username
         ));
     });
-    // when the user disconnects.. perform this
-    $socket->on('disconnect', function () use($socket) {
+
+    // When the user disconnects, perform this
+    $socket->on('disconnect', function () use ($socket) {
         global $usernames, $numUsers;
-        // remove the username from global usernames list
-        if($socket->addedUser) {
+
+        // Remove the username from global usernames list
+        if ($socket->addedUser) {
             unset($usernames[$socket->username]);
             --$numUsers;
-           // echo globally that this client has left
-           $socket->broadcast->emit('user left', array(
+
+            // echo globally that this client has left
+            $socket->broadcast->emit('user left', array(
                'username' => $socket->username,
                'numUsers' => $numUsers
             ));
@@ -101,11 +113,13 @@ Worker::runAll();
 start.php
 ```php
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
-// ssl context
+require_once __DIR__ . '/vendor/autoload.php';
+
+// SSL context
 $context = array(
     'ssl' => array(
         'local_cert'  => '/your/path/of/server.pem',
@@ -115,8 +129,8 @@ $context = array(
 );
 $io = new SocketIO(2021, $context);
 
-$io->on('connection', function($connection)use($io){
-  echo "new connection coming\n";
+$io->on('connection', function ($connection) use ($io) {
+    echo "New connection coming\n";
 });
 
 Worker::runAll();
