@@ -10,7 +10,7 @@ require_once join(DIRECTORY_SEPARATOR, array(__DIR__, "..", "..", "vendor", "aut
 $web = new Worker('http://0.0.0.0:2022');
 $web->name = 'web';
 
-define('WEBROOT', __DIR__ . '/public');
+define('WEBROOT', __DIR__ . DIRECTORY_SEPARATOR .  'public');
 
 $web->onMessage = function (TcpConnection $connection, Request $request) {
     $path = $request->path();
