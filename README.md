@@ -16,6 +16,7 @@ start.php
 
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Listen port 2021 for socket.io client
 $io = new SocketIO(2021);
@@ -35,6 +36,7 @@ https://github.com/walkor/phpsocket.io/blob/master/examples/chat/start_io.php
 
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Listen port 2020 for socket.io client
 $io = new SocketIO(2020);
