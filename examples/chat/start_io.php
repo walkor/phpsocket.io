@@ -21,11 +21,11 @@ $io->on('connection', function($socket){
 
     // when the client emits 'add user', this listens and executes
     $socket->on('add user', function ($username) use($socket){
+    if ($socket->addedUser)
+      return;
         global $usernames, $numUsers;
         // we store the username in the socket session for this client
         $socket->username = $username;
-        // add the client's username to the global list
-        $usernames[$username] = $username;
         ++$numUsers;
         $socket->addedUser = true;
         $socket->emit('login', array( 
@@ -55,9 +55,7 @@ $io->on('connection', function($socket){
     // when the user disconnects.. perform this
     $socket->on('disconnect', function () use($socket) {
         global $usernames, $numUsers;
-        // remove the username from global usernames list
         if($socket->addedUser) {
-            unset($usernames[$socket->username]);
             --$numUsers;
 
            // echo globally that this client has left
