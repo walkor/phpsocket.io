@@ -33,7 +33,8 @@ $web->onMessage = function (TcpConnection $connection, Request $request) {
         return;
     }
 
-    if (!empty($if_modified_since = $request->header('if-modified-since'))) {
+    $if_modified_since = $request->header('if-modified-since');
+    if (!empty($if_modified_since)) {
         // Check 304.
         $info = \stat($file);
         $modified_time = $info ? \date('D, d M Y H:i:s', $info['mtime']) . ' ' . \date_default_timezone_get() : '';
