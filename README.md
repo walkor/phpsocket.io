@@ -1,5 +1,12 @@
 # phpsocket.io
 A server side alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).<br>
+The socket extension implements a low-level interface to the socket communication functions based on the popular BSD sockets, providing the possibility to act as a socket server as well as a client.<br>
+
+<br>
+For a more generic client-side socket interface, see stream_socket_client(), stream_socket_server(), fsockopen(), and pfsockopen().
+<br>
+When using these functions, it is important to remember that while many of them have identical names to their C counterparts, they often have different declarations. Please <br>
+be sure to read the descriptions to avoid confusion.
 
 # Notice
 Only support socket.io v1.3.0 or greater. <br>
