@@ -45,7 +45,7 @@ class ChannelAdapter extends DefaultAdapter
     
     public function delAll($id)
     {
-        $rooms = isset($this->sids[$id]) ? $this->sids[$id] : array();
+        $rooms = isset($this->sids[$id]) ? array_keys($this->sids[$id]) : array();
         if($rooms)
         {
             foreach($rooms as $room)
@@ -56,11 +56,11 @@ class ChannelAdapter extends DefaultAdapter
                     $channel = "socket.io#/#$room#";
                     \Channel\Client::unsubscribe($channel);
                 }
+                if(isset($this->rooms[$room]) && empty($this->rooms[$room]))
+                {
+                    unset($this->rooms[$room]);
+                }
             }
-        }
-        if(isset($this->rooms[$room]) && empty($this->rooms[$room]))
-        {
-            unset($this->rooms[$room]);
         }
         unset($this->sids[$id]);
     }
