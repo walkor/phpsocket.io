@@ -142,7 +142,7 @@ Worker::runAll();
 [中文手册](https://github.com/walkor/phpsocket.io/tree/master/docs/zh)
 
 # Livedemo
-[chat demo](http://www.workerman.net/demos/phpsocketio-chat/)
+[chat demo](http://demos.workerman.net/phpsocketio-chat/)
 
 # Run chat example
 cd examples/chat
