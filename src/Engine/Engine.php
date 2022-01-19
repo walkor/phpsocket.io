@@ -113,6 +113,9 @@ class Engine extends Emitter
         }
         $transport = $req->_query['transport'];
         $sid = isset($req->_query['sid']) ? $req->_query['sid'] : '';
+        if ($transport === 'websocket' && empty($sid)) {
+            return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req, $res);
+        }
         if($sid)
         {
             if(!isset($this->clients[$sid]))
