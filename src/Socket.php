@@ -204,6 +204,7 @@ class Socket extends Emitter
 
      public function join($room)
      {
+        if (!$this->connected) return $this;
         if(isset($this->rooms[$room])) return $this;
         $this->adapter->add($this->id, $room);
         $this->rooms[$room] = $room;
