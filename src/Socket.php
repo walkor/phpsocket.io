@@ -346,7 +346,7 @@ class Socket extends Emitter
             call_user_func($ack, $packet['data']);
             unset($this->acks[$packet['id']]);
         } else {
-            echo ('bad ack '. packet.id);
+            echo ('bad ack '. $packet['id']);
         }
     }
 
