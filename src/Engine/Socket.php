@@ -1,7 +1,7 @@
 <?php
 namespace PHPSocketIO\Engine;
 use \PHPSocketIO\Event\Emitter;
-use \Workerman\Lib\Timer;
+use \Workerman\Timer;
 use \PHPSocketIO\Debug;
 class Socket extends Emitter
 {
