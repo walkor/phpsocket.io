@@ -44,7 +44,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
      * 检查包的完整性
      * @param string $buffer
      */
-    public static function input(string $buffer, ConnectionInterface $connection): bool|int
+    public static function input($buffer, ConnectionInterface $connection)
     {
         // 数据长度
         $recv_len = strlen($buffer);
@@ -173,7 +173,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
      * @param string $buffer
      * @return string
      */
-    public static function encode(mixed $buffer, ConnectionInterface $connection): string
+    public static function encode($buffer, ConnectionInterface $connection)
     {
         $len = strlen($buffer);
         if (empty($connection->websocketHandshake)) {
@@ -210,7 +210,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
      * @param string $buffer
      * @return string
      */
-    public static function decode(string $buffer, ConnectionInterface $connection): mixed
+    public static function decode($buffer, ConnectionInterface $connection)
     {
         $len = $masks = $data = $decoded = null;
         $len = ord($buffer[1]) & 127;
