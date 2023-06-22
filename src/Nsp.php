@@ -4,6 +4,7 @@ use PHPSocketIO\Event\Emitter;
 use PHPSocketIO\Parser\Parser;
 class Nsp extends Emitter
 {
+    public $adapter;
     public $name = null;
     public $server = null;
     public $rooms = array();
