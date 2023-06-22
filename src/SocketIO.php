@@ -4,6 +4,7 @@ use Workerman\Worker;
 use PHPSocketIO\Engine\Engine;
 class SocketIO
 {
+    public $sockets;
     public $nsps = array();
     protected $_nsp = null;
     protected $_socket = null;
