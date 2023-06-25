@@ -7,6 +7,7 @@ use \PHPSocketIO\Event\Emitter;
 use \PHPSocketIO\Debug;
 class Engine extends Emitter
 {
+    public $server;
     public $pingTimeout = 60;
     public $pingInterval = 25;
     public $upgradeTimeout = 5;

@@ -4,6 +4,7 @@ use PHPSocketIO\Event\Emitter;
 use PHPSocketIO\Parser\Parser;
 class Nsp extends Emitter
 {
+    public $adapter;
     public $name = null;
     public $server = null;
     public $rooms = array();
@@ -99,6 +100,7 @@ class Nsp extends Emitter
         $args = func_get_args();
         if (isset(self::$events[$ev]))
         {
+            call_user_func_array(array(get_parent_class(__CLASS__), 'emit'), $args);
             call_user_func_array(array(__CLASS__, 'parent::emit'), $args);
         }
         else
