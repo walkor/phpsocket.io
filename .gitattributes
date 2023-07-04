@@ -1,0 +1,8 @@
+/.idea/             export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/tests/             export-ignore
+/docs/              export-ignore
+/examples/          export-ignore
+/.github/           export-ignore
+README.md           export-ignore
