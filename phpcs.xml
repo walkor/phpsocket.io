@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="PHPSocket.io Coding Standard">
-    <description>IXC Soft Coding Standard</description>
+    <description>PHPSocket.io Coding Standard</description>
 
     <!-- display progress -->
     <arg value="p"/>
