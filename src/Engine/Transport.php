@@ -1,13 +1,16 @@
 <?php
+
 namespace PHPSocketIO\Engine;
+
 use \PHPSocketIO\Event\Emitter;
 use \PHPSocketIO\Debug;
+
 class Transport extends Emitter
 {
     public $readyState = 'opening';
     public $req = null;
     public $res = null;
-    
+
     public function __construct()
     {
         Debug::debug('Transport __construct no access !!!!');
@@ -20,33 +23,29 @@ class Transport extends Emitter
 
     public function noop()
     {
- 
-    } 
+    }
 
     public function onRequest($req)
     {
         $this->req = $req;
     }
-    
+
     public function close($fn = null)
     {
         $this->readyState = 'closing';
-        $fn = $fn ? $fn : array($this, 'noop');
+        $fn = $fn ? $fn : [$this, 'noop'];
         $this->doClose($fn);
     }
 
     public function onError($msg, $desc = '')
     {
-        if ($this->listeners('error')) 
-        {
-            $err = array(
+        if ($this->listeners('error')) {
+            $err = [
                 'type' => 'TransportError',
                 'description' => $desc,
-            );
+            ];
             $this->emit('error', $err);
-        } 
-        else 
-        {
+        } else {
             echo("ignored transport error $msg $desc\n");
         }
     }
@@ -60,8 +59,8 @@ class Transport extends Emitter
     {
         $this->onPacket(Parser::decodePacket($data));
     }
-    
-    public function onClose() 
+
+    public function onClose()
     {
         $this->req = $this->res = null;
         $this->readyState = 'closed';
@@ -71,9 +70,9 @@ class Transport extends Emitter
 
     public function destroy()
     {
-         $this->req = $this->res = null;
-         $this->readyState = 'closed';
-         $this->removeAllListeners();
-         $this->shouldClose = null;
+        $this->req = $this->res = null;
+        $this->readyState = 'closed';
+        $this->removeAllListeners();
+        $this->shouldClose = null;
     }
 }

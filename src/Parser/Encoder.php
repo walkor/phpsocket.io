@@ -1,9 +1,12 @@
 <?php
+
 namespace PHPSocketIO\Parser;
+
 use \PHPSocketIO\Parser\Parser;
 use \PHPSocketIO\Event\Emitter;
 use \PHPSocketIO\Debug;
-class Encoder extends Emitter 
+
+class Encoder extends Emitter
 {
     public function __construct()
     {
@@ -18,19 +21,17 @@ class Encoder extends Emitter
 
     public function encode($obj)
     {
-        if(Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) 
-        {
+        if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {
             echo new \Exception("not support BINARY_EVENT BINARY_ACK");
-            return array(); 
-        }
-        else 
-        {
+            return [];
+        } else {
             $encoding = self::encodeAsString($obj);
-            return array($encoding);
+            return [$encoding];
         }
     }
 
-    public static function encodeAsString($obj) {
+    public static function encodeAsString($obj)
+    {
         $str = '';
         $nsp = false;
 
@@ -38,25 +39,21 @@ class Encoder extends Emitter
         $str .= $obj['type'];
 
         // attachments if we have them
-        if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) 
-        {
+        if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {
             $str .= $obj['attachments'];
             $str .= '-';
         }
 
         // if we have a namespace other than `/`
         // we append it followed by a comma `,`
-        if (!empty($obj['nsp']) && '/' !== $obj['nsp']) 
-        {
+        if (! empty($obj['nsp']) && '/' !== $obj['nsp']) {
             $nsp = true;
             $str .= $obj['nsp'];
         }
 
         // immediately followed by the id
-        if (isset($obj['id'])) 
-        {
-            if($nsp)
-            {
+        if (isset($obj['id'])) {
+            if ($nsp) {
                 $str .= ',';
                 $nsp = false;
             }
@@ -64,13 +61,13 @@ class Encoder extends Emitter
         }
 
         // json data
-        if(isset($obj['data']))
-        {
-            if ($nsp) $str .= ',';
+        if (isset($obj['data'])) {
+            if ($nsp) {
+                $str .= ',';
+            }
             $str .= json_encode($obj['data']);
         }
 
         return $str;
     }
-
 }

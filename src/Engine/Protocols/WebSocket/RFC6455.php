@@ -7,41 +7,46 @@
  * For full copyright and license information, please see the MIT-LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @author walkor<walkor@workerman.net>
+ * @author    walkor<walkor@workerman.net>
  * @copyright walkor<walkor@workerman.net>
- * @link http://www.workerman.net/
- * @license http://www.opensource.org/licenses/mit-license.php MIT License
+ * @link      http://www.workerman.net/
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
 namespace PHPSocketIO\Engine\Protocols\WebSocket;
 
 use Workerman\Connection\ConnectionInterface;
+use Workerman\Protocols\ProtocolInterface;
 
 /**
  * WebSocket 协议服务端解包和打包
  */
-class RFC6455 implements \Workerman\Protocols\ProtocolInterface
+class RFC6455 implements ProtocolInterface
 {
     /**
      * websocket头部最小长度
+     *
      * @var int
      */
     const MIN_HEAD_LEN = 6;
 
     /**
      * websocket blob类型
+     *
      * @var char
      */
     const BINARY_TYPE_BLOB = "\x81";
 
     /**
      * websocket arraybuffer类型
+     *
      * @var char
      */
     const BINARY_TYPE_ARRAYBUFFER = "\x82";
 
     /**
      * 检查包的完整性
+     *
      * @param string $buffer
      */
     public static function input($buffer, ConnectionInterface $connection)
@@ -66,55 +71,53 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             $is_fin_frame = $firstbyte >> 7;
             $opcode = $firstbyte & 0xf;
             switch ($opcode) {
-                    // 附加数据帧 @todo 实现附加数据帧
+                // 附加数据帧 @todo 实现附加数据帧
                 case 0x0:
                     break;
-                    // 文本数据帧
+                // 文本数据帧
                 case 0x1:
                     break;
-                    // 二进制数据帧
+                // 二进制数据帧
                 case 0x2:
                     break;
-                    // 关闭的包
+                // 关闭的包
                 case 0x8:
                     // 如果有设置onWebSocketClose回调，尝试执行
                     if (isset($connection->onWebSocketClose)) {
                         call_user_func($connection->onWebSocketClose, $connection);
-                    }
-                    // 默认行为是关闭连接
+                    } // 默认行为是关闭连接
                     else {
                         $connection->close();
                     }
                     return 0;
-                    // ping的包
+                // ping的包
                 case 0x9:
                     // 如果有设置onWebSocketPing回调，尝试执行
                     if (isset($connection->onWebSocketPing)) {
                         call_user_func($connection->onWebSocketPing, $connection);
-                    }
-                    // 默认发送pong
+                    } // 默认发送pong
                     else {
                         $connection->send(pack('H*', '8a00'), true);
                     }
                     // 从接受缓冲区中消费掉该数据包
-                    if (!$data_len) {
+                    if (! $data_len) {
                         $connection->consumeRecvBuffer(self::MIN_HEAD_LEN);
                         return 0;
                     }
                     break;
-                    // pong的包
+                // pong的包
                 case 0xa:
                     // 如果有设置onWebSocketPong回调，尝试执行
                     if (isset($connection->onWebSocketPong)) {
                         call_user_func($connection->onWebSocketPong, $connection);
                     }
                     // 从接受缓冲区中消费掉该数据包
-                    if (!$data_len) {
+                    if (! $data_len) {
                         $connection->consumeRecvBuffer(self::MIN_HEAD_LEN);
                         return 0;
                     }
                     break;
-                    // 错误的opcode 
+                // 错误的opcode
                 default:
                     echo "error opcode $opcode and close websocket connection\n";
                     $connection->close();
@@ -130,7 +133,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
                 }
                 $pack = unpack('ntotal_len', substr($buffer, 2, 2));
                 $data_len = $pack['total_len'];
-            } else if ($data_len === 127) {
+            } elseif ($data_len === 127) {
                 $head_len = 14;
                 if ($head_len > $recv_len) {
                     return 0;
@@ -152,8 +155,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             $connection->consumeRecvBuffer($connection->websocketCurrentFrameLength);
             $connection->websocketCurrentFrameLength = 0;
             return 0;
-        }
-        // 收到的数据大于一个frame
+        } // 收到的数据大于一个frame
         elseif ($connection->websocketCurrentFrameLength < $recv_len) {
             self::decode(substr($buffer, 0, $connection->websocketCurrentFrameLength), $connection);
             $connection->consumeRecvBuffer($connection->websocketCurrentFrameLength);
@@ -161,8 +163,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
             $connection->websocketCurrentFrameLength = 0;
             // 继续读取下一个frame
             return self::input(substr($buffer, $current_frame_length), $connection);
-        }
-        // 收到的数据不足一个frame
+        } // 收到的数据不足一个frame
         else {
             return 0;
         }
@@ -170,7 +171,8 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
 
     /**
      * 打包
-     * @param string $buffer
+     *
+     * @param  string $buffer
      * @return string
      */
     public static function encode($buffer, ConnectionInterface $connection)
@@ -185,7 +187,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
 
         if ($len <= 125) {
             $encode_buffer = $first_byte . chr($len) . $buffer;
-        } else if ($len <= 65535) {
+        } elseif ($len <= 65535) {
             $encode_buffer = $first_byte . chr(126) . pack("n", $len) . $buffer;
         } else {
             $encode_buffer = $first_byte . chr(127) . pack("xxxxN", $len) . $buffer;
@@ -207,7 +209,8 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
 
     /**
      * 解包
-     * @param string $buffer
+     *
+     * @param  string $buffer
      * @return string
      */
     public static function decode($buffer, ConnectionInterface $connection)
@@ -217,7 +220,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
         if ($len === 126) {
             $masks = substr($buffer, 4, 4);
             $data = substr($buffer, 8);
-        } else if ($len === 127) {
+        } elseif ($len === 127) {
             $masks = substr($buffer, 10, 4);
             $data = substr($buffer, 14);
         } else {
@@ -239,20 +242,21 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
 
     /**
      * 处理websocket握手
-     * @param string $buffer
-     * @param TcpConnection $connection
+     *
+     * @param  string        $buffer
+     * @param  TcpConnection $connection
      * @return int
      */
     public static function dealHandshake($connection, $req, $res)
     {
-        $headers = array();
+        $headers = [];
         if (isset($connection->onWebSocketConnect)) {
             try {
-                call_user_func_array($connection->onWebSocketConnect, array($connection, $req, $res));
+                call_user_func_array($connection->onWebSocketConnect, [$connection, $req, $res]);
             } catch (\Exception $e) {
                 echo $e;
             }
-            if (!$res->writable) {
+            if (! $res->writable) {
                 return false;
             }
         }
@@ -286,7 +290,7 @@ class RFC6455 implements \Workerman\Protocols\ProtocolInterface
         $res->end();
 
         // 握手后有数据要发送
-        if (!empty($connection->websocketTmpData)) {
+        if (! empty($connection->websocketTmpData)) {
             $connection->send($connection->websocketTmpData, true);
             $connection->websocketTmpData = '';
         }
