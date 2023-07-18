@@ -2,3 +2,4 @@
 /docs/          export-ignore
 /examples/      export-ignore
 /tests/         export-ignore
+/phpcs.xml      export-ignore

@@ -13,9 +13,9 @@ class Socket extends Emitter
     public $upgrading = false;
     public $upgraded = false;
     public $readyState = 'opening';
-    public $writeBuffer = array();
-    public $packetsFn = array();
-    public $sentCallbackFn = array();
+    public $writeBuffer = [];
+    public $packetsFn = [];
+    public $sentCallbackFn = [];
     public $request = null;
     public $remoteAddress = '';
     public $checkIntervalTimer;
@@ -43,15 +43,15 @@ class Socket extends Emitter
         $this->upgrading = true;
         $this->upgradeTimeoutTimer = Timer::add(
             $this->server->upgradeTimeout,
-            array($this, 'upgradeTimeoutCallback'),
-            array($transport),
+            [$this, 'upgradeTimeoutCallback'],
+            [$transport],
             false
         );
         $this->upgradeTransport = $transport;
-        $transport->on('packet', array($this, 'onUpgradePacket'));
-        $transport->once('close', array($this, 'onUpgradeTransportClose'));
-        $transport->once('error', array($this, 'onUpgradeTransportError'));
-        $this->once('close', array($this, 'onUpgradeTransportClose'));
+        $transport->on('packet', [$this, 'onUpgradePacket']);
+        $transport->once('close', [$this, 'onUpgradeTransportClose']);
+        $transport->once('error', [$this, 'onUpgradeTransportError']);
+        $this->once('close', [$this, 'onUpgradeTransportClose']);
     }
 
     public function onUpgradePacket($packet)
@@ -61,13 +61,13 @@ class Socket extends Emitter
             return;
         }
         if ('ping' === $packet['type'] && (isset($packet['data']) && 'probe' === $packet['data'])) {
-            $this->upgradeTransport->send(array(array('type' => 'pong', 'data' => 'probe')));
+            $this->upgradeTransport->send([['type' => 'pong', 'data' => 'probe']]);
             //$this->transport->shouldClose = function(){};
             if ($this->checkIntervalTimer) {
                 Timer::del($this->checkIntervalTimer);
             }
-            $this->checkIntervalTimer = Timer::add(0.5, array($this, 'check'));
-        } else if ('upgrade' === $packet['type'] && $this->readyState !== 'closed') {
+            $this->checkIntervalTimer = Timer::add(0.5, [$this, 'check']);
+        } elseif ('upgrade' === $packet['type'] && $this->readyState !== 'closed') {
             $this->upgradeCleanup();
             $this->upgraded = true;
             $this->clearTransport();
@@ -78,10 +78,10 @@ class Socket extends Emitter
             $this->setPingTimeout();
             $this->flush();
             if ($this->readyState === 'closing') {
-                $this->transport->close(array($this, 'onClose'));
+                $this->transport->close([$this, 'onClose']);
             }
         } else {
-            if (!empty($this->upgradeTransport)) {
+            if (! empty($this->upgradeTransport)) {
                 $this->upgradeCleanup();
                 $this->upgradeTransport->close();
                 $this->upgradeTransport = null;
@@ -95,12 +95,12 @@ class Socket extends Emitter
         $this->upgrading = false;
         Timer::del($this->checkIntervalTimer);
         Timer::del($this->upgradeTimeoutTimer);
-        if (!empty($this->upgradeTransport)) {
-            $this->upgradeTransport->removeListener('packet', array($this, 'onUpgradePacket'));
-            $this->upgradeTransport->removeListener('close', array($this, 'onUpgradeTransportClose'));
-            $this->upgradeTransport->removeListener('error', array($this, 'onUpgradeTransportError'));
+        if (! empty($this->upgradeTransport)) {
+            $this->upgradeTransport->removeListener('packet', [$this, 'onUpgradePacket']);
+            $this->upgradeTransport->removeListener('close', [$this, 'onUpgradeTransportClose']);
+            $this->upgradeTransport->removeListener('error', [$this, 'onUpgradeTransportError']);
         }
-        $this->removeListener('close', array($this, 'onUpgradeTransportClose'));
+        $this->removeListener('close', [$this, 'onUpgradeTransportClose']);
     }
 
     public function onUpgradeTransportClose()
@@ -130,10 +130,10 @@ class Socket extends Emitter
     public function setTransport($transport)
     {
         $this->transport = $transport;
-        $this->transport->once('error', array($this, 'onError'));
-        $this->transport->on('packet', array($this, 'onPacket'));
-        $this->transport->on('drain', array($this, 'flush'));
-        $this->transport->once('close', array($this, 'onClose'));
+        $this->transport->once('error', [$this, 'onError']);
+        $this->transport->on('packet', [$this, 'onPacket']);
+        $this->transport->on('drain', [$this, 'flush']);
+        $this->transport->once('close', [$this, 'onClose']);
         //this function will manage packet events (also message callbacks)
         $this->setupSendCallback();
     }
@@ -144,9 +144,17 @@ class Socket extends Emitter
 
         // sends an `open` packet
         $this->transport->sid = $this->id;
-        $this->sendPacket('open', json_encode(array(
-            'sid' => $this->id, 'upgrades' => $this->getAvailableUpgrades(), 'pingInterval' => $this->server->pingInterval * 1000, 'pingTimeout' => $this->server->pingTimeout * 1000
-        )));
+        $this->sendPacket(
+            'open',
+            json_encode(
+                [
+                    'sid' => $this->id,
+                    'upgrades' => $this->getAvailableUpgrades(),
+                    'pingInterval' => $this->server->pingInterval * 1000,
+                    'pingTimeout' => $this->server->pingTimeout * 1000
+                ]
+            )
+        );
 
         $this->emit('open');
         $this->setPingTimeout();
@@ -162,7 +170,6 @@ class Socket extends Emitter
             // other side's liveness
             $this->setPingTimeout();
             switch ($packet['type']) {
-
                 case 'ping':
                     $this->sendPacket('pong');
                     $this->emit('heartbeat');
@@ -178,14 +185,14 @@ class Socket extends Emitter
                     break;
             }
         } else {
-            echo ('packet received with closed socket');
+            echo('packet received with closed socket');
         }
     }
 
     public function check()
     {
         if ('polling' == $this->transport->name && $this->transport->writable) {
-            $this->transport->send(array(array('type' => 'noop')));
+            $this->transport->send([['type' => 'noop']]);
         }
     }
 
@@ -201,7 +208,7 @@ class Socket extends Emitter
         }
         $this->pingTimeoutTimer = Timer::add(
             $this->server->pingInterval + $this->server->pingTimeout,
-            array($this, 'pingTimeoutCallback'),
+            [$this, 'pingTimeoutCallback'],
             null,
             false
         );
@@ -225,19 +232,21 @@ class Socket extends Emitter
         if ('closed' !== $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
 
-            if (!empty($this->checkIntervalTimer))
+            if (! empty($this->checkIntervalTimer)) {
                 Timer::del($this->checkIntervalTimer);
+            }
 
             $this->checkIntervalTimer = null;
 
-            if (!empty($this->checkIntervalTimer))
+            if (! empty($this->checkIntervalTimer)) {
                 Timer::del($this->upgradeTimeoutTimer);
+            }
 
             // clean writeBuffer in next tick, so developers can still
             // grab the writeBuffer on 'close' event
-            $this->writeBuffer = array();
-            $this->packetsFn = array();
-            $this->sentCallbackFn = array();
+            $this->writeBuffer = [];
+            $this->packetsFn = [];
+            $this->sentCallbackFn = [];
             $this->clearTransport();
             $this->readyState = 'closed';
             $this->emit('close', $this->id, $reason, $description);
@@ -245,7 +254,7 @@ class Socket extends Emitter
             $this->request = null;
             $this->upgradeTransport = null;
             $this->removeAllListeners();
-            if (!empty($this->transport)) {
+            if (! empty($this->transport)) {
                 $this->transport->removeAllListeners();
                 $this->transport = null;
             }
@@ -258,7 +267,7 @@ class Socket extends Emitter
         return $this;
     }
 
-    public function write($data, $options = array(), $callback = null)
+    public function write($data, $options = [], $callback = null)
     {
         return $this->send($data, $options, $callback);
     }
@@ -266,9 +275,9 @@ class Socket extends Emitter
     public function sendPacket($type, $data = null, $callback = null)
     {
         if ('closing' !== $this->readyState) {
-            $packet = array(
+            $packet = [
                 'type' => $type
-            );
+            ];
             if ($data !== null) {
                 $packet['data'] = $data;
             }
@@ -285,23 +294,22 @@ class Socket extends Emitter
 
     public function flush()
     {
-        if (
-            'closed' !== $this->readyState && $this->transport->writable
+        if ('closed' !== $this->readyState && $this->transport->writable
             && $this->writeBuffer
         ) {
             $this->emit('flush', $this->writeBuffer);
             $this->server->emit('flush', $this, $this->writeBuffer);
             $wbuf = $this->writeBuffer;
-            $this->writeBuffer = array();
+            $this->writeBuffer = [];
             if ($this->packetsFn) {
-                if (!empty($this->transport->supportsFraming)) {
+                if (! empty($this->transport->supportsFraming)) {
                     $this->sentCallbackFn[] = $this->packetsFn;
                 } else {
                     // @todo check
                     $this->sentCallbackFn[] = $this->packetsFn;
                 }
             }
-            $this->packetsFn = array();
+            $this->packetsFn = [];
             $this->transport->send($wbuf);
             $this->emit('drain');
             if ($this->server) {
@@ -312,7 +320,7 @@ class Socket extends Emitter
 
     public function getAvailableUpgrades()
     {
-        return array('websocket');
+        return ['websocket'];
     }
 
     public function close()
@@ -324,7 +332,7 @@ class Socket extends Emitter
         $this->readyState = 'closing';
 
         if ($this->writeBuffer) {
-            $this->once('drain', array($this, 'closeTransport'));
+            $this->once('drain', [$this, 'closeTransport']);
             return;
         }
 
@@ -334,14 +342,14 @@ class Socket extends Emitter
     public function closeTransport()
     {
         //todo onClose.bind(this, 'forced close'));
-        $this->transport->close(array($this, 'onClose'));
+        $this->transport->close([$this, 'onClose']);
     }
 
     public function setupSendCallback()
     {
         $self = $this;
         //the message was sent successfully, execute the callback
-        $this->transport->on('drain', array($this, 'onDrainCallback'));
+        $this->transport->on('drain', [$this, 'onDrainCallback']);
     }
 
     public function onDrainCallback()
@@ -349,10 +357,10 @@ class Socket extends Emitter
         if ($this->sentCallbackFn) {
             $seqFn = array_shift($this->sentCallbackFn);
             if (is_callable($seqFn)) {
-                echo ('executing send callback');
+                echo('executing send callback');
                 call_user_func($seqFn, $this->transport);
-            } else if (is_array($seqFn)) {
-                echo ('executing batch send callback');
+            } elseif (is_array($seqFn)) {
+                echo('executing batch send callback');
                 foreach ($seqFn as $fn) {
                     call_user_func($fn, $this->transport);
                 }
