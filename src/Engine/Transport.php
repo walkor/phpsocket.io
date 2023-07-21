@@ -2,8 +2,8 @@
 
 namespace PHPSocketIO\Engine;
 
-use \PHPSocketIO\Event\Emitter;
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Event\Emitter;
+use PHPSocketIO\Debug;
 
 class Transport extends Emitter
 {

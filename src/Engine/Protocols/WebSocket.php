@@ -14,10 +14,10 @@
 
 namespace PHPSocketIO\Engine\Protocols;
 
-use \PHPSocketIO\Engine\Protocols\Http\Request;
-use \PHPSocketIO\Engine\Protocols\Http\Response;
-use \PHPSocketIO\Engine\Protocols\WebSocket\RFC6455;
-use \Workerman\Connection\TcpConnection;
+use PHPSocketIO\Engine\Protocols\Http\Request;
+use PHPSocketIO\Engine\Protocols\Http\Response;
+use PHPSocketIO\Engine\Protocols\WebSocket\RFC6455;
+use Workerman\Connection\TcpConnection;
 
 /**
  * WebSocket 协议服务端解包和打包
@@ -68,8 +68,9 @@ class WebSocket
     /**
      * 处理websocket握手
      *
-     * @param  string        $buffer
-     * @param  TcpConnection $connection
+     * @param TcpConnection $connection
+     * @param $req
+     * @param $res
      * @return int
      */
     public static function dealHandshake($connection, $req, $res)

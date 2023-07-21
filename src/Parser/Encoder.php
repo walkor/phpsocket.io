@@ -2,9 +2,8 @@
 
 namespace PHPSocketIO\Parser;
 
-use \PHPSocketIO\Parser\Parser;
-use \PHPSocketIO\Event\Emitter;
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Event\Emitter;
+use PHPSocketIO\Debug;
 
 class Encoder extends Emitter
 {

@@ -2,7 +2,7 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Debug;
 
 class PollingJsonp extends Polling
 {
@@ -38,7 +38,6 @@ class PollingJsonp extends Polling
     public function doWrite($data)
     {
         $js = json_encode($data);
-        //$js = preg_replace(array('/\u2028/', '/\u2029/'), array('\\u2028', '\\u2029'), $js);
 
         // prepare response
         $data = $this->head . $js . $this->foot;

@@ -3,11 +3,9 @@
 namespace PHPSocketIO\Engine;
 
 use Exception;
-use \PHPSocketIO\Engine\Transports\Polling;
-use \PHPSocketIO\Engine\Transports\PollingXHR;
-use \PHPSocketIO\Engine\Transports\WebSocket;
-use \PHPSocketIO\Event\Emitter;
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Engine\Transports\WebSocket;
+use PHPSocketIO\Event\Emitter;
+use PHPSocketIO\Debug;
 
 class Engine extends Emitter
 {
@@ -70,6 +68,9 @@ class Engine extends Emitter
         $this->verify($req, $res, false, [$this, 'dealRequest']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function dealRequest($err, $success, $req)
     {
         if (! $success) {
@@ -112,9 +113,6 @@ class Engine extends Emitter
         }
         $transport = $req->_query['transport'];
         $sid = $req->_query['sid'] ?? '';
-        /*if ($transport === 'websocket' && empty($sid)) {
-            return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req, $res);
-        }*/
         if ($sid) {
             if (! isset($this->clients[$sid])) {
                 return call_user_func($fn, self::ERROR_UNKNOWN_SID, false, $req, $res);
@@ -198,11 +196,6 @@ class Engine extends Emitter
 
         $socket = new Socket($id, $this, $transport, $req);
 
-        /* $transport->on('headers', function(&$headers)use($id)
-        {
-            $headers['Set-Cookie'] = "io=$id";
-        }); */
-
         $transport->onRequest($req);
 
         $this->clients[$id] = $socket;
@@ -250,6 +243,9 @@ class Engine extends Emitter
         $this->verify($req, $res, true, [$this, 'dealWebSocketConnect']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function dealWebSocketConnect($err, $success, $req, $res)
     {
         if (! $success) {

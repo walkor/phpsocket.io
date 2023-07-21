@@ -2,9 +2,9 @@
 
 namespace PHPSocketIO\Engine;
 
-use \PHPSocketIO\Event\Emitter;
-use \Workerman\Timer;
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Event\Emitter;
+use Workerman\Timer;
+use PHPSocketIO\Debug;
 
 class Socket extends Emitter
 {
@@ -62,7 +62,6 @@ class Socket extends Emitter
         }
         if ('ping' === $packet['type'] && (isset($packet['data']) && 'probe' === $packet['data'])) {
             $this->upgradeTransport->send([['type' => 'pong', 'data' => 'probe']]);
-            //$this->transport->shouldClose = function(){};
             if ($this->checkIntervalTimer) {
                 Timer::del($this->checkIntervalTimer);
             }
@@ -120,7 +119,6 @@ class Socket extends Emitter
 
     public function upgradeTimeoutCallback($transport)
     {
-        //echo("client did not complete upgrade - closing transport\n");
         $this->upgradeCleanup();
         if ('open' === $transport->readyState) {
             $transport->close();

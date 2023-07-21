@@ -16,7 +16,8 @@
   "license": "MIT",
   "require": {
     "workerman/workerman": "^4.0.0",
-    "workerman/channel": ">=1.0.0"
+    "workerman/channel": ">=1.0.0",
+    "ext-json": "*"
   },
   "autoload": {
     "psr-4": {
