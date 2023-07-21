@@ -70,7 +70,6 @@ class ChannelAdapter extends DefaultAdapter
     public function onChannelMessage($channel, $msg)
     {
         if ($this->_channelId === array_shift($msg)) {
-            //echo "ignore same channel_id \n";
             return;
         }
 

@@ -2,7 +2,7 @@
 
 namespace PHPSocketIO\Engine;
 
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Debug;
 
 class Parser
 {
@@ -162,12 +162,6 @@ class Parser
                 }
 
                 $msg = substr($data, $i + 1/*, $n*/);
-
-                /*if ($length != strlen($msg))
-                {
-                    // parser error - ignoring payload
-                    return self::$err;
-                }*/
 
                 if (isset($msg[0])) {
                     $packet = self::decodePacket($msg, $binaryType, true);

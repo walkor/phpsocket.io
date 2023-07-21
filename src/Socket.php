@@ -94,8 +94,6 @@ class Socket extends Emitter
             call_user_func_array([__CLASS__, 'parent::emit'], $args);
         } else {
             $packet = [];
-            // todo check
-            //$packet['type'] = hasBin($args) ? Parser::BINARY_EVENT : Parser::EVENT;
             $packet['type'] = Parser::EVENT;
             $packet['data'] = $args;
             $flags = $this->flags;
@@ -186,7 +184,6 @@ class Socket extends Emitter
             return;
         }
         $packet['nsp'] = $this->nsp->name;
-        //$volatile = !empty(self::$flagsMap['volatile']);
         $volatile = false;
         $this->client->packet($packet, $preEncoded, $volatile);
     }
@@ -266,16 +263,12 @@ class Socket extends Emitter
     public function onpacket($packet)
     {
         switch ($packet['type']) {
+            case Parser::BINARY_EVENT:
             case Parser::EVENT:
                 $this->onevent($packet);
                 break;
-            case Parser::BINARY_EVENT:
-                $this->onevent($packet);
-                break;
-            case Parser::ACK:
-                $this->onack($packet);
-                break;
             case Parser::BINARY_ACK:
+            case Parser::ACK:
                 $this->onack($packet);
                 break;
             case Parser::DISCONNECT:
@@ -348,6 +341,7 @@ class Socket extends Emitter
     /**
      * Called upon client disconnect packet.
      *
+     * @throws Exception
      * @api private
      */
     public function ondisconnect()
@@ -359,6 +353,7 @@ class Socket extends Emitter
     /**
      * Handles a client error.
      *
+     * @throws Exception
      * @api private
      */
     public function onerror($err)

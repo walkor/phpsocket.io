@@ -118,7 +118,6 @@ class Nsp extends Emitter
 
             $this->rooms = [];
             $this->flags = [];
-            ;
         }
         return $this;
     }

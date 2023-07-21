@@ -120,7 +120,6 @@ class Client
             return;
         }
         if ('open' === $this->conn->readyState) {
-            //echo('forcing transport close');
             $this->conn->close();
             $this->onclose('forced server close');
         }

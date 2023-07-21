@@ -4,7 +4,6 @@ namespace PHPSocketIO\Engine\Transports;
 
 use PHPSocketIO\Engine\Transport;
 use PHPSocketIO\Engine\Parser;
-use \PHPSocketIO\Debug;
 
 class Polling extends Transport
 {
@@ -101,12 +100,6 @@ class Polling extends Transport
     public function dataRequestOnData($req, $data)
     {
         $this->chunks .= $data;
-        // todo maxHttpBufferSize
-        /*if(strlen($this->chunks) > $this->maxHttpBufferSize)
-        {
-            $this->chunks = '';
-            $req->connection->destroy();
-        }*/
     }
 
     public function dataRequestOnEnd()
@@ -174,16 +167,13 @@ class Polling extends Transport
     public function doClose($fn)
     {
         if (! empty($this->dataReq)) {
-            //echo('aborting ongoing data request');
             $this->dataReq->destroy();
         }
 
         if ($this->writable) {
-            //echo('transport writable - closing right away');
             $this->send([['type' => 'close']]);
             call_user_func($fn);
         } else {
-            //echo("transport not writable - buffering orderly close\n");
             $this->shouldClose = $fn;
         }
     }

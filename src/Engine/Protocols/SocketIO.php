@@ -3,10 +3,9 @@
 namespace PHPSocketIO\Engine\Protocols;
 
 use Exception;
-use \PHPSocketIO\Engine\Protocols\WebSocket;
-use \PHPSocketIO\Engine\Protocols\Http\Request;
-use \PHPSocketIO\Engine\Protocols\Http\Response;
-use \Workerman\Connection\TcpConnection;
+use PHPSocketIO\Engine\Protocols\Http\Request;
+use PHPSocketIO\Engine\Protocols\Http\Response;
+use Workerman\Connection\TcpConnection;
 
 class SocketIO
 {

@@ -3,9 +3,8 @@
 namespace PHPSocketIO\Parser;
 
 use Exception;
-use \PHPSocketIO\Parser\Parser;
-use \PHPSocketIO\Event\Emitter;
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Event\Emitter;
+use PHPSocketIO\Debug;
 
 class Decoder extends Emitter
 {

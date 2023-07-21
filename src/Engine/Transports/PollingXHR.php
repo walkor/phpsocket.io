@@ -2,7 +2,7 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use \PHPSocketIO\Debug;
+use PHPSocketIO\Debug;
 
 class PollingXHR extends Polling
 {
@@ -32,9 +32,6 @@ class PollingXHR extends Polling
     public function doWrite($data)
     {
         // explicit UTF-8 is required for pages not served under utf todo
-        //$content_type = $isString
-        //    ? 'text/plain; charset=UTF-8'
-        //    : 'application/octet-stream';
         $content_type = preg_match('/^\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';
         $content_length = strlen($data);
         $headers = [
