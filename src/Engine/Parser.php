@@ -2,6 +2,7 @@
 
 namespace PHPSocketIO\Engine;
 
+use Exception;
 use PHPSocketIO\Debug;
 
 class Parser
@@ -12,13 +13,13 @@ class Parser
     }
 
     public static $packets = [
-        'open' => 0    // non-ws
-        , 'close' => 1    // non-ws
-        , 'ping' => 2
-        , 'pong' => 3
-        , 'message' => 4
-        , 'upgrade' => 5
-        , 'noop' => 6
+        'open' => 0,     // non-ws
+        'close' => 1,    // non-ws
+        'ping' => 2,
+        'pong' => 3,
+        'message' => 4,
+        'upgrade' => 5,
+        'noop' => 6,
     ];
 
     public static $packetsList = [
@@ -36,7 +37,7 @@ class Parser
         'data' => 'parser error'
     ];
 
-    public static function encodePacket($packet)
+    public static function encodePacket($packet): string
     {
         $data = ! isset($packet['data']) ? '' : $packet['data'];
         return self::$packets[$packet['type']] . $data;
@@ -47,18 +48,20 @@ class Parser
      * Encodes a packet with binary data in a base64 string
      *
      * @param  {Object} packet, has `type` and `data`
-     * @return {String} base64 encoded message
+     * @return string {String} base64 encoded message
      */
-    public static function encodeBase64Packet($packet)
+    public static function encodeBase64Packet($packet): string
     {
-        $data = isset($packet['data']) ? '' : $packet['data'];
-        return $message = 'b' . self::$packets[$packet['type']] . base64_encode($packet['data']);
+        return 'b' . self::$packets[$packet['type']] . base64_encode($packet['data']);
     }
 
     /**
      * Decodes a packet. Data also available as an ArrayBuffer if requested.
      *
-     * @return {Object} with `type` and `data` (if any)
+     * @param $data
+     * @param null $binaryType
+     * @param bool $utf8decode
+     * @return array|string[] {Object} with `type` and `data` (if any)
      * @api    private
      */
     public static function decodePacket($data, $binaryType = null, $utf8decode = true)
@@ -83,8 +86,9 @@ class Parser
     /**
      * Decodes a packet encoded in a base64 string.
      *
-     * @param  {String} base64 encoded message
-     * @return {Object} with `type` and `data` (if any)
+     * @param $msg
+     * @param $binaryType
+     * @return array {Object} with `type` and `data` (if any)
      */
     public static function decodeBase64Packet($msg, $binaryType)
     {
@@ -108,7 +112,7 @@ class Parser
      * @param {Array} packets
      * @api   private
      */
-    public static function encodePayload($packets, $supportsBinary = null)
+    public static function encodePayload($packets, $supportsBinary = null): string
     {
         if ($supportsBinary) {
             return self::encodePayloadAsBinary($packets);
@@ -125,9 +129,9 @@ class Parser
         return $results;
     }
 
-    public static function encodeOne($packet, $supportsBinary = null, $result = null)
+    public static function encodeOne($packet, $supportsBinary = null, $result = null): string
     {
-        $message = self::encodePacket($packet, $supportsBinary, true);
+        $message = self::encodePacket($packet);
         return strlen($message) . ':' . $message;
     }
 
@@ -164,7 +168,7 @@ class Parser
                 $msg = substr($data, $i + 1/*, $n*/);
 
                 if (isset($msg[0])) {
-                    $packet = self::decodePacket($msg, $binaryType, true);
+                    $packet = self::decodePacket($msg, $binaryType);
 
                     if (self::$err['type'] == $packet['type'] && self::$err['data'] == $packet['data']) {
                         // parser error in individual packet - ignoring payload
@@ -182,7 +186,7 @@ class Parser
 
         if ($length !== '') {
             // parser error - ignoring payload
-            echo new \Exception('parser error');
+            echo new Exception('parser error');
             return self::$err;
         }
     }
@@ -194,13 +198,13 @@ class Parser
      * 255><data>
      *
      * Example:
-     * 1 3 255 1 2 3, if the binary contents are interpreted as 8 bit integers
+     * 1 3 255 1 2 3, if the binary contents are interpreted as 8-bit integers
      *
      * @param  {Array} packets
-     * @return {Buffer} encoded payload
+     * @return string {Buffer} encoded payload
      * @api    private
      */
-    public static function encodePayloadAsBinary($packets)
+    public static function encodePayloadAsBinary($packets): string
     {
         $results = '';
         foreach ($packets as $msg) {
@@ -209,10 +213,10 @@ class Parser
         return $results;
     }
 
-    public static function encodeOneAsBinary($p)
+    public static function encodeOneAsBinary($p): string
     {
         // todo is string or arraybuf
-        $packet = self::encodePacket($p, true, true);
+        $packet = self::encodePacket($p);
         $encodingLength = '' . strlen($packet);
         $sizeBuffer = chr(0);
         for ($i = 0; $i < strlen($encodingLength); $i++) {
@@ -228,14 +232,13 @@ class Parser
     * description of encodePayloadAsBinary
     * @api public
     */
-    public static function decodePayloadAsBinary($data, $binaryType = null)
+    public static function decodePayloadAsBinary($data, $binaryType = null): array
     {
         $bufferTail = $data;
         $buffers = [];
 
         while (strlen($bufferTail) > 0) {
             $strLen = '';
-            $isString = $bufferTail[0] == 0;
             $numberTooLong = false;
             for ($i = 1;; $i++) {
                 $tail = ord($bufferTail[$i]);
@@ -260,10 +263,9 @@ class Parser
             $buffers[] = $msg;
             $bufferTail = substr($bufferTail, $msgLength + 1);
         }
-        $total = count($buffers);
         $packets = [];
         foreach ($buffers as $i => $buffer) {
-            $packets[] = self::decodePacket($buffer, $binaryType, true);
+            $packets[] = self::decodePacket($buffer, $binaryType);
         }
         return $packets;
     }

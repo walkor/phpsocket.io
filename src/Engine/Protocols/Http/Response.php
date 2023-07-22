@@ -50,7 +50,7 @@ class Response
         $this->headersSent = true;
     }
 
-    public function getHeadBuffer()
+    public function getHeadBuffer(): string
     {
         if (! $this->_statusPhrase) {
             $this->_statusPhrase = self::$codes[$this->statusCode] ?? '';

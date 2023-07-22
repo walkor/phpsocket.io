@@ -10,6 +10,7 @@ class Transport extends Emitter
     public $readyState = 'opening';
     public $req = null;
     public $res = null;
+    public $shouldClose = null;
 
     public function __construct()
     {

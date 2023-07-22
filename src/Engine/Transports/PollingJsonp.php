@@ -2,6 +2,7 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
+use Exception;
 use PHPSocketIO\Debug;
 
 class PollingJsonp extends Polling
@@ -26,12 +27,6 @@ class PollingJsonp extends Polling
         $parsed_data = null;
         parse_str($data, $parsed_data);
         $data = $parsed_data['d'];
-        // todo check
-        //client will send already escaped newlines as \\\\n and newlines as \\n
-        // \\n must be replaced with \n and \\\\n with \\n
-        /*data = data.replace(rSlashes, function(match, slashes) {
-          return slashes ? match : '\n';
-        });*/
         call_user_func([$this, 'parent::onData'], preg_replace('/\\\\n/', '\\n', $data));
     }
 
@@ -49,7 +44,7 @@ class PollingJsonp extends Polling
             'X-XSS-Protection' => '0'
         ];
         if (empty($this->res)) {
-            echo new \Exception('empty $this->res');
+            echo new Exception('empty $this->res');
             return;
         }
         $this->res->writeHead(200, '', $this->headers($this->req, $headers));

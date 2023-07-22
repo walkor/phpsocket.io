@@ -61,8 +61,6 @@ class WebSocket
         $res = new Response($connection);
         $connection->consumeRecvBuffer(strlen($buffer));
         return self::dealHandshake($connection, $req, $res);
-        $connection->consumeRecvBuffer($pos + 4);
-        return 0;
     }
 
     /**

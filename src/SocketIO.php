@@ -13,7 +13,6 @@ class SocketIO
     protected $_nsp = null;
     protected $_socket = null;
     protected $_adapter = null;
-    public $eio = null;
     public $engine = null;
     protected $_origins = '*:*';
     protected $_path = null;
@@ -93,10 +92,10 @@ class SocketIO
         return $this;
     }
 
-    public function attach($srv, $opts = [])
+    public function attach($srv, $opts = []): SocketIO
     {
         $engine = new Engine();
-        $this->eio = $engine->attach($srv, $opts);
+        $engine->attach($srv, $opts);
 
         // Export http server
         $this->worker = $srv;
@@ -107,7 +106,7 @@ class SocketIO
         return $this;
     }
 
-    public function bind($engine)
+    public function bind($engine): SocketIO
     {
         $this->engine = $engine;
         $this->engine->on('connection', [$this, 'onConnection']);
@@ -130,7 +129,7 @@ class SocketIO
         return $this->nsps[$name];
     }
 
-    public function onConnection($engine_socket)
+    public function onConnection($engine_socket): SocketIO
     {
         $client = new Client($this, $engine_socket);
         $client->connect('/');
