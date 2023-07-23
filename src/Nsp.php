@@ -42,7 +42,7 @@ class Nsp extends Emitter
         $this->adapter = new $adapter_name($this);
     }
 
-    public function to($name)
+    public function to($name): Nsp
     {
         if (! isset($this->rooms[$name])) {
             $this->rooms[$name] = $name;
@@ -50,7 +50,7 @@ class Nsp extends Emitter
         return $this;
     }
 
-    public function in($name)
+    public function in($name): Nsp
     {
         return $this->to($name);
     }
@@ -87,7 +87,8 @@ class Nsp extends Emitter
     /**
      * Emits to all clients.
      *
-     * @return {Namespace} self
+     * @param null $ev
+     * @return Nsp|void {Namespace} self
      * @api    public
      */
     public function emit($ev = null)
@@ -122,7 +123,7 @@ class Nsp extends Emitter
         return $this;
     }
 
-    public function send()
+    public function send(): Nsp
     {
         $args = func_get_args();
         array_unshift($args, 'message');
@@ -136,7 +137,7 @@ class Nsp extends Emitter
         return call_user_func_array([$this, 'send'], $args);
     }
 
-    public function clients($fn)
+    public function clients($fn): Nsp
     {
         $this->adapter->clients($this->rooms, $fn);
         return $this;
@@ -146,7 +147,7 @@ class Nsp extends Emitter
      * Sets the compress flag.
      *
      * @param  {Boolean} if `true`, compresses the sending data
-     * @return {Socket} self
+     * @return Nsp {Socket} self
      * @api    public
      */
     public function compress($compress)

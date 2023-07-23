@@ -21,20 +21,20 @@ class Emitter
      */
     protected $_eventListenerMap = [];
 
-    public function on($event_name, $listener)
+    public function on($event_name, $listener): Emitter
     {
         $this->emit('newListener', $event_name, $listener);
         $this->_eventListenerMap[$event_name][] = [$listener, 0];
         return $this;
     }
 
-    public function once($event_name, $listener)
+    public function once($event_name, $listener): Emitter
     {
         $this->_eventListenerMap[$event_name][] = [$listener, 1];
         return $this;
     }
 
-    public function removeListener($event_name, $listener)
+    public function removeListener($event_name, $listener): Emitter
     {
         if (! isset($this->_eventListenerMap[$event_name])) {
             return $this;
@@ -51,7 +51,7 @@ class Emitter
         return $this;
     }
 
-    public function removeAllListeners($event_name = null)
+    public function removeAllListeners($event_name = null): Emitter
     {
         $this->emit('removeListener', $event_name);
         if (null === $event_name) {
@@ -62,7 +62,7 @@ class Emitter
         return $this;
     }
 
-    public function listeners($event_name)
+    public function listeners($event_name): array
     {
         if (empty($this->_eventListenerMap[$event_name])) {
             return [];

@@ -18,6 +18,9 @@ class Decoder extends Emitter
         Debug::debug('Decoder __destruct');
     }
 
+    /**
+     * @throws Exception
+     */
     public function add($obj)
     {
         if (is_string($obj)) {
@@ -48,7 +51,7 @@ class Decoder extends Emitter
         }
     }
 
-    public function decodeString($str)
+    public function decodeString($str): array
     {
         $p = [];
         $i = 0;
@@ -120,7 +123,7 @@ class Decoder extends Emitter
         return $p;
     }
 
-    public static function error()
+    public static function error(): array
     {
         return [
             'type' => Parser::ERROR,

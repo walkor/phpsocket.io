@@ -2,6 +2,7 @@
 
 namespace PHPSocketIO;
 
+use Closure;
 use Exception;
 use PHPSocketIO\Event\Emitter;
 use PHPSocketIO\Parser\Parser;
@@ -55,7 +56,7 @@ class Socket extends Emitter
         Debug::debug('IO Socket __destruct');
     }
 
-    public function buildHandshake()
+    public function buildHandshake(): array
     {
         //todo check this->request->_query
         $info = ! empty($this->request->url) ? parse_url($this->request->url) : [];
@@ -133,10 +134,10 @@ class Socket extends Emitter
      * Targets a room when broadcasting.
      *
      * @param  {String} name
-     * @return {Socket} self
+     * @return Socket {Socket} self
      * @api    public
      */
-    public function to($name)
+    public function to($name): Socket
     {
         if (! isset($this->_rooms[$name])) {
             $this->_rooms[$name] = $name;
@@ -144,7 +145,7 @@ class Socket extends Emitter
         return $this;
     }
 
-    public function in($name)
+    public function in($name): Socket
     {
         return $this->to($name);
     }
@@ -152,10 +153,10 @@ class Socket extends Emitter
     /**
      * Sends a `message` event.
      *
-     * @return {Socket} self
+     * @return Socket {Socket} self
      * @api    public
      */
-    public function send()
+    public function send(): Socket
     {
         $args = func_get_args();
         array_unshift($args, 'message');
@@ -163,7 +164,7 @@ class Socket extends Emitter
         return $this;
     }
 
-    public function write()
+    public function write(): Socket
     {
         $args = func_get_args();
         array_unshift($args, 'message');
@@ -184,19 +185,17 @@ class Socket extends Emitter
             return;
         }
         $packet['nsp'] = $this->nsp->name;
-        $volatile = false;
-        $this->client->packet($packet, $preEncoded, $volatile);
+        $this->client->packet($packet, $preEncoded, false);
     }
 
     /**
      * Joins a room.
      *
      * @param  {String} room
-     * @param  {Function} optional, callback
-     * @return {Socket} self
+     * @return Socket {Socket} self
      * @api    private
      */
-    public function join($room)
+    public function join($room): Socket
     {
         if (! $this->connected) {
             return $this;
@@ -213,11 +212,10 @@ class Socket extends Emitter
      * Leaves a room.
      *
      * @param  {String} room
-     * @param  {Function} optional, callback
-     * @return {Socket} self
+     * @return Socket {Socket} self
      * @api    private
      */
-    public function leave($room)
+    public function leave($room): Socket
     {
         $this->adapter->del($this->id, $room);
         unset($this->rooms[$room]);
@@ -300,11 +298,11 @@ class Socket extends Emitter
      * @param {Number} packet id
      * @api   private
      */
-    public function ack($id)
+    public function ack($id): Closure
     {
-        $self = $this;
         $sent = false;
-        return function () use (&$sent, $id, $self) {
+        return function () use (&$sent, $id) {
+            $self = $this;
             // prevent double callbacks
             if ($sent) {
                 return;
@@ -326,7 +324,6 @@ class Socket extends Emitter
      *
      * @api private
      */
-
     public function onack($packet)
     {
         $ack = $this->acks[$packet['id']];
@@ -346,7 +343,6 @@ class Socket extends Emitter
      */
     public function ondisconnect()
     {
-        //echo('got disconnect packet');
         $this->onclose('client namespace disconnect');
     }
 
@@ -412,11 +408,12 @@ class Socket extends Emitter
     /**
      * Disconnects this client.
      *
-     * @param  {Boolean} if `true`, closes the underlying connection
-     * @return {Socket} self
+     * @param bool $close
+     * @return Socket {Socket} self
+     * @throws Exception
      * @api    public
      */
-    public function disconnect($close = false)
+    public function disconnect(bool $close = false): Socket
     {
         if (! $this->connected) {
             return $this;
@@ -438,16 +435,16 @@ class Socket extends Emitter
      * Sets the compress flag.
      *
      * @param  {Boolean} if `true`, compresses the sending data
-     * @return {Socket} self
+     * @return Socket {Socket} self
      * @api    public
      */
-    public function compress($compress)
+    public function compress($compress): Socket
     {
         $this->flags['compress'] = $compress;
         return $this;
     }
 
-    protected function hasBin($args)
+    protected function hasBin($args): bool
     {
         $hasBin = false;
 

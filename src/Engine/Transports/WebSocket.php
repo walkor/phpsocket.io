@@ -12,6 +12,7 @@ class WebSocket extends Transport
     public $supportsFraming = true;
     public $supportsBinary = true;
     public $name = 'websocket';
+    public $socket = null;
 
     public function __construct($req)
     {
@@ -40,7 +41,7 @@ class WebSocket extends Transport
     public function send($packets)
     {
         foreach ($packets as $packet) {
-            $data = Parser::encodePacket($packet, $this->supportsBinary);
+            $data = Parser::encodePacket($packet);
             if ($this->socket) {
                 $this->socket->send($data);
                 $this->emit('drain');

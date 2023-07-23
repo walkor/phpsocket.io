@@ -159,7 +159,7 @@ class Engine extends Emitter
                     $allow_origin === '*:' . $parts['port'];
                 if ($ok) {
                     // 只需要有一个白名单通过，则都通过
-                    return call_user_func($fn, null, $ok, $req, $res);
+                    return call_user_func($fn, null, true, $req, $res);
                 }
             }
         }

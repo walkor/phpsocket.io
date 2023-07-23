@@ -21,6 +21,8 @@ class Socket extends Emitter
     public $checkIntervalTimer;
     public $upgradeTimeoutTimer = null;
     public $pingTimeoutTimer = null;
+    public $upgradeTransport = null;
+    public $transport = null;
 
     public function __construct($id, $server, $transport, $req)
     {
@@ -109,7 +111,6 @@ class Socket extends Emitter
 
     public function onUpgradeTransportError($err)
     {
-        //echo $err;
         $this->upgradeCleanup();
         if ($this->upgradeTransport) {
             $this->upgradeTransport->close();
@@ -172,11 +173,9 @@ class Socket extends Emitter
                     $this->sendPacket('pong');
                     $this->emit('heartbeat');
                     break;
-
                 case 'error':
                     $this->onClose('parse error');
                     break;
-
                 case 'message':
                     $this->emit('data', $packet['data']);
                     $this->emit('message', $packet['data']);
@@ -259,13 +258,13 @@ class Socket extends Emitter
         }
     }
 
-    public function send($data, $options, $callback)
+    public function send($data, $options, $callback): Socket
     {
         $this->sendPacket('message', $data, $callback);
         return $this;
     }
 
-    public function write($data, $options = [], $callback = null)
+    public function write($data, $options = [], $callback = null): Socket
     {
         return $this->send($data, $options, $callback);
     }
@@ -316,7 +315,7 @@ class Socket extends Emitter
         }
     }
 
-    public function getAvailableUpgrades()
+    public function getAvailableUpgrades(): array
     {
         return ['websocket'];
     }
@@ -345,7 +344,6 @@ class Socket extends Emitter
 
     public function setupSendCallback()
     {
-        $self = $this;
         //the message was sent successfully, execute the callback
         $this->transport->on('drain', [$this, 'onDrainCallback']);
     }

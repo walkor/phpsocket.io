@@ -16,6 +16,7 @@
 namespace PHPSocketIO\Engine\Protocols\WebSocket;
 
 use Workerman\Connection\ConnectionInterface;
+use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\ProtocolInterface;
 
 /**
@@ -33,14 +34,14 @@ class RFC6455 implements ProtocolInterface
     /**
      * websocket blob类型
      *
-     * @var char
+     * @var string
      */
     const BINARY_TYPE_BLOB = "\x81";
 
     /**
      * websocket arraybuffer类型
      *
-     * @var char
+     * @var string
      */
     const BINARY_TYPE_ARRAYBUFFER = "\x82";
 
@@ -72,14 +73,12 @@ class RFC6455 implements ProtocolInterface
             $opcode = $firstbyte & 0xf;
             switch ($opcode) {
                 // 附加数据帧 @todo 实现附加数据帧
+                case 0x1:
+                case 0x2:
                 case 0x0:
                     break;
                 // 文本数据帧
-                case 0x1:
-                    break;
                 // 二进制数据帧
-                case 0x2:
-                    break;
                 // 关闭的包
                 case 0x8:
                     // 如果有设置onWebSocketClose回调，尝试执行
@@ -215,7 +214,7 @@ class RFC6455 implements ProtocolInterface
      */
     public static function decode($buffer, ConnectionInterface $connection)
     {
-        $len = $masks = $data = $decoded = null;
+        $masks = $data = $decoded = null;
         $len = ord($buffer[1]) & 127;
         if ($len === 126) {
             $masks = substr($buffer, 4, 4);
@@ -243,8 +242,9 @@ class RFC6455 implements ProtocolInterface
     /**
      * 处理websocket握手
      *
-     * @param  string        $buffer
-     * @param  TcpConnection $connection
+     * @param TcpConnection $connection
+     * @param $req
+     * @param $res
      * @return int
      */
     public static function dealHandshake($connection, $req, $res)

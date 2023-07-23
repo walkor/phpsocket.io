@@ -2,6 +2,7 @@
 
 namespace PHPSocketIO;
 
+use Exception;
 use PHPSocketIO\Parser\Decoder;
 use PHPSocketIO\Parser\Encoder;
 use PHPSocketIO\Parser\Parser;
@@ -16,6 +17,10 @@ class Client
     public $request = null;
     public $nsps = [];
     public $connectBuffer = [];
+    /**
+     * @var array|mixed|null
+     */
+    public $sockets;
 
     public function __construct($server, $conn)
     {
@@ -148,7 +153,7 @@ class Client
     public function writeToEngine($encodedPackets, $volatile = false)
     {
         if ($volatile) {
-            echo new \Exception('volatile');
+            echo new Exception('volatile');
         }
         if ($volatile && ! $this->conn->transport->writable) {
             return;
@@ -172,7 +177,7 @@ class Client
         try {
             // todo chek '2["chat message","2"]' . "\0" . ''
             $this->decoder->add(trim($data));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->onerror($e);
         }
     }
