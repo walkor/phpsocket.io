@@ -158,7 +158,6 @@ class Client
         if ($volatile && ! $this->conn->transport->writable) {
             return;
         }
-        // todo check
         if (isset($encodedPackets['nsp'])) {
             unset($encodedPackets['nsp']);
         }

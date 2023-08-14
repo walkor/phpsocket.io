@@ -150,7 +150,7 @@ class Nsp extends Emitter
      * @return Nsp {Socket} self
      * @api    public
      */
-    public function compress($compress)
+    public function compress($compress): Nsp
     {
         $this->flags['compress'] = $compress;
         return $this;
