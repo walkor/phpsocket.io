@@ -21,36 +21,17 @@ class Decoder extends Emitter
     /**
      * @throws Exception
      */
-    public function add($obj)
+    public function add($obj): void
     {
         if (is_string($obj)) {
             $packet = self::decodeString($obj);
-            if (Parser::BINARY_EVENT == $packet['type'] || Parser::BINARY_ACK == $packet['type']) {
-                // binary packet's json todo BinaryReconstructor
-                $this->reconstructor = new BinaryReconstructor(packet);
-
-                // no attachments, labeled binary but no binary data to follow
-                if ($this->reconstructor->reconPack->attachments === 0) {
-                    $this->emit('decoded', $packet);
-                }
-            } else { // non-binary full packet
-                $this->emit('decoded', $packet);
-            }
-        } elseif (isBuf($obj) || ! empty($obj['base64'])) { // raw binary data
-            if (! $this->reconstructor) {
-                throw new Exception('got binary data when not reconstructing a packet');
-            } else {
-                $packet = $this->reconstructor->takeBinaryData($obj);
-                if ($packet) { // received final buffer
-                    $this->reconstructor = null;
-                    $this->emit('decoded', $packet);
-                }
-            }
-        } else {
-            throw new Exception('Unknown type: ' + obj);
+            $this->emit('decoded', $packet);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function decodeString($str): array
     {
         $p = [];
@@ -67,7 +48,7 @@ class Decoder extends Emitter
             $buf = '';
             while ($str[++$i] != '-') {
                 $buf .= $str[$i];
-                if ($i == strlen(str)) {
+                if ($i == strlen($str)) {
                     break;
                 }
             }
@@ -116,7 +97,6 @@ class Decoder extends Emitter
 
         // look up json data
         if (isset($str[++$i])) {
-            // todo try
             $p['data'] = json_decode(substr($str, $i), true);
         }
 
@@ -129,9 +109,5 @@ class Decoder extends Emitter
             'type' => Parser::ERROR,
             'data' => 'parser error'
         ];
-    }
-
-    public function destroy()
-    {
     }
 }

@@ -90,7 +90,6 @@ class Socket extends Emitter
         }
     }
 
-
     public function upgradeCleanup()
     {
         $this->upgrading = false;
