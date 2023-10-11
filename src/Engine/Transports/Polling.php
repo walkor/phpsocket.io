@@ -11,6 +11,9 @@ class Polling extends Transport
     public $chunks = '';
     public $shouldClose = null;
     public $writable = false;
+    public $supportsBinary = null;
+    public $dataRes = null;
+    public $dataReq = null;
 
     public function onRequest($req)
     {
@@ -26,11 +29,9 @@ class Polling extends Transport
         }
     }
 
-    public function onPollRequest($req, $res)
+    public function onPollRequest(object $req, object $res): void
     {
         if ($this->req) {
-            echo('request overlap');
-            // assert: this.res, '.req and .res should be (un)set together'
             $this->onError('overlap from client');
             $res->writeHead(500);
             return;
@@ -45,32 +46,29 @@ class Polling extends Transport
         $this->writable = true;
         $this->emit('drain');
 
-        // if we're still writable but had a pending close, trigger an empty send
         if ($this->writable && $this->shouldClose) {
             echo('triggering empty send to append close packet');
             $this->send([['type' => 'noop']]);
         }
     }
 
-    public function pollRequestOnClose()
+    public function pollRequestOnClose(): void
     {
         $this->onError('poll connection closed prematurely');
         $this->pollRequestClean();
     }
 
-    public function pollRequestClean()
+    public function pollRequestClean(): void
     {
         if (isset($this->req)) {
-            $this->req->res = null;
-            $this->req->onClose = $this->req->cleanup = null;
-            $this->req = $this->res = null;
+            $this->req = null;
+            $this->res = null;
         }
     }
 
-    public function onDataRequest($req, $res)
+    public function onDataRequest($req, $res): void
     {
         if (isset($this->dataReq)) {
-            // assert: this.dataRes, '.dataReq and .dataRes should be (un)set together'
             $this->onError('data request overlap from client');
             $res->writeHead(500);
             return;
@@ -83,26 +81,25 @@ class Polling extends Transport
         $req->onEnd = [$this, 'dataRequestOnEnd'];
     }
 
-    public function dataRequestCleanup()
+    public function dataRequestCleanup(): void
     {
         $this->chunks = '';
-        $this->dataReq->res = null;
-        $this->dataReq->onClose = $this->dataReq->onData = $this->dataReq->onEnd = null;
-        $this->dataReq = $this->dataRes = null;
+        $this->dataReq = null;
+        $this->dataRes = null;
     }
 
-    public function dataRequestOnClose()
+    public function dataRequestOnClose(): void
     {
         $this->dataRequestCleanup();
         $this->onError('data request connection closed prematurely');
     }
 
-    public function dataRequestOnData($req, $data)
+    public function dataRequestOnData($req, $data): void
     {
         $this->chunks .= $data;
     }
 
-    public function dataRequestOnEnd()
+    public function dataRequestOnEnd(): void
     {
         $this->onData($this->chunks);
 
@@ -137,13 +134,12 @@ class Polling extends Transport
     public function onClose()
     {
         if ($this->writable) {
-            // close pending poll request
             $this->send([['type' => 'noop']]);
         }
         parent::onClose();
     }
 
-    public function send($packets)
+    public function send($packets): void
     {
         $this->writable = false;
         if ($this->shouldClose) {
@@ -156,7 +152,7 @@ class Polling extends Transport
         $this->write($data);
     }
 
-    public function write($data)
+    public function write($data): void
     {
         $this->doWrite($data);
         if (! empty($this->req->cleanup)) {
@@ -164,7 +160,7 @@ class Polling extends Transport
         }
     }
 
-    public function doClose($fn)
+    public function doClose(callable $fn): void
     {
         if (! empty($this->dataReq)) {
             $this->dataReq->destroy();
