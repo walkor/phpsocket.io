@@ -28,17 +28,17 @@ class WebSocket extends Transport
         Debug::debug('WebSocket __destruct');
     }
 
-    public function onData2($connection, $data)
+    public function onData2($connection, $data): void
     {
         call_user_func([$this, 'parent::onData'], $data);
     }
 
-    public function onError2($conection, $code, $msg)
+    public function onError2($conection, $code, $msg): void
     {
         call_user_func([$this, 'parent::onClose'], $code, $msg);
     }
 
-    public function send($packets)
+    public function send(array $packets): void
     {
         foreach ($packets as $packet) {
             $data = Parser::encodePacket($packet);
@@ -49,7 +49,7 @@ class WebSocket extends Transport
         }
     }
 
-    public function doClose($fn = null)
+    public function doClose(callable $fn = null): void
     {
         if ($this->socket) {
             $this->socket->close();

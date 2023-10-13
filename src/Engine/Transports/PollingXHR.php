@@ -47,7 +47,7 @@ class PollingXHR extends Polling
         $this->res->end($data);
     }
 
-    public function headers($req, $headers = [])
+    public function headers(object $req, array $headers = []): array
     {
         if (isset($req->headers['origin'])) {
             $headers['Access-Control-Allow-Credentials'] = 'true';

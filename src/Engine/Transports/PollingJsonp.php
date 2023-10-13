@@ -12,8 +12,7 @@ class PollingJsonp extends Polling
 
     public function __construct($req)
     {
-        $j = isset($req->_query['j']) ? preg_replace('/[^0-9]/', '', $req->_query['j']) : '';
-        $this->head = "___eio[ $j ](";
+        $this->head = '___eio[' . (isset($req['_query']['j']) ? preg_replace('/[^0-9]/', '', $req['_query']['j']) : '') . '](';
         Debug::debug('PollingJsonp __construct');
     }
 
@@ -30,11 +29,10 @@ class PollingJsonp extends Polling
         call_user_func([$this, 'parent::onData'], preg_replace('/\\\\n/', '\\n', $data));
     }
 
-    public function doWrite($data)
+    public function doWrite($data): void
     {
         $js = json_encode($data);
 
-        // prepare response
         $data = $this->head . $js . $this->foot;
 
         // explicit UTF-8 is required for pages not served under utf
@@ -47,11 +45,11 @@ class PollingJsonp extends Polling
             echo new Exception('empty $this->res');
             return;
         }
-        $this->res->writeHead(200, '', $this->headers($this->req, $headers));
+        $this->res->writeHead(200, '', $this->headers($headers));
         $this->res->end($data);
     }
 
-    public function headers($req, $headers = [])
+    public function headers(array $headers = []): array
     {
         $listeners = $this->listeners('headers');
         foreach ($listeners as $listener) {

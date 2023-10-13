@@ -30,13 +30,13 @@ class Engine extends Emitter
         'Bad request'
     ];
 
-    const ERROR_UNKNOWN_TRANSPORT = 0;
+    private const ERROR_UNKNOWN_TRANSPORT = 0;
 
-    const ERROR_UNKNOWN_SID = 1;
+    private const ERROR_UNKNOWN_SID = 1;
 
-    const ERROR_BAD_HANDSHAKE_METHOD = 2;
+    private const ERROR_BAD_HANDSHAKE_METHOD = 2;
 
-    const ERROR_BAD_REQUEST = 3;
+    private const ERROR_BAD_REQUEST = 3;
 
     public function __construct($opts = [])
     {
@@ -48,6 +48,7 @@ class Engine extends Emitter
             'allowUpgrades',
             'allowRequest'
         ];
+
         foreach ($ops_map as $key) {
             if (isset($opts[$key])) {
                 $this->$key = $opts[$key];
@@ -61,7 +62,7 @@ class Engine extends Emitter
         Debug::debug('Engine __destruct');
     }
 
-    public function handleRequest($req, $res)
+    public function handleRequest(object $req, object $res)
     {
         $this->prepare($req);
         $req->res = $res;
@@ -71,7 +72,7 @@ class Engine extends Emitter
     /**
      * @throws Exception
      */
-    public function dealRequest($err, $success, $req)
+    public function dealRequest($err, bool $success, object $req)
     {
         if (! $success) {
             self::sendErrorMessage($req, $req->res, $err);
@@ -85,7 +86,7 @@ class Engine extends Emitter
         }
     }
 
-    protected function sendErrorMessage($req, $res, $code)
+    protected function sendErrorMessage(object $req, object $res, string $code): void
     {
         $headers = ['Content-Type' => 'application/json'];
         if (isset($req->headers['origin'])) {
@@ -106,7 +107,7 @@ class Engine extends Emitter
         );
     }
 
-    protected function verify($req, $res, $upgrade, $fn)
+    protected function verify(object $req, object $res, bool $upgrade, callable $fn)
     {
         if (! isset($req->_query['transport']) || ! isset(self::$allowTransports[$req->_query['transport']])) {
             return call_user_func($fn, self::ERROR_UNKNOWN_TRANSPORT, false, $req, $res);
@@ -129,7 +130,7 @@ class Engine extends Emitter
         call_user_func($fn, null, true, $req, $res);
     }
 
-    public function checkRequest($req, $res, $fn)
+    public function checkRequest(object $req, object $res, callable $fn)
     {
         if ($this->origins === "*:*" || empty($this->origins)) {
             return call_user_func($fn, null, true, $req, $res);
@@ -158,7 +159,6 @@ class Engine extends Emitter
                     $allow_origin === $parts['scheme'] . '://' . $parts['host'] . ':*' ||
                     $allow_origin === '*:' . $parts['port'];
                 if ($ok) {
-                    // 只需要有一个白名单通过，则都通过
                     return call_user_func($fn, null, true, $req, $res);
                 }
             }
@@ -166,7 +166,7 @@ class Engine extends Emitter
         call_user_func($fn, null, false, $req, $res);
     }
 
-    protected function prepare($req)
+    protected function prepare(object $req)
     {
         if (! isset($req->_query)) {
             $info = parse_url($req->url);
@@ -179,7 +179,7 @@ class Engine extends Emitter
     /**
      * @throws Exception
      */
-    public function handshake($transport, $req)
+    public function handshake(string $transport, object $req)
     {
         $id = bin2hex(pack('d', microtime(true)) . pack('N', function_exists('random_int') ? random_int(1, 100000000) : rand(1, 100000000)));
         if ($transport == 'websocket') {
@@ -203,18 +203,18 @@ class Engine extends Emitter
         $this->emit('connection', $socket);
     }
 
-    public function onSocketClose($id)
+    public function onSocketClose($id): void
     {
         unset($this->clients[$id]);
     }
 
-    public function attach($worker)
+    public function attach($worker): void
     {
         $this->server = $worker;
         $worker->onConnect = [$this, 'onConnect'];
     }
 
-    public function onConnect($connection)
+    public function onConnect(object $connection): void
     {
         $connection->onRequest = [$this, 'handleRequest'];
         $connection->onWebSocketConnect = [$this, 'onWebSocketConnect'];
@@ -237,7 +237,7 @@ class Engine extends Emitter
         };
     }
 
-    public function onWebSocketConnect($connection, $req, $res)
+    public function onWebSocketConnect($connection, object $req, object $res): void
     {
         $this->prepare($req);
         $this->verify($req, $res, true, [$this, 'dealWebSocketConnect']);
@@ -246,7 +246,7 @@ class Engine extends Emitter
     /**
      * @throws Exception
      */
-    public function dealWebSocketConnect($err, $success, $req, $res)
+    public function dealWebSocketConnect($err, bool $success, object $req, object $res): void
     {
         if (! $success) {
             self::sendErrorMessage($req, $res, $err);

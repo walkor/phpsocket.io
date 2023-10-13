@@ -40,7 +40,7 @@ class Socket extends Emitter
         Debug::debug('Engine/Socket __destruct');
     }
 
-    public function maybeUpgrade($transport)
+    public function maybeUpgrade(object $transport): void
     {
         $this->upgrading = true;
         $this->upgradeTimeoutTimer = Timer::add(
@@ -56,7 +56,7 @@ class Socket extends Emitter
         $this->once('close', [$this, 'onUpgradeTransportClose']);
     }
 
-    public function onUpgradePacket($packet)
+    public function onUpgradePacket(array $packet): void
     {
         if (empty($this->upgradeTransport)) {
             $this->onError('upgradeTransport empty');
@@ -82,15 +82,13 @@ class Socket extends Emitter
                 $this->transport->close([$this, 'onClose']);
             }
         } else {
-            if (! empty($this->upgradeTransport)) {
-                $this->upgradeCleanup();
-                $this->upgradeTransport->close();
-                $this->upgradeTransport = null;
-            }
+            $this->upgradeCleanup();
+            $this->upgradeTransport->close();
+            $this->upgradeTransport = null;
         }
     }
 
-    public function upgradeCleanup()
+    public function upgradeCleanup(): void
     {
         $this->upgrading = false;
         Timer::del($this->checkIntervalTimer);
@@ -103,12 +101,12 @@ class Socket extends Emitter
         $this->removeListener('close', [$this, 'onUpgradeTransportClose']);
     }
 
-    public function onUpgradeTransportClose()
+    public function onUpgradeTransportClose(): void
     {
         $this->onUpgradeTransportError('transport closed');
     }
 
-    public function onUpgradeTransportError($err)
+    public function onUpgradeTransportError($err): void
     {
         $this->upgradeCleanup();
         if ($this->upgradeTransport) {
@@ -117,7 +115,7 @@ class Socket extends Emitter
         }
     }
 
-    public function upgradeTimeoutCallback($transport)
+    public function upgradeTimeoutCallback(object $transport): void
     {
         $this->upgradeCleanup();
         if ('open' === $transport->readyState) {
@@ -125,7 +123,7 @@ class Socket extends Emitter
         }
     }
 
-    public function setTransport($transport)
+    public function setTransport(object $transport)
     {
         $this->transport = $transport;
         $this->transport->once('error', [$this, 'onError']);
@@ -136,11 +134,10 @@ class Socket extends Emitter
         $this->setupSendCallback();
     }
 
-    public function onOpen()
+    public function onOpen(): void
     {
         $this->readyState = 'open';
 
-        // sends an `open` packet
         $this->transport->sid = $this->id;
         $this->sendPacket(
             'open',
@@ -158,7 +155,7 @@ class Socket extends Emitter
         $this->setPingTimeout();
     }
 
-    public function onPacket($packet)
+    public function onPacket(array $packet)
     {
         if ('open' === $this->readyState) {
             // export packet event
@@ -185,19 +182,19 @@ class Socket extends Emitter
         }
     }
 
-    public function check()
+    public function check(): void
     {
         if ('polling' == $this->transport->name && $this->transport->writable) {
             $this->transport->send([['type' => 'noop']]);
         }
     }
 
-    public function onError($err)
+    public function onError($err): void
     {
         $this->onClose('transport error', $err);
     }
 
-    public function setPingTimeout()
+    public function setPingTimeout(): void
     {
         if ($this->pingTimeoutTimer) {
             Timer::del($this->pingTimeoutTimer);
@@ -210,20 +207,19 @@ class Socket extends Emitter
         );
     }
 
-    public function pingTimeoutCallback()
+    public function pingTimeoutCallback(): void
     {
         $this->transport->close();
         $this->onClose('ping timeout');
     }
 
-
-    public function clearTransport()
+    public function clearTransport(): void
     {
         $this->transport->close();
         Timer::del($this->pingTimeoutTimer);
     }
 
-    public function onClose($reason = '', $description = null)
+    public function onClose(string $reason = '', ?string $description = null): void
     {
         if ('closed' !== $this->readyState) {
             Timer::del($this->pingTimeoutTimer);
@@ -257,18 +253,18 @@ class Socket extends Emitter
         }
     }
 
-    public function send($data, $options, $callback): Socket
+    public function send($data, $options, ?callable $callback): Socket
     {
         $this->sendPacket('message', $data, $callback);
         return $this;
     }
 
-    public function write($data, $options = [], $callback = null): Socket
+    public function write($data, ?array $options = [], ?callable $callback = null): Socket
     {
         return $this->send($data, $options, $callback);
     }
 
-    public function sendPacket($type, $data = null, $callback = null)
+    public function sendPacket(string $type, $data = null, $callback = null): void
     {
         if ('closing' !== $this->readyState) {
             $packet = [
@@ -288,7 +284,7 @@ class Socket extends Emitter
         }
     }
 
-    public function flush()
+    public function flush(): void
     {
         if ('closed' !== $this->readyState && $this->transport->writable
             && $this->writeBuffer
@@ -319,7 +315,7 @@ class Socket extends Emitter
         return ['websocket'];
     }
 
-    public function close()
+    public function close(): void
     {
         if ('open' !== $this->readyState) {
             return;
@@ -335,19 +331,18 @@ class Socket extends Emitter
         $this->closeTransport();
     }
 
-    public function closeTransport()
+    public function closeTransport(): void
     {
-        //todo onClose.bind(this, 'forced close'));
         $this->transport->close([$this, 'onClose']);
     }
 
-    public function setupSendCallback()
+    public function setupSendCallback(): void
     {
         //the message was sent successfully, execute the callback
         $this->transport->on('drain', [$this, 'onDrainCallback']);
     }
 
-    public function onDrainCallback()
+    public function onDrainCallback(): void
     {
         if ($this->sentCallbackFn) {
             $seqFn = array_shift($this->sentCallbackFn);
