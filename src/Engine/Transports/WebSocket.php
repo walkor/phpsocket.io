@@ -8,6 +8,7 @@ use PHPSocketIO\Debug;
 
 class WebSocket extends Transport
 {
+    public $sid = null;
     public $writable = true;
     public $supportsFraming = true;
     public $supportsBinary = true;
@@ -30,12 +31,13 @@ class WebSocket extends Transport
 
     public function onData2($connection, $data): void
     {
-        call_user_func([$this, 'parent::onData'], $data);
+        call_user_func(array(get_parent_class($this), 'onData'), $data);
+
     }
 
     public function onError2($conection, $code, $msg): void
     {
-        call_user_func([$this, 'parent::onClose'], $code, $msg);
+        call_user_func(array(get_parent_class($this), 'onData'), $code, $msg);
     }
 
     public function send(array $packets): void
