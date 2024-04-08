@@ -26,7 +26,7 @@ class PollingJsonp extends Polling
         $parsed_data = null;
         parse_str($data, $parsed_data);
         $data = $parsed_data['d'];
-        call_user_func([$this, 'parent::onData'], preg_replace('/\\\\n/', '\\n', $data));
+        call_user_func(array(get_parent_class($this), 'onData'), preg_replace('/\\\\n/', '\\n', $data));
     }
 
     public function doWrite($data): void

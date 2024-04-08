@@ -8,6 +8,8 @@ class Request
 
     public $onEnd = null;
 
+    public $onClose = null;
+
     public $httpVersion = null;
 
     public $headers = [];
@@ -19,6 +21,8 @@ class Request
     public $url = null;
 
     public $connection = null;
+
+    public $_query = null;
 
     public function __construct($connection, $raw_head)
     {

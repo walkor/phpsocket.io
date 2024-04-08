@@ -23,6 +23,9 @@ class Socket extends Emitter
     public $acks = [];
     public $connected = true;
     public $disconnected = false;
+    public $handshake = [];
+    public $userId = null;
+    public $isGuest = false;
 
     public static $events = [
         'error' => 'error',
@@ -92,7 +95,7 @@ class Socket extends Emitter
     {
         $args = func_get_args();
         if (isset(self::$events[$ev])) {
-            call_user_func_array([__CLASS__, 'parent::emit'], $args);
+            call_user_func_array(array(get_parent_class(__CLASS__), 'emit'), $args);
         } else {
             $packet = [];
             $packet['type'] = Parser::EVENT;
@@ -289,7 +292,7 @@ class Socket extends Emitter
         if (! empty($packet['id']) || (isset($packet['id']) && $packet['id'] === 0)) {
             $args[] = $this->ack($packet['id']);
         }
-        call_user_func_array([__CLASS__, 'parent::emit'], $args);
+        call_user_func_array(array(get_parent_class(__CLASS__), 'emit'), $args);
     }
 
     /**
