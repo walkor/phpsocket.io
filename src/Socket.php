@@ -26,6 +26,9 @@ class Socket extends Emitter
     public $handshake = [];
     public $userId = null;
     public $isGuest = false;
+    public $addedUser = null;
+    public $username = null;
+
 
     public static $events = [
         'error' => 'error',
