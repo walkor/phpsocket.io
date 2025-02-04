@@ -39,7 +39,7 @@ class SocketIO
             class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
         }
         if ($port) {
-            $worker = new Worker('SocketIO://0.0.0.0:' . $port, $opts);
+            $worker = new Worker('SocketIO://[::]:' . $port, $opts);
             $worker->name = 'PHPSocketIO';
 
             if (isset($opts['ssl'])) {
