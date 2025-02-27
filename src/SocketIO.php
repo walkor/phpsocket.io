@@ -39,7 +39,7 @@ class SocketIO
             class_alias('PHPSocketIO\Engine\Protocols\SocketIO', 'Protocols\SocketIO');
         }
         if ($port) {
-            $host = $opts['host'] ?? '0.0.0.0';
+            $host = filter_var(trim($opts['host'] ?? '0.0.0.0', '[]'), FILTER_VALIDATE_IP) ?: '0.0.0.0';
             $worker = new Worker('SocketIO://' . $host . ':' . $port, $opts);
             $worker->name = 'PHPSocketIO';
 
