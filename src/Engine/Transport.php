@@ -41,11 +41,7 @@ class Transport extends Emitter
     public function onError(string $msg, string $desc = '')
     {
         if ($this->listeners('error')) {
-            $err = [
-                'type' => 'TransportError',
-                'description' => $desc,
-            ];
-            $this->emit('error', $err);
+            $this->emit('error', "TransportError: {$desc}");
         } else {
             echo("ignored transport error $msg $desc\n");
         }
