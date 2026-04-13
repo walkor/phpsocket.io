@@ -184,7 +184,6 @@ php start.php status      # status
 
 ## Documentation
 
-- [中文手册](https://github.com/walkor/phpsocket.io/tree/master/docs/zh)
 - [Live demo](http://demos.workerman.net/phpsocketio-chat/)
 
 ## License
