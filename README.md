@@ -182,9 +182,6 @@ php start.php stop        # stop
 php start.php status      # status
 ```
 
-## Documentation
-
-- [Live demo](http://demos.workerman.net/phpsocketio-chat/)
 
 ## License
 
