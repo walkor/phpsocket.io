@@ -39,7 +39,7 @@ class Parser
 
     public static function encodePacket($packet): string
     {
-        $data = ! isset($packet['data']) ? '' : $packet['data'];
+        $data = $packet['data'] ?? '';
         return self::$packets[$packet['type']] . $data;
     }
 
