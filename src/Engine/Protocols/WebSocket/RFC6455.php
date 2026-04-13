@@ -84,8 +84,7 @@ class RFC6455 implements ProtocolInterface
                     // 如果有设置onWebSocketClose回调，尝试执行
                     if (isset($connection->onWebSocketClose)) {
                         call_user_func($connection->onWebSocketClose, $connection);
-                    } // 默认行为是关闭连接
-                    else {
+                    } else { // 默认行为是关闭连接
                         $connection->close();
                     }
                     return 0;
@@ -94,8 +93,7 @@ class RFC6455 implements ProtocolInterface
                     // 如果有设置onWebSocketPing回调，尝试执行
                     if (isset($connection->onWebSocketPing)) {
                         call_user_func($connection->onWebSocketPing, $connection);
-                    } // 默认发送pong
-                    else {
+                    } else { // 默认发送pong
                         $connection->send(pack('H*', '8a00'), true);
                     }
                     // 从接受缓冲区中消费掉该数据包
@@ -154,16 +152,14 @@ class RFC6455 implements ProtocolInterface
             $connection->consumeRecvBuffer($connection->websocketCurrentFrameLength);
             $connection->websocketCurrentFrameLength = 0;
             return 0;
-        } // 收到的数据大于一个frame
-        elseif ($connection->websocketCurrentFrameLength < $recv_len) {
+        } elseif ($connection->websocketCurrentFrameLength < $recv_len) { // 收到的数据大于一个frame
             self::decode(substr($buffer, 0, $connection->websocketCurrentFrameLength), $connection);
             $connection->consumeRecvBuffer($connection->websocketCurrentFrameLength);
             $current_frame_length = $connection->websocketCurrentFrameLength;
             $connection->websocketCurrentFrameLength = 0;
             // 继续读取下一个frame
             return self::input(substr($buffer, $current_frame_length), $connection);
-        } // 收到的数据不足一个frame
-        else {
+        } else { // 收到的数据不足一个frame
             return 0;
         }
     }
