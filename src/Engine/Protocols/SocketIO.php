@@ -163,7 +163,7 @@ class SocketIO
         if (isset($connection->onRequest)) {
             return $http_buffer;
         } else {
-            list($head, $body) = explode("\r\n\r\n", $http_buffer, 2);
+            [$head, $body] = explode("\r\n\r\n", $http_buffer, 2);
             return $body;
         }
     }
