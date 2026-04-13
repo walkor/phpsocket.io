@@ -1,25 +1,39 @@
 # phpsocket.io
-A server side alternative implementation of [socket.io](https://github.com/socketio/socket.io) in PHP based on [Workerman](https://github.com/walkor/Workerman).<br>
 
-# Notice
-Only support socket.io >= v1.3.0 and <= v2.x <br>
-This project is just translate socket.io by [workerman](https://github.com/walkor/Workerman).<br>
-More api just see [https://socket.io/docs/v2/server-api/](https://socket.io/docs/v2/server-api/)
+[![Packagist Version](https://img.shields.io/packagist/v/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
+[![Total Downloads](https://img.shields.io/packagist/dt/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-blue)](https://www.php.net)
+[![License](https://img.shields.io/packagist/l/workerman/phpsocket.io)](LICENSE)
 
-# Install
+A server-side PHP implementation of [socket.io](https://github.com/socketio/socket.io) based on [Workerman](https://github.com/walkor/Workerman).
+
+> **Notice:** Only supports socket.io client >= v1.3.0 and <= v2.x. **socket.io v3 and v4 are not supported.**
+> Requires PHP >= 7.1.
+> For the full server API, see [socket.io/docs/v2/server-api](https://socket.io/docs/v2/server-api/).
+
+## Install
+
+```bash
 composer require workerman/phpsocket.io
+```
 
-# Examples
-## Simple chat
-start.php
+## Examples
+
+### Simple chat
+
+`start.php`
+
 ```php
+<?php
 
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
+
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Listen port 2021 for socket.io client
-$io = new SocketIO(2021);
+// Listen on port 2026 for socket.io clients
+$io = new SocketIO(2026);
+
 $io->on('connection', function ($socket) use ($io) {
     $socket->on('chat message', function ($msg) use ($io) {
         $io->emit('chat message', $msg);
@@ -29,90 +43,10 @@ $io->on('connection', function ($socket) use ($io) {
 Worker::runAll();
 ```
 
-## Another chat demo
+### Another chat demo
 
-https://github.com/walkor/phpsocket.io/blob/master/examples/chat/start_io.php
-```php
+Full source: [examples/chat/start_io.php](https://github.com/walkor/phpsocket.io/blob/master/examples/chat/start_io.php)
 
-use Workerman\Worker;
-use PHPSocketIO\SocketIO;
-require_once __DIR__ . '/vendor/autoload.php';
-
-// Listen port 2020 for socket.io client
-$io = new SocketIO(2020);
-$io->on('connection', function ($socket) {
-    $socket->addedUser = false;
-
-    // When the client emits 'new message', this listens and executes
-    $socket->on('new message', function ($data) use ($socket) {
-        // We tell the client to execute 'new message'
-        $socket->broadcast->emit('new message', array(
-            'username' => $socket->username,
-            'message' => $data
-        ));
-    });
-
-    // When the client emits 'add user', this listens and executes
-    $socket->on('add user', function ($username) use ($socket) {
-        global $usernames, $numUsers;
-
-        // We store the username in the socket session for this client
-        $socket->username = $username;
-        // Add the client's username to the global list
-        $usernames[$username] = $username;
-        ++$numUsers;
-
-        $socket->addedUser = true;
-        $socket->emit('login', array( 
-            'numUsers' => $numUsers
-        ));
-
-        // echo globally (all clients) that a person has connected
-        $socket->broadcast->emit('user joined', array(
-            'username' => $socket->username,
-            'numUsers' => $numUsers
-        ));
-    });
-
-    // When the client emits 'typing', we broadcast it to others
-    $socket->on('typing', function () use ($socket) {
-        $socket->broadcast->emit('typing', array(
-            'username' => $socket->username
-        ));
-    });
-
-    // When the client emits 'stop typing', we broadcast it to others
-    $socket->on('stop typing', function () use ($socket) {
-        $socket->broadcast->emit('stop typing', array(
-            'username' => $socket->username
-        ));
-    });
-
-    // When the user disconnects, perform this
-    $socket->on('disconnect', function () use ($socket) {
-        global $usernames, $numUsers;
-
-        // Remove the username from global usernames list
-        if ($socket->addedUser) {
-            unset($usernames[$socket->username]);
-            --$numUsers;
-
-            // echo globally that this client has left
-            $socket->broadcast->emit('user left', array(
-               'username' => $socket->username,
-               'numUsers' => $numUsers
-            ));
-        }
-   });
-});
-
-Worker::runAll();
-```
-
-## Enable SSL for https 
-**```(phpsocket.io>=1.1.1 && workerman>=3.3.7 required)```**
-
-start.php
 ```php
 <?php
 
@@ -121,36 +55,111 @@ use PHPSocketIO\SocketIO;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// SSL context
-$context = array(
-    'ssl' => array(
-        'local_cert'  => '/your/path/of/server.pem',
-        'local_pk'    => '/your/path/of/server.key',
-        'verify_peer' => false
-    )
-);
-$io = new SocketIO(2021, $context);
+$io = new SocketIO(2020);
 
-$io->on('connection', function ($connection) use ($io) {
-    echo "New connection coming\n";
+$io->on('connection', function ($socket) {
+    $socket->addedUser = false;
+
+    // When the client emits 'new message', this listens and executes
+    $socket->on('new message', function ($data) use ($socket) {
+        $socket->broadcast->emit('new message', [
+            'username' => $socket->username,
+            'message'  => $data,
+        ]);
+    });
+
+    // When the client emits 'add user', this listens and executes
+    $socket->on('add user', function ($username) use ($socket) {
+        // Note: global variables are used here for simplicity (demo only)
+        global $usernames, $numUsers;
+
+        $socket->username = $username;
+        $usernames[$username] = $username;
+        ++$numUsers;
+
+        $socket->addedUser = true;
+        $socket->emit('login', ['numUsers' => $numUsers]);
+
+        $socket->broadcast->emit('user joined', [
+            'username' => $socket->username,
+            'numUsers' => $numUsers,
+        ]);
+    });
+
+    // When the client emits 'typing', broadcast it to others
+    $socket->on('typing', function () use ($socket) {
+        $socket->broadcast->emit('typing', ['username' => $socket->username]);
+    });
+
+    // When the client emits 'stop typing', broadcast it to others
+    $socket->on('stop typing', function () use ($socket) {
+        $socket->broadcast->emit('stop typing', ['username' => $socket->username]);
+    });
+
+    // When the user disconnects
+    $socket->on('disconnect', function () use ($socket) {
+        global $usernames, $numUsers;
+
+        if ($socket->addedUser) {
+            unset($usernames[$socket->username]);
+            --$numUsers;
+
+            $socket->broadcast->emit('user left', [
+                'username' => $socket->username,
+                'numUsers' => $numUsers,
+            ]);
+        }
+    });
 });
 
 Worker::runAll();
 ```
 
-## Acknowledgement callback
+### Enable SSL (HTTPS)
+
+> Requires phpsocket.io >= 1.1.1 and workerman >= 3.3.7
+
+`start.php`
+
 ```php
+<?php
 
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$io = new SocketIO(2021);
+$context = [
+    'ssl' => [
+        'local_cert'  => '/your/path/of/server.pem',
+        'local_pk'    => '/your/path/of/server.key',
+        'verify_peer' => false,
+    ],
+];
 
-$io->on('connection', function ($connection) use ($io) {
-    $socket->on('message with ack', function ($data, $callback) use ($socket, $io) {
-        // acknowledgement callback
+$io = new SocketIO(2026, $context);
+
+$io->on('connection', function ($socket) {
+    echo "New connection: {$socket->id}\n";
+});
+
+Worker::runAll();
+```
+
+### Acknowledgement callback
+
+```php
+<?php
+
+use Workerman\Worker;
+use PHPSocketIO\SocketIO;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$io = new SocketIO(2026);
+
+$io->on('connection', function ($socket) {
+    $socket->on('message with ack', function ($data, $callback) {
         if ($callback && is_callable($callback)) {
             $callback(0);
         }
@@ -160,25 +169,24 @@ $io->on('connection', function ($connection) use ($io) {
 Worker::runAll();
 ```
 
-# 手册
-[中文手册](https://github.com/walkor/phpsocket.io/tree/master/docs/zh)
+## Run chat example
 
-# Livedemo
-[chat demo](http://demos.workerman.net/phpsocketio-chat/)
-
-# Run chat example
+```bash
 cd examples/chat
+```
 
-## Start
-```php start.php start``` for debug mode
+```bash
+php start.php start       # debug mode
+php start.php start -d    # daemon mode
+php start.php stop        # stop
+php start.php status      # status
+```
 
-```php start.php start -d ``` for daemon mode
+## Documentation
 
-## Stop
-```php start.php stop```
+- [中文手册](https://github.com/walkor/phpsocket.io/tree/master/docs/zh)
+- [Live demo](http://demos.workerman.net/phpsocketio-chat/)
 
-## Status
-```php start.php status```
+## License
 
-# License
-MIT
+[MIT](LICENSE)
