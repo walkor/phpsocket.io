@@ -2,27 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Socket.IO Chat Example</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <ul class="pages">
     <li class="chat page">
-      <div class="chatArea">
-        <ul class="messages"></ul>
+      <div class="chatHeader">
+        <div class="chatHeaderLeft">
+          <span class="statusDot"></span>
+          <span class="chatTitle">Socket.IO Chat</span>
+        </div>
+        <span class="onlineCount"><span class="onlineNumber">0</span> online</span>
       </div>
-      <input class="inputMessage" placeholder="Type here..."/>
+      <div class="chatBody">
+        <div class="chatArea">
+          <ul class="messages"></ul>
+        </div>
+        <aside class="sidebar">
+          <div class="sidebarTitle">Online</div>
+          <ul class="userList"></ul>
+        </aside>
+      </div>
+      <div class="inputArea">
+        <input class="inputMessage" placeholder="Type a message..." autocomplete="off"/>
+        <button class="sendButton" title="Send">&#9654;</button>
+      </div>
+      <footer class="chatFooter">
+        Powered by <a href="https://github.com/walkor/phpsocket.io" target="_blank">phpsocket.io</a>
+        &amp; <a href="https://github.com/walkor/workerman" target="_blank">Workerman</a>
+      </footer>
     </li>
     <li class="login page">
       <div class="form">
-        <h3 class="title">What's your nickname?</h3>
-        <input class="usernameInput" type="text" maxlength="14" />
+        <h2 class="brandName">phpsocket.io</h2>
+        <p class="brandDesc">A server-side PHP implementation of Socket.IO</p>
+        <hr class="brandDivider"/>
+        <input class="usernameInput" type="text" maxlength="14" placeholder="Your nickname..." autocomplete="off"/>
+        <button class="joinButton">Join Chat Demo</button>
       </div>
     </li>
   </ul>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.6.1/socket.io.min.js"></script>
-  <script src="/main.js"></script>
+  <script src="socket.io.min.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

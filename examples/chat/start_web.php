@@ -7,7 +7,7 @@ use Workerman\Connection\TcpConnection;
 // composer autoload
 require_once join(DIRECTORY_SEPARATOR, array(__DIR__, "..", "..", "vendor", "autoload.php"));
 
-$web = new Worker('http://0.0.0.0:2022');
+$web = new Worker('http://0.0.0.0:2027');
 $web->name = 'web';
 
 define('WEBROOT', __DIR__ . DIRECTORY_SEPARATOR .  'public');

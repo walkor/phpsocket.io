@@ -3,12 +3,13 @@
 [![Packagist Version](https://img.shields.io/packagist/v/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
 [![Total Downloads](https://img.shields.io/packagist/dt/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-blue)](https://www.php.net)
+[![Workerman](https://img.shields.io/badge/workerman-%3E%3D4.0%20%3C5.0-orange)](https://github.com/walkor/Workerman)
 [![License](https://img.shields.io/packagist/l/workerman/phpsocket.io)](LICENSE)
 
 A server-side PHP implementation of [socket.io](https://github.com/socketio/socket.io) based on [Workerman](https://github.com/walkor/Workerman).
 
 > **Notice:** Only supports socket.io client >= v1.3.0 and <= v2.x. **socket.io v3 and v4 are not supported.**
-> Requires PHP >= 7.1.
+> Requires PHP >= 7.1 and Workerman >= 4.0 < 5.0. **Workerman 5.x is not supported.**
 > For the full server API, see [socket.io/docs/v2/server-api](https://socket.io/docs/v2/server-api/).
 
 ## Install
@@ -55,7 +56,7 @@ use PHPSocketIO\SocketIO;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$io = new SocketIO(2020);
+$io = new SocketIO(2026);
 
 $io->on('connection', function ($socket) {
     $socket->addedUser = false;
@@ -171,6 +172,19 @@ Worker::runAll();
 
 ## Run chat example
 
+### With Docker
+
+```bash
+docker compose up --build
+```
+
+Then open your browser at:
+
+- **Chat:** [http://localhost:2027](http://localhost:2027)
+- **Socket.IO:** port `2026`
+
+### Without Docker
+
 ```bash
 cd examples/chat
 ```
@@ -182,6 +196,11 @@ php start.php stop        # stop
 php start.php status      # status
 ```
 
+Then open [http://localhost:2027](http://localhost:2027) in your browser.
+
+### Server debug output
+
+The chat example includes built-in server-side logging. When running in debug mode, connections, user activity, and messages are printed to the terminal in real time with color-coded output.
 
 ## License
 

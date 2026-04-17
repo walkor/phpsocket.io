@@ -1,71 +1,83 @@
 <?php
 use Workerman\Worker;
-use Workerman\WebServer;
-use Workerman\Autoloader;
 use PHPSocketIO\SocketIO;
 
 // composer autoload
-require_once join(DIRECTORY_SEPARATOR, array(__DIR__, "..", "..", "vendor", "autoload.php"));
+require_once join(DIRECTORY_SEPARATOR, array(__DIR__, '..', '..', 'vendor', 'autoload.php'));
 
-$io = new SocketIO(2020);
-$io->on('connection', function($socket){
+function chatLog(string $level, string $message): void
+{
+    $time = date('Y-m-d H:i:s');
+    $levels = ['INFO' => "\033[32m", 'DISCONNECT' => "\033[33m", 'ERROR' => "\033[31m"];
+    $color  = $levels[$level] ?? "\033[37m";
+    echo "{$color}[{$time}] [{$level}] {$message}\033[0m\n";
+}
+
+$io = new SocketIO(2026);
+
+$io->on('connection', function ($socket) {
     $socket->addedUser = false;
-    // when the client emits 'new message', this listens and executes
-    $socket->on('new message', function ($data)use($socket){
-        // we tell the client to execute 'new message'
-        $socket->broadcast->emit('new message', array(
-            'username'=> $socket->username,
-            'message'=> $data
-        ));
+
+    $remoteAddress = $socket->conn->remoteAddress ?? 'unknown';
+    chatLog('INFO', "New connection from {$remoteAddress} | sid: {$socket->id}");
+
+    $socket->on('new message', function ($data) use ($socket) {
+        chatLog('INFO', "Message from [{$socket->username}]: {$data}");
+        $socket->broadcast->emit('new message', [
+            'username' => $socket->username,
+            'message'  => $data,
+        ]);
     });
 
-    // when the client emits 'add user', this listens and executes
-    $socket->on('add user', function ($username) use($socket){
-    if ($socket->addedUser)
-      return;
+    $socket->on('add user', function ($username) use ($socket) {
+        if ($socket->addedUser) return;
+
         global $usernames, $numUsers;
-        // we store the username in the socket session for this client
-        $socket->username = $username;
+
+        $socket->username  = $username;
+        $usernames[$username] = $username;
         ++$numUsers;
         $socket->addedUser = true;
-        $socket->emit('login', array( 
-            'numUsers' => $numUsers
-        ));
-        // echo globally (all clients) that a person has connected
-        $socket->broadcast->emit('user joined', array(
+
+        chatLog('INFO', "User joined: [{$username}] | online: {$numUsers}");
+
+        $socket->emit('login', [
+            'numUsers'  => $numUsers,
+            'usernames' => array_values($usernames),
+        ]);
+
+        $socket->broadcast->emit('user joined', [
             'username' => $socket->username,
-            'numUsers' => $numUsers
-        ));
+            'numUsers' => $numUsers,
+        ]);
     });
 
-    // when the client emits 'typing', we broadcast it to others
-    $socket->on('typing', function () use($socket) {
-        $socket->broadcast->emit('typing', array(
-            'username' => $socket->username
-        ));
+    $socket->on('typing', function () use ($socket) {
+        $socket->broadcast->emit('typing', ['username' => $socket->username]);
     });
 
-    // when the client emits 'stop typing', we broadcast it to others
-    $socket->on('stop typing', function () use($socket) {
-        $socket->broadcast->emit('stop typing', array(
-            'username' => $socket->username
-        ));
+    $socket->on('stop typing', function () use ($socket) {
+        $socket->broadcast->emit('stop typing', ['username' => $socket->username]);
     });
 
-    // when the user disconnects.. perform this
-    $socket->on('disconnect', function () use($socket) {
+    $socket->on('disconnect', function () use ($socket) {
         global $usernames, $numUsers;
-        if($socket->addedUser) {
+
+        if ($socket->addedUser) {
+            unset($usernames[$socket->username]);
             --$numUsers;
 
-           // echo globally that this client has left
-           $socket->broadcast->emit('user left', array(
-               'username' => $socket->username,
-               'numUsers' => $numUsers
-            ));
+            chatLog('DISCONNECT', "User left: [{$socket->username}] | online: {$numUsers}");
+
+            $socket->broadcast->emit('user left', [
+                'username' => $socket->username,
+                'numUsers' => $numUsers,
+            ]);
+        } else {
+            $remoteAddress = $socket->conn->remoteAddress ?? 'unknown';
+            chatLog('DISCONNECT', "Connection closed before login | {$remoteAddress}");
         }
-   });
-   
+    });
 });
 
 if (!defined('GLOBAL_START')) {
