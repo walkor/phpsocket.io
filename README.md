@@ -4,6 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-blue)](https://www.php.net)
 [![Workerman](https://img.shields.io/badge/workerman-%3E%3D4.0%20%3C5.0-orange)](https://github.com/walkor/Workerman)
+[![CI](https://github.com/walkor/phpsocket.io/actions/workflows/ci.yml/badge.svg)](https://github.com/walkor/phpsocket.io/actions/workflows/ci.yml)
 [![License](https://img.shields.io/packagist/l/workerman/phpsocket.io)](LICENSE)
 
 A server-side PHP implementation of [socket.io](https://github.com/socketio/socket.io) based on [Workerman](https://github.com/walkor/Workerman).
@@ -201,6 +202,10 @@ Then open [http://localhost:2027](http://localhost:2027) in your browser.
 ### Server debug output
 
 The chat example includes built-in server-side logging. When running in debug mode, connections, user activity, and messages are printed to the terminal in real time with color-coded output.
+
+## CI
+
+This project uses GitHub Actions to run [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) on every pull request and push to `master`, ensuring the codebase follows the coding standard defined in `phpcs.xml`.
 
 ## License
 

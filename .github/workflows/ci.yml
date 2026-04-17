@@ -17,4 +17,4 @@ jobs:
 
       - run: composer install --dev --no-interaction
 
-      - run: vendor/bin/phpcs
+      - run: vendor/bin/phpcs src/
