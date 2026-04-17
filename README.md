@@ -207,6 +207,17 @@ The chat example includes built-in server-side logging. When running in debug mo
 
 This project uses GitHub Actions to run [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) on every pull request and push to `master`, ensuring the codebase follows the coding standard defined in `phpcs.xml`.
 
+To run locally:
+
+```bash
+# Without Docker
+composer install --dev
+vendor/bin/phpcs src/
+
+# With Docker
+docker compose --profile tools run --rm phpcs
+```
+
 ## License
 
 [MIT](LICENSE)
