@@ -1,0 +1,18 @@
+services:
+  phpsocketio:
+    build: .
+    ports:
+      - "2026:2026"
+      - "2027:2027"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    tty: false
+    stdin_open: false
+
+  phpcs:
+    build: .
+    volumes:
+      - .:/app
+    command: sh -c "composer install --dev --no-interaction && vendor/bin/phpcs src/"
+    profiles: [tools]
