@@ -11,7 +11,9 @@
     <exclude-pattern>*/examples/*</exclude-pattern>
 
     <!-- inherit rules from: -->
-    <rule ref="PSR2"/>
+    <rule ref="PSR2">
+        <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
+    </rule>
     <rule ref="Generic.Files.LineLength">
         <properties>
             <property name="lineLimit" value="200"/>

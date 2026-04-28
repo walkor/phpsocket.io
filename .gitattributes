@@ -2,3 +2,6 @@
 /examples/      export-ignore
 /tests/         export-ignore
 /phpcs.xml      export-ignore
+/Dockerfile         export-ignore
+/docker-compose.yml export-ignore
+/composer.lock      export-ignore

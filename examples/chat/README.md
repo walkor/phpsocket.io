@@ -1,20 +1,38 @@
-# For chat demo
-## start
-```php start.php start``` for debug mode
+# Chat Example
 
-```php start.php start -d``` for daemon mode
+A real-time chat demo built with phpsocket.io, featuring:
 
-## stop
-```php start.php stop```
+- Online user list with colored avatars
+- Typing indicators
+- Message timestamps
+- Live online counter
+- Server-side debug logging (connections, messages, disconnections)
 
-## satus 
-```php start.php status```
+## Ports
 
-## restart
-``` php start.php restart```
+| Service | Port |
+|---|---|
+| Web (chat UI) | `2027` |
+| Socket.IO | `2026` |
 
-## reload
-``` php start.php reload```
+## Run with Docker
 
-## connections
-``` php start.php connections```
+```bash
+docker compose up --build
+```
+
+Then open [http://localhost:2027](http://localhost:2027).
+
+## Run without Docker
+
+```bash
+php start.php start        # debug mode
+php start.php start -d     # daemon mode
+php start.php stop         # stop
+php start.php status       # status
+php start.php restart      # restart
+php start.php reload       # reload
+php start.php connections  # connections
+```
+
+Then open [http://localhost:2027](http://localhost:2027).
