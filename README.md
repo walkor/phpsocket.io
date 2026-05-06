@@ -2,6 +2,7 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
 [![Total Downloads](https://img.shields.io/packagist/dt/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
+[![Monthly Downloads](https://img.shields.io/packagist/dm/workerman/phpsocket.io)](https://packagist.org/packages/workerman/phpsocket.io)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-blue)](https://www.php.net)
 [![Workerman](https://img.shields.io/badge/workerman-%3E%3D4.0%20%3C5.0-orange)](https://github.com/walkor/Workerman)
 [![CI](https://github.com/walkor/phpsocket.io/actions/workflows/ci.yml/badge.svg)](https://github.com/walkor/phpsocket.io/actions/workflows/ci.yml)
