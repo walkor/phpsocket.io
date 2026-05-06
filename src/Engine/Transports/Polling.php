@@ -32,7 +32,7 @@ class Polling extends Transport
     public function onPollRequest(object $req, object $res): void
     {
         if ($this->req) {
-            $this->onError('overlap from client');
+            $this->onError('Overlap from client', 'A poll request already exists for this transport');
             $res->writeHead(500);
             return;
         }
@@ -54,7 +54,7 @@ class Polling extends Transport
 
     public function pollRequestOnClose(): void
     {
-        $this->onError('poll connection closed prematurely');
+        $this->onError('Poll connection closed prematurely', 'Client disconnected before poll response was sent');
         $this->pollRequestClean();
     }
 
@@ -69,7 +69,7 @@ class Polling extends Transport
     public function onDataRequest($req, $res): void
     {
         if (isset($this->dataReq)) {
-            $this->onError('data request overlap from client');
+            $this->onError('Data request overlap from client', 'A data request already exists for this transport');
             $res->writeHead(500);
             return;
         }
@@ -91,7 +91,7 @@ class Polling extends Transport
     public function dataRequestOnClose(): void
     {
         $this->dataRequestCleanup();
-        $this->onError('data request connection closed prematurely');
+        $this->onError('Data request connection closed prematurely', 'Client disconnected before data request completed');
     }
 
     public function dataRequestOnData($req, $data): void

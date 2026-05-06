@@ -59,7 +59,7 @@ class Socket extends Emitter
     public function onUpgradePacket(array $packet): void
     {
         if (empty($this->upgradeTransport)) {
-            $this->onError('upgradeTransport empty');
+            $this->onError('Upgrade transport is not available or was already cleared');
             return;
         }
         if ('ping' === $packet['type'] && (isset($packet['data']) && 'probe' === $packet['data'])) {
@@ -103,7 +103,7 @@ class Socket extends Emitter
 
     public function onUpgradeTransportClose(): void
     {
-        $this->onUpgradeTransportError('transport closed');
+        $this->onUpgradeTransportError('Upgrade transport closed unexpectedly');
     }
 
     public function onUpgradeTransportError($err): void
