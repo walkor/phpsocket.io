@@ -18,3 +18,16 @@ jobs:
       - run: composer install --dev --no-interaction
 
       - run: vendor/bin/phpcs src/
+
+  phpunit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - run: composer install --dev --no-interaction
+
+      - run: vendor/bin/phpunit

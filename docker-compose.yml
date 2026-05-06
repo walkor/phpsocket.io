@@ -16,3 +16,10 @@ services:
       - .:/app
     command: sh -c "composer install --dev --no-interaction && vendor/bin/phpcs src/"
     profiles: [tools]
+
+  phpunit:
+    build: .
+    volumes:
+      - .:/app
+    command: sh -c "composer install --dev --no-interaction && vendor/bin/phpunit"
+    profiles: [tools]

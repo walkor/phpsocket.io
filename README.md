@@ -205,9 +205,12 @@ The chat example includes built-in server-side logging. When running in debug mo
 
 ## CI
 
-This project uses GitHub Actions to run [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) on every pull request and push to `master`, ensuring the codebase follows the coding standard defined in `phpcs.xml`.
+This project uses GitHub Actions on every pull request and push to `master` to run:
 
-To run locally:
+- [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) — enforces the coding standard defined in `phpcs.xml`
+- [PHPUnit](https://phpunit.de) — runs the test suite in `tests/`
+
+### Code style
 
 ```bash
 # Without Docker
@@ -216,6 +219,17 @@ vendor/bin/phpcs src/
 
 # With Docker
 docker compose --profile tools run --rm phpcs
+```
+
+### Tests
+
+```bash
+# Without Docker
+composer install --dev
+vendor/bin/phpunit
+
+# With Docker
+docker compose --profile tools run --rm phpunit
 ```
 
 ## License
