@@ -96,7 +96,6 @@ class Socket extends Emitter
         } else {
             $packet = [];
             $packet['type'] = Parser::EVENT;
-            $packet['data'] = $args;
             $flags = $this->flags;
             // access last argument to see if it's an ACK callback
             if (is_callable(end($args))) {
@@ -107,6 +106,7 @@ class Socket extends Emitter
                 $this->acks[$this->nsp->ids] = array_pop($args);
                 $packet['id'] = $this->nsp->ids++;
             }
+            $packet['data'] = $args;
 
             if ($this->_rooms || ! empty($flags['broadcast'])) {
                 $this->adapter->broadcast(
@@ -307,6 +307,7 @@ class Socket extends Emitter
             if ($sent) {
                 return;
             }
+            $sent = true;
             $args = func_get_args();
             $type = $this->hasBin($args) ? Parser::BINARY_ACK : Parser::ACK;
             $self->packet(
@@ -450,7 +451,7 @@ class Socket extends Emitter
 
         array_walk_recursive(
             $args,
-            function ($item, $key) use ($hasBin) {
+            function ($item, $key) use (&$hasBin) {
                 if (! ctype_print($item)) {
                     $hasBin = true;
                 }
