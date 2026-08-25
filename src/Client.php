@@ -17,10 +17,7 @@ class Client
     public $request = null;
     public $nsps = [];
     public $connectBuffer = [];
-    /**
-     * @var array|mixed|null
-     */
-    public $sockets;
+    public $sockets = [];
 
     public function __construct($server, $conn)
     {
