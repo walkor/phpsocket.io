@@ -121,7 +121,7 @@ class Nsp extends Emitter
     {
         $args = func_get_args();
         array_unshift($args, 'message');
-        $this->emit($args);
+        call_user_func_array([$this, 'emit'], $args);
         return $this;
     }
 
