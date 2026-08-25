@@ -6,7 +6,7 @@ class PollingXHR extends Polling
 {
     public ?string $sid = null;
 
-    public function onRequest($req)
+    public function onRequest(object $req): void
     {
         if ('OPTIONS' === $req->method) {
             $res = $req->res;
@@ -19,7 +19,7 @@ class PollingXHR extends Polling
         }
     }
 
-    public function doWrite($data)
+    public function doWrite(string $data): void
     {
         // explicit UTF-8 is required for pages not served under utf todo
         $content_type = preg_match('/^\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';

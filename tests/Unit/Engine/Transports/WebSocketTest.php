@@ -59,6 +59,26 @@ class WebSocketTest extends TestCase
         $this->assertSame(['type' => 'ping'], $received);
     }
 
+    public function testOnError2EmitsTransportError(): void
+    {
+        $req = $this->makeReq();
+        $transport = new WebSocket($req);
+        $errorSeen = null;
+        $transport->on('error', function ($err) use (&$errorSeen) {
+            $errorSeen = $err;
+        });
+
+        // Workerman invokes the raw connection's onError callback as
+        // ($connection, $code, $msg) -- onError2 is the adapter wired onto
+        // that callback (see the constructor); it must forward into
+        // Transport::onError() (which emits 'error'), not onData() (which
+        // would silently feed the numeric code into the packet parser and
+        // never surface an error at all).
+        $transport->onError2($req->connection, 1006, 'Connection reset by peer');
+
+        $this->assertSame('TransportError: Connection reset by peer - 1006', $errorSeen);
+    }
+
     public function testSendWritesEncodedPacketsAndEmitsDrain(): void
     {
         $req = $this->makeReq();

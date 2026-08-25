@@ -5,6 +5,7 @@ namespace PHPSocketIO\Engine;
 use Exception;
 use PHPSocketIO\Engine\Transports\WebSocket;
 use PHPSocketIO\Event\Emitter;
+use Workerman\Worker;
 
 class Engine extends Emitter
 {
@@ -39,7 +40,7 @@ class Engine extends Emitter
 
     private const ERROR_BAD_REQUEST = 3;
 
-    public function __construct($opts = [])
+    public function __construct(array $opts = [])
     {
         $ops_map = [
             'pingTimeout',
@@ -57,7 +58,7 @@ class Engine extends Emitter
         }
     }
 
-    public function handleRequest(object $req, object $res)
+    public function handleRequest(object $req, object $res): void
     {
         $this->prepare($req);
         $req->res = $res;
@@ -67,7 +68,7 @@ class Engine extends Emitter
     /**
      * @throws Exception
      */
-    public function dealRequest($err, bool $success, object $req)
+    public function dealRequest($err, bool $success, object $req): void
     {
         if (! $success) {
             self::sendErrorMessage($req, $req->res, $err);
@@ -161,7 +162,7 @@ class Engine extends Emitter
         call_user_func($fn, null, false, $req, $res);
     }
 
-    protected function prepare(object $req)
+    protected function prepare(object $req): void
     {
         if (! isset($req->_query)) {
             $info = parse_url($req->url);
@@ -174,7 +175,7 @@ class Engine extends Emitter
     /**
      * @throws Exception
      */
-    public function handshake(string $transport, object $req)
+    public function handshake(string $transport, object $req): void
     {
         $id = bin2hex(pack('d', microtime(true)) . pack('N', function_exists('random_int') ? random_int(1, 100000000) : rand(1, 100000000)));
         if ($transport == 'websocket') {
@@ -198,12 +199,12 @@ class Engine extends Emitter
         $this->emit('connection', $socket);
     }
 
-    public function onSocketClose($id): void
+    public function onSocketClose(string $id): void
     {
         unset($this->clients[$id]);
     }
 
-    public function attach($worker): void
+    public function attach(Worker $worker): void
     {
         $this->server = $worker;
         $worker->onConnect = [$this, 'onConnect'];
@@ -232,7 +233,7 @@ class Engine extends Emitter
         };
     }
 
-    public function onWebSocketConnect($connection, object $req, object $res): void
+    public function onWebSocketConnect(object $connection, object $req, object $res): void
     {
         $this->prepare($req);
         $this->verify($req, $res, true, [$this, 'dealWebSocketConnect']);

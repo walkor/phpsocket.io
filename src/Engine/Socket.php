@@ -29,7 +29,7 @@ class Socket extends Emitter
     public ?object $upgradeTransport = null;
     public ?object $transport = null;
 
-    public function __construct($id, $server, $transport, $req)
+    public function __construct(string $id, $server, object $transport, object $req)
     {
         $this->id = $id;
         $this->server = $server;
@@ -105,7 +105,7 @@ class Socket extends Emitter
         $this->onUpgradeTransportError('Upgrade transport closed unexpectedly');
     }
 
-    public function onUpgradeTransportError($err): void
+    public function onUpgradeTransportError(string $err): void
     {
         $this->upgradeCleanup();
         if ($this->upgradeTransport) {
@@ -122,7 +122,7 @@ class Socket extends Emitter
         }
     }
 
-    public function setTransport(object $transport)
+    public function setTransport(object $transport): void
     {
         $this->transport = $transport;
         $this->transport->once('error', [$this, 'onError']);
@@ -154,7 +154,7 @@ class Socket extends Emitter
         $this->setPingTimeout();
     }
 
-    public function onPacket(array $packet)
+    public function onPacket(array $packet): void
     {
         if ('open' === $this->readyState) {
             // export packet event
@@ -186,7 +186,7 @@ class Socket extends Emitter
         }
     }
 
-    public function onError($err): void
+    public function onError(string $err): void
     {
         $this->onClose('transport error', $err);
     }
@@ -250,7 +250,7 @@ class Socket extends Emitter
         }
     }
 
-    public function send($data, $options, ?callable $callback): Socket
+    public function send($data, ?array $options, ?callable $callback): Socket
     {
         $this->sendPacket('message', $data, $callback);
         return $this;

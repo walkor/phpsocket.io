@@ -15,7 +15,7 @@ class Polling extends Transport
     public ?object $dataRes = null;
     public ?object $dataReq = null;
 
-    public function onRequest($req)
+    public function onRequest(object $req): void
     {
         $res = $req->res;
 
@@ -65,7 +65,7 @@ class Polling extends Transport
         }
     }
 
-    public function onDataRequest($req, $res): void
+    public function onDataRequest(object $req, object $res): void
     {
         if (isset($this->dataReq)) {
             $this->onError('Data request overlap from client', 'A data request already exists for this transport');
@@ -93,7 +93,7 @@ class Polling extends Transport
         $this->onError('Data request connection closed prematurely', 'Client disconnected before data request completed');
     }
 
-    public function dataRequestOnData($req, $data): void
+    public function dataRequestOnData(object $req, string $data): void
     {
         $this->chunks .= $data;
     }
@@ -113,7 +113,7 @@ class Polling extends Transport
         $this->dataRequestCleanup();
     }
 
-    public function onData($data)
+    public function onData(string $data)
     {
         $packets = Parser::decodePayload($data);
         if (isset($packets['type'])) {
@@ -130,7 +130,7 @@ class Polling extends Transport
         }
     }
 
-    public function onClose()
+    public function onClose(): void
     {
         if ($this->writable) {
             $this->send([['type' => 'noop']]);
@@ -138,7 +138,7 @@ class Polling extends Transport
         parent::onClose();
     }
 
-    public function send($packets): void
+    public function send(array $packets): void
     {
         $this->writable = false;
         if ($this->shouldClose) {
@@ -150,7 +150,7 @@ class Polling extends Transport
         $this->write($data);
     }
 
-    public function write($data): void
+    public function write(string $data): void
     {
         $this->doWrite($data);
         if (! empty($this->req->cleanup)) {

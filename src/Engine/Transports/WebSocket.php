@@ -14,7 +14,7 @@ class WebSocket extends Transport
     public string $name = 'websocket';
     public ?object $socket = null;
 
-    public function __construct($req)
+    public function __construct(object $req)
     {
         $this->socket = $req->connection;
         $this->socket->onMessage = [$this, 'onData2'];
@@ -22,14 +22,14 @@ class WebSocket extends Transport
         $this->socket->onError = [$this, 'onError2'];
     }
 
-    public function onData2($connection, $data): void
+    public function onData2(object $connection, string $data): void
     {
         call_user_func([get_parent_class($this), 'onData'], $data);
     }
 
-    public function onError2($conection, $code, $msg): void
+    public function onError2(object $connection, int $code, string $msg): void
     {
-        call_user_func([get_parent_class($this), 'onData'], $code, $msg);
+        call_user_func([get_parent_class($this), 'onError'], $msg, (string)$code);
     }
 
     public function send(array $packets): void

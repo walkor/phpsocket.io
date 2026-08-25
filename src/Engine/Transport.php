@@ -11,11 +11,11 @@ class Transport extends Emitter
     public ?object $res = null;
     public $shouldClose = null;
 
-    public function noop()
+    public function noop(): void
     {
     }
 
-    public function onRequest($req)
+    public function onRequest(object $req): void
     {
         $this->req = $req;
     }
@@ -39,12 +39,12 @@ class Transport extends Emitter
         $this->emit('packet', $packet);
     }
 
-    public function onData($data)
+    public function onData(string $data)
     {
         $this->onPacket(Parser::decodePacket($data));
     }
 
-    public function onClose()
+    public function onClose(): void
     {
         $this->req = $this->res = null;
         $this->readyState = 'closed';
