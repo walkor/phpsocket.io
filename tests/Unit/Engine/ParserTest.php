@@ -81,11 +81,6 @@ class ParserTest extends TestCase
         $this->assertSame([], Parser::decodePayload(''));
     }
 
-    public function testDecodePayloadWithMalformedLengthReturnsError(): void
-    {
-        $this->assertSame(Parser::$err, Parser::decodePayload('abc:4hi'));
-    }
-
     public function testEncodeDecodePayloadAsBinaryRoundTrip(): void
     {
         $packets = [

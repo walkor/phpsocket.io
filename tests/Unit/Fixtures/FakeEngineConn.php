@@ -15,6 +15,7 @@ class FakeEngineConn extends Emitter
     public $id;
     public $request;
     public string $readyState = 'open';
+    public string $remoteAddress = '127.0.0.1:1234';
     public $transport;
     public array $writeCalls = [];
     public array $closeCalls = [];

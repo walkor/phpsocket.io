@@ -43,7 +43,7 @@ class WebSocket extends Transport
         }
     }
 
-    public function doClose(callable $fn = null): void
+    public function doClose(?callable $fn = null): void
     {
         if ($this->socket) {
             $this->socket->close();
