@@ -10,7 +10,9 @@
 
 A server-side PHP implementation of [socket.io](https://github.com/socketio/socket.io) based on [Workerman](https://github.com/walkor/Workerman).
 
-> **Notice:** Only supports socket.io client >= v1.3.0 and <= v2.x. **socket.io v3 and v4 are not supported.**
+> **Notice:** Only supports socket.io client >= v1.3.0 and <= v2.x (verified end-to-end against
+> `socket.io-client@2.5.0`, the last 2.x release, over both polling and websocket transports).
+> **socket.io v3 and v4 are not supported.**
 > Requires PHP >= 7.4 and Workerman >= 4.0 < 5.0. **Workerman 5.x is not supported.**
 > For the full server API, see [socket.io/docs/v2/server-api](https://socket.io/docs/v2/server-api/).
 
