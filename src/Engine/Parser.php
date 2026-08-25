@@ -141,7 +141,7 @@ class Parser
                     return self::$err;
                 }
 
-                $msg = substr($data, $i + 1);
+                $msg = substr($data, $i + 1, $n);
 
                 if (isset($msg[0])) {
                     $packet = self::decodePacket($msg);
@@ -234,7 +234,7 @@ class Parser
 
             $msgLength = intval($strLen);
 
-            $msg = substr($bufferTail, 1, $msgLength + 1);
+            $msg = substr($bufferTail, 1, $msgLength);
             $buffers[] = $msg;
             $bufferTail = substr($bufferTail, $msgLength + 1);
         }
