@@ -10,6 +10,18 @@ services:
     tty: false
     stdin_open: false
 
+  rooms:
+    build: .
+    ports:
+      - "2030:2030"
+      - "2031:2031"
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-dev --optimize-autoloader --no-interaction && php examples/rooms/start.php start"
+    restart: unless-stopped
+    tty: false
+    stdin_open: false
+
   phpcs:
     build: .
     volumes:

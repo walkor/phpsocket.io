@@ -20,7 +20,7 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 
 - [Install](#install)
 - [Examples](#examples)
-- [Run chat example](#run-chat-example)
+- [Run the examples](#run-the-examples)
 - [Development](#development)
 - [Contributing](#contributing)
 - [License](#license)
@@ -183,37 +183,47 @@ $io->on('connection', function ($socket) {
 Worker::runAll();
 ```
 
-## Run chat example
+## Run the examples
 
-### With Docker
+### Chat ([examples/chat](examples/chat))
+
+A full chat room demo -- online user list, typing indicators, message timestamps, and
+color-coded server-side logging.
 
 ```bash
-docker compose up --build
+docker compose up --build         # or: docker compose up --build phpsocketio
 ```
 
-Then open your browser at:
+Then open [http://localhost:2027](http://localhost:2027) (Socket.IO on port `2026`).
 
-- **Chat:** [http://localhost:2027](http://localhost:2027)
-- **Socket.IO:** port `2026`
-
-### Without Docker
+Without Docker:
 
 ```bash
 cd examples/chat
-```
-
-```bash
 php start.php start       # debug mode
 php start.php start -d    # daemon mode
 php start.php stop        # stop
 php start.php status      # status
 ```
 
-Then open [http://localhost:2027](http://localhost:2027) in your browser.
+### Rooms ([examples/rooms](examples/rooms))
 
-### Server debug output
+A minimal demo of `socket->join()`/`leave()`/`to(room)->emit()` -- join a room, message
+everyone else in it, leave, and watch the member list update live.
 
-The chat example includes built-in server-side logging. When running in debug mode, connections, user activity, and messages are printed to the terminal in real time with color-coded output.
+```bash
+docker compose up --build rooms
+```
+
+Then open [http://localhost:2031](http://localhost:2031) (Socket.IO on port `2030`) in two
+browser tabs.
+
+Without Docker:
+
+```bash
+cd examples/rooms
+php start.php start
+```
 
 ## Development
 
