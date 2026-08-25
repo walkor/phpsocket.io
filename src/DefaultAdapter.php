@@ -87,8 +87,8 @@ class DefaultAdapter
     {
         $sids = [];
         foreach ($rooms as $room) {
-            $sids = array_merge($sids, $this->rooms[$room]);
+            $sids = array_merge($sids, $this->rooms[$room] ?? []);
         }
-        $fn();
+        $fn(array_keys($sids));
     }
 }
