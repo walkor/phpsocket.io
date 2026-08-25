@@ -6,7 +6,7 @@ use Exception;
 
 class Parser
 {
-    public static $packets = [
+    public static array $packets = [
         'open' => 0,     // non-ws
         'close' => 1,    // non-ws
         'ping' => 2,
@@ -16,7 +16,7 @@ class Parser
         'noop' => 6,
     ];
 
-    public static $packetsList = [
+    public static array $packetsList = [
         'open',
         'close',
         'ping',
@@ -26,7 +26,7 @@ class Parser
         'noop'
     ];
 
-    public static $err = [
+    public static array $err = [
         'type' => 'error',
         'data' => 'parser error'
     ];

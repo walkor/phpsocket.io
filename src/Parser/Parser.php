@@ -53,7 +53,7 @@ class Parser
      */
     const BINARY_ACK = 6;
 
-    public static $types = [
+    public static array $types = [
         'CONNECT',
         'DISCONNECT',
         'EVENT',

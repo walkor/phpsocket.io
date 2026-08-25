@@ -7,7 +7,7 @@ class Emitter
     /**
      * [event=>[[listener1, once?], [listener2,once?], ..], ..]
      */
-    protected $_eventListenerMap = [];
+    protected array $_eventListenerMap = [];
 
     public function on($event_name, $listener): Emitter
     {
