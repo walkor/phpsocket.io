@@ -103,7 +103,7 @@ class Socket extends Emitter
         ];
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         if ($name === 'broadcast') {
             $this->flags['broadcast'] = true;
@@ -163,7 +163,7 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    public
      */
-    public function to($name): Socket
+    public function to(string $name): Socket
     {
         if (! isset($this->roomTargets[$name])) {
             $this->roomTargets[$name] = $name;
@@ -171,7 +171,7 @@ class Socket extends Emitter
         return $this;
     }
 
-    public function in($name): Socket
+    public function in(string $name): Socket
     {
         return $this->to($name);
     }
@@ -205,7 +205,7 @@ class Socket extends Emitter
      * @param {Object} options
      * @api   private
      */
-    public function packet($packet, $preEncoded = false)
+    public function packet(array $packet, $preEncoded = false): void
     {
         if (! $this->nsp || ! $this->client) {
             return;
@@ -221,7 +221,7 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    private
      */
-    public function join($room): Socket
+    public function join(string $room): Socket
     {
         if (! $this->connected) {
             return $this;
@@ -241,7 +241,7 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    private
      */
-    public function leave($room): Socket
+    public function leave(string $room): Socket
     {
         $this->adapter->del($this->id, $room);
         unset($this->rooms[$room]);
@@ -254,7 +254,7 @@ class Socket extends Emitter
      * @api private
      */
 
-    public function leaveAll()
+    public function leaveAll(): void
     {
         $this->adapter->delAll($this->id);
         $this->rooms = [];
@@ -266,7 +266,7 @@ class Socket extends Emitter
      *
      * @api private
      */
-    public function onconnect()
+    public function onconnect(): void
     {
         $this->nsp->connected[$this->id] = $this;
         $this->join($this->id);
@@ -284,7 +284,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api    private
      */
-    public function onpacket($packet)
+    public function onpacket(array $packet): void
     {
         switch ($packet['type']) {
             case Parser::BINARY_EVENT:
@@ -309,7 +309,7 @@ class Socket extends Emitter
      * @param {Object} packet object
      * @api   private
      */
-    public function onevent($packet)
+    public function onevent(array $packet): void
     {
         $args = $packet['data'] ?? [];
         if (! empty($packet['id']) || (isset($packet['id']) && $packet['id'] === 0)) {
@@ -324,7 +324,7 @@ class Socket extends Emitter
      * @param {Number} packet id
      * @api   private
      */
-    public function ack($id): Closure
+    public function ack(int $id): Closure
     {
         $sent = false;
         return function () use (&$sent, $id) {
@@ -351,7 +351,7 @@ class Socket extends Emitter
      *
      * @api private
      */
-    public function onack($packet)
+    public function onack(array $packet): void
     {
         $ack = $this->acks[$packet['id']];
         if (is_callable($ack)) {
@@ -366,7 +366,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api private
      */
-    public function ondisconnect()
+    public function ondisconnect(): void
     {
         $this->onclose('client namespace disconnect');
     }
@@ -377,7 +377,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api private
      */
-    public function onerror($err)
+    public function onerror($err): void
     {
         if ($this->listeners('error')) {
             $this->emit('error', $err);
@@ -392,7 +392,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api    private
      */
-    public function onclose($reason)
+    public function onclose(string $reason)
     {
         if (! $this->connected) {
             return $this;
@@ -421,7 +421,7 @@ class Socket extends Emitter
      * @api   private
      */
 
-    public function error($err)
+    public function error($err): void
     {
         $this->packet(
             [
@@ -463,13 +463,13 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    public
      */
-    public function compress($compress): Socket
+    public function compress(bool $compress): Socket
     {
         $this->flags['compress'] = $compress;
         return $this;
     }
 
-    protected function hasBin($args): bool
+    protected function hasBin(array $args): bool
     {
         $hasBin = false;
 
