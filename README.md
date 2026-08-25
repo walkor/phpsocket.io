@@ -14,6 +14,15 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 > Requires PHP >= 7.1 and Workerman >= 4.0 < 5.0. **Workerman 5.x is not supported.**
 > For the full server API, see [socket.io/docs/v2/server-api](https://socket.io/docs/v2/server-api/).
 
+## Table of contents
+
+- [Install](#install)
+- [Examples](#examples)
+- [Run chat example](#run-chat-example)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Install
 
 ```bash
@@ -204,20 +213,30 @@ Then open [http://localhost:2027](http://localhost:2027) in your browser.
 
 The chat example includes built-in server-side logging. When running in debug mode, connections, user activity, and messages are printed to the terminal in real time with color-coded output.
 
-## CI
+## Development
 
-This project uses GitHub Actions to run [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) on every pull request and push to `master`, ensuring the codebase follows the coding standard defined in `phpcs.xml`.
+This project uses GitHub Actions to run on every pull request and push to `master`:
+
+- [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer), ensuring the codebase follows the coding standard defined in `phpcs.xml`.
+- The PHPUnit test suite, across PHP 7.4 through 8.5.
 
 To run locally:
 
 ```bash
 # Without Docker
-composer install --dev
-vendor/bin/phpcs src/
+composer install
+composer lint   # vendor/bin/phpcs src/
+composer test   # vendor/bin/phpunit
 
 # With Docker
 docker compose --profile tools run --rm phpcs
+docker compose --profile tools run --rm phpunit
 ```
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up the project,
+run checks locally, and submit a pull request.
 
 ## License
 

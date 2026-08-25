@@ -6,3 +6,5 @@ vendor
 examples/vendor
 composer.lock
 examples/chat/public/socket.io.min.js
+.phpunit.cache
+.phpunit.result.cache
