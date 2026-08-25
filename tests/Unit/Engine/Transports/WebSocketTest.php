@@ -40,12 +40,12 @@ class WebSocketTest extends TestCase
 
         $transport = new WebSocket($req);
 
-        $this->assertSame([$transport, 'onData2'], $req->connection->onMessage);
+        $this->assertSame([$transport, 'onConnectionMessage'], $req->connection->onMessage);
         $this->assertSame([$transport, 'onClose'], $req->connection->onClose);
-        $this->assertSame([$transport, 'onError2'], $req->connection->onError);
+        $this->assertSame([$transport, 'onConnectionError'], $req->connection->onError);
     }
 
-    public function testOnData2DecodesAndEmitsPacket(): void
+    public function testOnConnectionMessageDecodesAndEmitsPacket(): void
     {
         $req = $this->makeReq();
         $transport = new WebSocket($req);
@@ -54,12 +54,12 @@ class WebSocketTest extends TestCase
             $received = $packet;
         });
 
-        $transport->onData2($req->connection, '2');
+        $transport->onConnectionMessage($req->connection, '2');
 
         $this->assertSame(['type' => 'ping'], $received);
     }
 
-    public function testOnError2EmitsTransportError(): void
+    public function testOnConnectionErrorEmitsTransportError(): void
     {
         $req = $this->makeReq();
         $transport = new WebSocket($req);
@@ -69,12 +69,12 @@ class WebSocketTest extends TestCase
         });
 
         // Workerman invokes the raw connection's onError callback as
-        // ($connection, $code, $msg) -- onError2 is the adapter wired onto
-        // that callback (see the constructor); it must forward into
-        // Transport::onError() (which emits 'error'), not onData() (which
-        // would silently feed the numeric code into the packet parser and
-        // never surface an error at all).
-        $transport->onError2($req->connection, 1006, 'Connection reset by peer');
+        // ($connection, $code, $msg) -- onConnectionError is the adapter
+        // wired onto that callback (see the constructor); it must forward
+        // into Transport::onError() (which emits 'error'), not onData()
+        // (which would silently feed the numeric code into the packet
+        // parser and never surface an error at all).
+        $transport->onConnectionError($req->connection, 1006, 'Connection reset by peer');
 
         $this->assertSame('TransportError: Connection reset by peer - 1006', $errorSeen);
     }
