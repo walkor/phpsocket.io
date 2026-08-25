@@ -27,14 +27,14 @@ class Transport extends Emitter
         $this->doClose($fn);
     }
 
-    public function onError(string $msg, string $desc = '')
+    public function onError(string $msg, string $desc = ''): void
     {
         if ($this->listeners('error')) {
             $this->emit('error', "TransportError: {$msg}" . ($desc ? " - {$desc}" : ''));
         }
     }
 
-    public function onPacket($packet): void
+    public function onPacket(array $packet): void
     {
         $this->emit('packet', $packet);
     }

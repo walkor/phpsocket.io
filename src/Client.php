@@ -68,7 +68,7 @@ class Client
         $nsp->add($this, $nsp, [$this, 'nspAdd']);
     }
 
-    public function nspAdd($socket, $nsp): void
+    public function nspAdd(Socket $socket, Nsp $nsp): void
     {
         $this->sockets[$socket->id] = $socket;
         $this->nsps[$nsp->name] = $socket;
@@ -99,7 +99,7 @@ class Client
      *
      * @api private
      */
-    public function remove($socket): void
+    public function remove(Socket $socket): void
     {
         if (isset($this->sockets[$socket->id])) {
             $nsp = $this->sockets[$socket->id]->nsp->name;
