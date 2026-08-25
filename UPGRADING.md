@@ -1,11 +1,13 @@
 # Upgrading to v3.0.0
 
 v3.0.0 is a breaking release: it raises the minimum PHP version, removes an
-internal debug-logging leftover, and locks down a handful of properties that
-were never meant to be touched from outside the library. It also fixes 10
-real correctness bugs found while adding test coverage -- most of these are
-pure bug fixes with no action needed, but a couple change *observable*
-behavior on the wire, so they're called out below too.
+internal debug-logging leftover, locks down a handful of properties that
+were never meant to be touched from outside the library, and declares types
+on (almost) every property, method parameter, and return value across the
+whole codebase. It also fixes 11 real correctness bugs found while adding
+test coverage and while doing that typing pass -- most of these are pure
+bug fixes with no action needed, but a few change *observable* behavior on
+the wire, so they're called out below too.
 
 ## Checklist
 
@@ -75,6 +77,23 @@ compensating for the old (broken) behavior.
 - **`Client::$sockets`**: now defaults to `[]` instead of `null`. This only
   matters if a connection closed or errored before completing its first
   namespace join; previously that could raise a PHP warning internally.
+- **`disconnect` event reason**: when a connection closed via the normal
+  transport path (network drop, ping timeout, client-initiated close --
+  i.e. the vast majority of real disconnects), the `reason` argument your
+  `$socket->on('disconnect', function ($reason) {...})` handler received
+  was actually the socket's own connection id, not a real reason string
+  like `"ping timeout"` or `"transport close"`. Only the two
+  server-initiated disconnect paths (`$socket->disconnect(true)`, a client
+  protocol error) ever passed the real reason through. If your disconnect
+  handler branches on `$reason`, it was very likely always taking the
+  "unknown reason" path before; it'll now see the actual reason.
+- **WebSocket transport-level errors**: a raw TCP/WebSocket error (reset,
+  protocol violation) on an established WebSocket connection was silently
+  swallowed instead of closing the socket and firing `error`/`disconnect`
+  -- the error handler had a copy-paste bug forwarding into the packet
+  parser instead of the error path. Affected connections could be left in
+  a stuck, half-dead state instead of cleaning up. Now closes and emits
+  correctly.
 
 ## What's new
 
@@ -85,5 +104,23 @@ compensating for the old (broken) behavior.
 - A `CONTRIBUTING.md` guide and a Docker-based dev workflow that needs no
   local PHP/Composer install (`docker compose --profile tools run --rm
   phpunit`).
-- A real PHPUnit test suite (0 -> 190+ tests) covering the vast majority of
+- A real PHPUnit test suite (0 -> 192 tests) covering the vast majority of
   `src/`, running in CI across PHP 7.4-8.5.
+- Property, method-parameter, and return-type declarations across
+  essentially the entire codebase. Left deliberately untyped anywhere real
+  usage is genuinely mixed/duck-typed (e.g. `Socket::$userId`, several
+  adapter/collaborator properties) -- see the property table above for the
+  handful that changed visibility, and the "behavior fixes" section for the
+  two real bugs this pass uncovered.
+
+## Known limitation: Socket.IO v3.x/v4.x clients are not supported
+
+This server only speaks the Engine.IO v3 / Socket.IO v2 wire protocol.
+`socket.io-client@2.x` works end-to-end (verified above); `socket.io-client@3.x`
+or `@4.x` will fail to connect (`connect_error: "server error"`) -- the
+client-side protocol changed in ways this server doesn't implement (e.g. the
+server must ack a client's `CONNECT` packet with its own per-namespace
+`sid`, which this implementation never sends). This isn't new in v3.0.0; it's
+called out here because it was verified precisely while preparing this
+release. Protocol-level v3/v4 support would be a separate, much larger
+initiative.
