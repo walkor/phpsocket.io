@@ -54,6 +54,8 @@ for any change to `src/`.
 - For behavior changes affecting the public API, please open an issue first to discuss the
   approach — this project only supports Socket.IO client v1.3.0–v2.x, so backwards compatibility
   matters.
+- If your change is backwards-incompatible, add an entry to [UPGRADING.md](UPGRADING.md) describing
+  what breaks and how to adapt.
 
 ## Reporting issues
 

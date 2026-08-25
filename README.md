@@ -15,6 +15,7 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 > **socket.io v3 and v4 are not supported.**
 > Requires PHP >= 7.4 and Workerman >= 4.0 < 5.0. **Workerman 5.x is not supported.**
 > For the full server API, see [socket.io/docs/v2/server-api](https://socket.io/docs/v2/server-api/).
+> Upgrading from v2.x? See [UPGRADING.md](UPGRADING.md) for what changed in v3.0.0.
 
 ## Table of contents
 
@@ -23,6 +24,7 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 - [Run the examples](#run-the-examples)
 - [Development](#development)
 - [Contributing](#contributing)
+- [Upgrading](UPGRADING.md)
 - [License](#license)
 
 ## Install
