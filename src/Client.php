@@ -3,26 +3,26 @@
 namespace PHPSocketIO;
 
 use Exception;
+use PHPSocketIO\Event\Emitter;
 use PHPSocketIO\Parser\Decoder;
 use PHPSocketIO\Parser\Encoder;
 use PHPSocketIO\Parser\Parser;
 
 class Client
 {
-    public $server = null;
-    public $conn = null;
-    public $encoder = null;
-    public $decoder = null;
-    public $id = null;
-    public $request = null;
-    public $nsps = [];
-    public $connectBuffer = [];
-    /**
-     * @var array|mixed|null
-     */
-    public $sockets;
+    public ?SocketIO $server = null;
+    // Real usage: Engine\Socket. Tests: a lightweight fake. Both extend
+    // Emitter, so that's as specific as this can safely be typed.
+    public ?Emitter $conn = null;
+    public ?Encoder $encoder = null;
+    public ?Decoder $decoder = null;
+    public ?string $id = null;
+    public ?object $request = null;
+    public array $nsps = [];
+    public array $connectBuffer = [];
+    public array $sockets = [];
 
-    public function __construct($server, $conn)
+    public function __construct(SocketIO $server, Emitter $conn)
     {
         $this->server = $server;
         $this->conn = $conn;
@@ -31,12 +31,6 @@ class Client
         $this->id = $conn->id;
         $this->request = $conn->request;
         $this->setup();
-        Debug::debug('Client __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Client __destruct');
     }
 
     /**
@@ -45,7 +39,7 @@ class Client
      * @api private
      */
 
-    public function setup()
+    public function setup(): void
     {
         $this->decoder->on('decoded', [$this, 'ondecoded']);
         $this->conn->on('data', [$this, 'ondata']);
@@ -60,7 +54,7 @@ class Client
      * @api   private
      */
 
-    public function connect($name)
+    public function connect(string $name): void
     {
         if (! isset($this->server->nsps[$name])) {
             $this->packet(['type' => Parser::ERROR, 'nsp' => $name, 'data' => 'Invalid namespace']);
@@ -74,7 +68,7 @@ class Client
         $nsp->add($this, $nsp, [$this, 'nspAdd']);
     }
 
-    public function nspAdd($socket, $nsp)
+    public function nspAdd(Socket $socket, Nsp $nsp): void
     {
         $this->sockets[$socket->id] = $socket;
         $this->nsps[$nsp->name] = $socket;
@@ -91,7 +85,7 @@ class Client
      *
      * @api private
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         foreach ($this->sockets as $socket) {
             $socket->disconnect();
@@ -105,7 +99,7 @@ class Client
      *
      * @api private
      */
-    public function remove($socket)
+    public function remove(Socket $socket): void
     {
         if (isset($this->sockets[$socket->id])) {
             $nsp = $this->sockets[$socket->id]->nsp->name;
@@ -119,14 +113,14 @@ class Client
      *
      * @api private
      */
-    public function close()
+    public function close(): void
     {
         if (empty($this->conn)) {
             return;
         }
         if ('open' === $this->conn->readyState) {
             $this->conn->close();
-            $this->onclose('forced server close');
+            $this->onclose($this->id, 'forced server close');
         }
     }
 
@@ -137,7 +131,7 @@ class Client
      * @param {Object} options
      * @api   private
      */
-    public function packet($packet, $preEncoded = false, $volatile = false)
+    public function packet(array $packet, $preEncoded = false, ?bool $volatile = false): void
     {
         if (! empty($this->conn) && 'open' === $this->conn->readyState) {
             if (! $preEncoded) {
@@ -150,11 +144,8 @@ class Client
         }
     }
 
-    public function writeToEngine($encodedPackets, $volatile = false)
+    public function writeToEngine(array $encodedPackets, ?bool $volatile = false): void
     {
-        if ($volatile) {
-            echo new Exception('volatile');
-        }
         if ($volatile && ! $this->conn->transport->writable) {
             return;
         }
@@ -171,7 +162,7 @@ class Client
      *
      * @api private
      */
-    public function ondata($data)
+    public function ondata(string $data): void
     {
         try {
             // todo chek '2["chat message","2"]' . "\0" . ''
@@ -186,7 +177,7 @@ class Client
      *
      * @api private
      */
-    public function ondecoded($packet)
+    public function ondecoded(array $packet): void
     {
         if (Parser::CONNECT == $packet['type']) {
             $this->connect($packet['nsp']);
@@ -203,21 +194,24 @@ class Client
      * @param {Objcet} error object
      * @api   private
      */
-    public function onerror($err)
+    public function onerror($err): void
     {
         foreach ($this->sockets as $socket) {
             $socket->onerror($err);
         }
-        $this->onclose('client error');
+        $this->onclose($this->id, 'client error');
     }
 
     /**
-     * Called upon transport close.
+     * Called upon transport close. Registered as the listener for the
+     * underlying Engine\Socket's 'close' event, which emits
+     * ($id, $reason, $description) -- $id is unused here (this Client is
+     * already scoped to one connection) but kept as the first parameter so
+     * the signature matches what's actually emitted.
      *
-     * @param {String} reason
-     * @api   private
+     * @api private
      */
-    public function onclose($reason)
+    public function onclose($id, string $reason = '', ?string $description = null): void
     {
         if (empty($this->conn)) {
             return;
@@ -229,7 +223,7 @@ class Client
         foreach ($this->sockets as $socket) {
             $socket->onclose($reason);
         }
-        $this->sockets = null;
+        $this->sockets = [];
     }
 
     /**
@@ -237,7 +231,7 @@ class Client
      *
      * @api private
      */
-    public function destroy()
+    public function destroy(): void
     {
         if (! $this->conn) {
             return;
@@ -245,6 +239,7 @@ class Client
         $this->conn->removeAllListeners();
         $this->decoder->removeAllListeners();
         $this->encoder->removeAllListeners();
-        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
+        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = null;
+        $this->nsps = [];
     }
 }

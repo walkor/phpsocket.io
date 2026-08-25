@@ -2,26 +2,17 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use Exception;
-use PHPSocketIO\Debug;
-
 class PollingJsonp extends Polling
 {
-    public $head = null;
-    public $foot = ');';
+    public ?string $head = null;
+    public string $foot = ');';
 
-    public function __construct($req)
+    public function __construct(object $req)
     {
-        $this->head = '___eio[' . (isset($req['_query']['j']) ? preg_replace('/[^0-9]/', '', $req['_query']['j']) : '') . '](';
-        Debug::debug('PollingJsonp __construct');
+        $this->head = '___eio[' . (isset($req->_query['j']) ? preg_replace('/[^0-9]/', '', $req->_query['j']) : '') . '](';
     }
 
-    public function __destruct()
-    {
-        Debug::debug('PollingJsonp __destruct');
-    }
-
-    public function onData($data)
+    public function onData(string $data)
     {
         $parsed_data = null;
         parse_str($data, $parsed_data);
@@ -29,7 +20,7 @@ class PollingJsonp extends Polling
         call_user_func([get_parent_class($this), 'onData'], preg_replace('/\\\\n/', '\\n', $data));
     }
 
-    public function doWrite($data): void
+    public function doWrite(string $data): void
     {
         $js = json_encode($data);
 
@@ -42,7 +33,6 @@ class PollingJsonp extends Polling
             'X-XSS-Protection' => '0'
         ];
         if (empty($this->res)) {
-            echo new Exception('empty $this->res');
             return;
         }
         $this->res->writeHead(200, '', $this->headers($headers));

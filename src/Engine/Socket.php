@@ -4,27 +4,32 @@ namespace PHPSocketIO\Engine;
 
 use PHPSocketIO\Event\Emitter;
 use Workerman\Timer;
-use PHPSocketIO\Debug;
 
 class Socket extends Emitter
 {
-    public $id = 0;
+    public string $id = '';
+    // Intentionally untyped: duck-typed server object (real usage: Engine;
+    // tests: a lightweight Emitter-based double).
     public $server = null;
-    public $upgrading = false;
-    public $upgraded = false;
-    public $readyState = 'opening';
-    public $writeBuffer = [];
-    public $packetsFn = [];
-    public $sentCallbackFn = [];
-    public $request = null;
-    public $remoteAddress = '';
-    public $checkIntervalTimer;
-    public $upgradeTimeoutTimer = null;
-    public $pingTimeoutTimer = null;
-    public $upgradeTransport = null;
-    public $transport = null;
+    public bool $upgrading = false;
+    public bool $upgraded = false;
+    public string $readyState = 'opening';
+    public array $writeBuffer = [];
+    public array $packetsFn = [];
+    public array $sentCallbackFn = [];
+    public ?object $request = null;
+    public string $remoteAddress = '';
+    // Workerman\Timer::add() return values (timer ids), or null when unset.
+    public ?int $checkIntervalTimer = null;
+    public ?int $upgradeTimeoutTimer = null;
+    public ?int $pingTimeoutTimer = null;
+    // Duck-typed transport objects (real usage: a Transport subclass;
+    // tests: a lightweight double) -- typed as ?object rather than
+    // ?Transport since it only needs to be *an* object, not that class.
+    public ?object $upgradeTransport = null;
+    public ?object $transport = null;
 
-    public function __construct($id, $server, $transport, $req)
+    public function __construct(string $id, $server, object $transport, object $req)
     {
         $this->id = $id;
         $this->server = $server;
@@ -32,12 +37,6 @@ class Socket extends Emitter
         $this->remoteAddress = $req->connection->getRemoteIp() . ':' . $req->connection->getRemotePort();
         $this->setTransport($transport);
         $this->onOpen();
-        Debug::debug('Engine/Socket __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Engine/Socket __destruct');
     }
 
     public function maybeUpgrade(object $transport): void
@@ -106,7 +105,7 @@ class Socket extends Emitter
         $this->onUpgradeTransportError('Upgrade transport closed unexpectedly');
     }
 
-    public function onUpgradeTransportError($err): void
+    public function onUpgradeTransportError(string $err): void
     {
         $this->upgradeCleanup();
         if ($this->upgradeTransport) {
@@ -123,7 +122,7 @@ class Socket extends Emitter
         }
     }
 
-    public function setTransport(object $transport)
+    public function setTransport(object $transport): void
     {
         $this->transport = $transport;
         $this->transport->once('error', [$this, 'onError']);
@@ -155,7 +154,7 @@ class Socket extends Emitter
         $this->setPingTimeout();
     }
 
-    public function onPacket(array $packet)
+    public function onPacket(array $packet): void
     {
         if ('open' === $this->readyState) {
             // export packet event
@@ -177,8 +176,6 @@ class Socket extends Emitter
                     $this->emit('message', $packet['data']);
                     break;
             }
-        } else {
-            echo('packet received with closed socket');
         }
     }
 
@@ -189,7 +186,7 @@ class Socket extends Emitter
         }
     }
 
-    public function onError($err): void
+    public function onError(string $err): void
     {
         $this->onClose('transport error', $err);
     }
@@ -253,7 +250,7 @@ class Socket extends Emitter
         }
     }
 
-    public function send($data, $options, ?callable $callback): Socket
+    public function send($data, ?array $options, ?callable $callback): Socket
     {
         $this->sendPacket('message', $data, $callback);
         return $this;
@@ -347,10 +344,8 @@ class Socket extends Emitter
         if ($this->sentCallbackFn) {
             $seqFn = array_shift($this->sentCallbackFn);
             if (is_callable($seqFn)) {
-                echo('executing send callback');
                 call_user_func($seqFn, $this->transport);
             } elseif (is_array($seqFn)) {
-                echo('executing batch send callback');
                 foreach ($seqFn as $fn) {
                     call_user_func($fn, $this->transport);
                 }

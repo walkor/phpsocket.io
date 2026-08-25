@@ -2,39 +2,38 @@
 
 namespace PHPSocketIO\Engine\Protocols\Http;
 
-use Exception;
-
 class Response
 {
-    public $statusCode = 200;
+    public int $statusCode = 200;
 
-    protected $_statusPhrase = null;
+    protected ?string $_statusPhrase = null;
 
-    protected $_connection = null;
+    // Duck-typed: real usage is a Workerman TcpConnection, tests use a
+    // lightweight double.
+    protected ?object $_connection = null;
 
-    protected $_headers = [];
+    protected array $_headers = [];
 
-    public $headersSent = false;
+    public bool $headersSent = false;
 
-    public $writable = true;
+    public bool $writable = true;
 
-    protected $_buffer = '';
+    protected string $_buffer = '';
 
-    public function __construct($connection)
+    public function __construct(object $connection)
     {
         $this->_connection = $connection;
     }
 
-    protected function initHeader()
+    protected function initHeader(): void
     {
         $this->_headers['Connection'] = 'keep-alive';
         $this->_headers['Content-Type'] = 'Content-Type: text/html;charset=utf-8';
     }
 
-    public function writeHead($status_code, $reason_phrase = '', $headers = null)
+    public function writeHead(int $status_code, string $reason_phrase = '', ?array $headers = null)
     {
         if ($this->headersSent) {
-            echo "header has already send\n";
             return false;
         }
         $this->statusCode = $status_code;
@@ -74,22 +73,22 @@ class Response
         return $head_buffer . "\r\n";
     }
 
-    public function setHeader($key, $val)
+    public function setHeader(string $key, $val): void
     {
         $this->_headers[$key] = $val;
     }
 
-    public function getHeader($name)
+    public function getHeader(string $name)
     {
         return $this->_headers[$name] ?? '';
     }
 
-    public function removeHeader($name)
+    public function removeHeader(string $name): void
     {
         unset($this->_headers[$name]);
     }
 
-    public function write($chunk)
+    public function write(string $chunk): void
     {
         if (! isset($this->_headers['Content-Length'])) {
             $chunk = dechex(strlen($chunk)) . "\r\n" . $chunk . "\r\n";
@@ -103,10 +102,9 @@ class Response
         }
     }
 
-    public function end($data = null)
+    public function end(?string $data = null)
     {
         if (! $this->writable) {
-            echo new Exception('unwirtable');
             return false;
         }
         if ($data !== null) {
@@ -129,7 +127,7 @@ class Response
         return $ret;
     }
 
-    public function destroy()
+    public function destroy(): void
     {
         if (! empty($this->_connection->httpRequest)) {
             $this->_connection->httpRequest->destroy();
@@ -141,7 +139,7 @@ class Response
         $this->writable = false;
     }
 
-    public static $codes = [
+    public static array $codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',

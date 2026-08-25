@@ -7,42 +7,55 @@ use PHPSocketIO\Parser\Parser;
 
 class Nsp extends Emitter
 {
+    // $adapter/$server are intentionally left untyped: duck-typed against
+    // whatever SocketIO (or a test double) hands them.
     public $adapter;
-    public $name = null;
+    public ?string $name = null;
     public $server = null;
-    public $rooms = [];
-    public $flags = [];
-    public $sockets = [];
-    public $connected = [];
-    public $fns = [];
-    public $ids = 0;
-    public $acks = [];
-    public static $events = [
+
+    // Ephemeral per-emit() targeting/flags -- protected for the same reason
+    // as Socket::$roomTargets/$flags (no external usage found, and mutating
+    // them from outside would corrupt in-flight broadcast bookkeeping).
+    protected array $rooms = [];
+    protected array $flags = [];
+
+    public array $sockets = [];
+    // Read directly by DefaultAdapter::broadcast() and Socket::onconnect()/
+    // onclose(), so this stays public.
+    public array $connected = [];
+    // Incremented by Socket::emit() when assigning ack ids, so this stays
+    // public too.
+    public int $ids = 0;
+    public static array $events = [
         'connect' => 'connect',    // for symmetry with client
         'connection' => 'connection',
         'newListener' => 'newListener'
     ];
 
-    public function __construct($server, $name)
+    public function getRoomTargets(): array
+    {
+        return $this->rooms;
+    }
+
+    public function getFlags(): array
+    {
+        return $this->flags;
+    }
+
+    public function __construct(SocketIO $server, string $name)
     {
         $this->name = $name;
         $this->server = $server;
         $this->initAdapter();
-        Debug::debug('Nsp __construct');
     }
 
-    public function __destruct()
-    {
-        Debug::debug('Nsp __destruct');
-    }
-
-    public function initAdapter()
+    public function initAdapter(): void
     {
         $adapter_name = $this->server->adapter();
         $this->adapter = new $adapter_name($this);
     }
 
-    public function to($name): Nsp
+    public function to(string $name): Nsp
     {
         if (! isset($this->rooms[$name])) {
             $this->rooms[$name] = $name;
@@ -50,12 +63,16 @@ class Nsp extends Emitter
         return $this;
     }
 
-    public function in($name): Nsp
+    public function in(string $name): Nsp
     {
         return $this->to($name);
     }
 
-    public function add($client, $nsp, $fn)
+    // $client is intentionally left untyped: real usage passes a Client,
+    // but tests exercise this with a lightweight fake (constructing a real
+    // Client requires a real SocketIO + conn wiring), so it's duck-typed
+    // against $client->id/$client->conn like Socket's own $client property.
+    public function add($client, Nsp $nsp, ?callable $fn): void
     {
         $socket_name = $this->server->socket();
         $socket = new $socket_name($this, $client);
@@ -67,8 +84,6 @@ class Nsp extends Emitter
             }
             $this->emit('connect', $socket);
             $this->emit('connection', $socket);
-        } else {
-            echo('next called after client was closed - ignoring socket');
         }
     }
 
@@ -77,7 +92,7 @@ class Nsp extends Emitter
      *
      * @api private
      */
-    public function remove($socket)
+    public function remove(Socket $socket): void
     {
         // todo $socket->id
         unset($this->sockets[$socket->id]);
@@ -105,7 +120,6 @@ class Nsp extends Emitter
             $packet = ['type' => $parserType, 'data' => $args];
 
             if (is_callable(end($args))) {
-                echo('Callbacks are not supported when broadcasting');
                 return;
             }
 
@@ -127,17 +141,17 @@ class Nsp extends Emitter
     {
         $args = func_get_args();
         array_unshift($args, 'message');
-        $this->emit($args);
+        call_user_func_array([$this, 'emit'], $args);
         return $this;
     }
 
-    public function write()
+    public function write(): Nsp
     {
         $args = func_get_args();
         return call_user_func_array([$this, 'send'], $args);
     }
 
-    public function clients($fn): Nsp
+    public function clients(callable $fn): Nsp
     {
         $this->adapter->clients($this->rooms, $fn);
         return $this;
@@ -150,7 +164,7 @@ class Nsp extends Emitter
      * @return Nsp {Socket} self
      * @api    public
      */
-    public function compress($compress): Nsp
+    public function compress(bool $compress): Nsp
     {
         $this->flags['compress'] = $compress;
         return $this;

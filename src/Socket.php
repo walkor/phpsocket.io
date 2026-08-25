@@ -9,28 +9,40 @@ use PHPSocketIO\Parser\Parser;
 
 class Socket extends Emitter
 {
+    // $nsp/$server/$adapter/$request/$client/$conn are intentionally left
+    // untyped: they're duck-typed against whatever the surrounding SocketIO
+    // wiring (or a test double) hands them, not strictly the concrete
+    // Nsp/SocketIO/Http\Request/Client classes.
     public $nsp = null;
     public $server = null;
     public $adapter = null;
-    public $id = null;
-    public $path = '/';
+    public ?string $id = null;
+    public string $path = '/';
     public $request = null;
     public $client = null;
     public $conn = null;
-    public $rooms = [];
-    public $_rooms = [];
-    public $flags = [];
-    public $acks = [];
-    public $connected = true;
-    public $disconnected = false;
-    public $handshake = [];
+    public array $rooms = [];
+
+    // Ephemeral per-emit() state. No evidence of external use (checked real
+    // consumers on GitHub while raising the floor for v3.0.0) and mutating
+    // these from outside would corrupt in-flight broadcast bookkeeping, so
+    // they're now protected -- read them via getRoomTargets()/getFlags()/
+    // getAcks() if you need to inspect them.
+    protected array $roomTargets = [];
+    protected array $flags = [];
+    protected array $acks = [];
+
+    public bool $connected = true;
+    public bool $disconnected = false;
+    public array $handshake = [];
+    // Left untyped: real-world consumers assign a mix of int/string here
+    // depending on their own user id scheme.
     public $userId = null;
-    public $isGuest = false;
-    public $addedUser = null;
-    public $username = null;
+    public bool $isGuest = false;
+    public ?bool $addedUser = null;
+    public ?string $username = null;
 
-
-    public static $events = [
+    public static array $events = [
         'error' => 'error',
         'connect' => 'connect',
         'disconnect' => 'disconnect',
@@ -38,11 +50,26 @@ class Socket extends Emitter
         'removeListener' => 'removeListener'
     ];
 
-    public static $flagsMap = [
+    public static array $flagsMap = [
         'json' => 'json',
         'volatile' => 'volatile',
         'broadcast' => 'broadcast'
     ];
+
+    public function getRoomTargets(): array
+    {
+        return $this->roomTargets;
+    }
+
+    public function getFlags(): array
+    {
+        return $this->flags;
+    }
+
+    public function getAcks(): array
+    {
+        return $this->acks;
+    }
 
     public function __construct($nsp, $client)
     {
@@ -54,12 +81,6 @@ class Socket extends Emitter
         $this->client = $client;
         $this->conn = $client->conn;
         $this->handshake = $this->buildHandshake();
-        Debug::debug('IO Socket __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('IO Socket __destruct');
     }
 
     public function buildHandshake(): array
@@ -82,7 +103,7 @@ class Socket extends Emitter
         ];
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         if ($name === 'broadcast') {
             $this->flags['broadcast'] = true;
@@ -102,24 +123,23 @@ class Socket extends Emitter
         } else {
             $packet = [];
             $packet['type'] = Parser::EVENT;
-            $packet['data'] = $args;
             $flags = $this->flags;
             // access last argument to see if it's an ACK callback
             if (is_callable(end($args))) {
-                if ($this->_rooms || isset($flags['broadcast'])) {
+                if ($this->roomTargets || isset($flags['broadcast'])) {
                     throw new Exception('Callbacks are not supported when broadcasting');
                 }
-                echo('emitting packet with ack id ' . $this->nsp->ids);
                 $this->acks[$this->nsp->ids] = array_pop($args);
                 $packet['id'] = $this->nsp->ids++;
             }
+            $packet['data'] = $args;
 
-            if ($this->_rooms || ! empty($flags['broadcast'])) {
+            if ($this->roomTargets || ! empty($flags['broadcast'])) {
                 $this->adapter->broadcast(
                     $packet,
                     [
                         'except' => [$this->id => $this->id],
-                        'rooms' => $this->_rooms,
+                        'rooms' => $this->roomTargets,
                         'flags' => $flags
                     ]
                 );
@@ -129,7 +149,7 @@ class Socket extends Emitter
             }
 
             // reset flags
-            $this->_rooms = [];
+            $this->roomTargets = [];
             $this->flags = [];
         }
         return $this;
@@ -143,15 +163,15 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    public
      */
-    public function to($name): Socket
+    public function to(string $name): Socket
     {
-        if (! isset($this->_rooms[$name])) {
-            $this->_rooms[$name] = $name;
+        if (! isset($this->roomTargets[$name])) {
+            $this->roomTargets[$name] = $name;
         }
         return $this;
     }
 
-    public function in($name): Socket
+    public function in(string $name): Socket
     {
         return $this->to($name);
     }
@@ -185,7 +205,7 @@ class Socket extends Emitter
      * @param {Object} options
      * @api   private
      */
-    public function packet($packet, $preEncoded = false)
+    public function packet(array $packet, $preEncoded = false): void
     {
         if (! $this->nsp || ! $this->client) {
             return;
@@ -201,7 +221,7 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    private
      */
-    public function join($room): Socket
+    public function join(string $room): Socket
     {
         if (! $this->connected) {
             return $this;
@@ -221,7 +241,7 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    private
      */
-    public function leave($room): Socket
+    public function leave(string $room): Socket
     {
         $this->adapter->del($this->id, $room);
         unset($this->rooms[$room]);
@@ -234,7 +254,7 @@ class Socket extends Emitter
      * @api private
      */
 
-    public function leaveAll()
+    public function leaveAll(): void
     {
         $this->adapter->delAll($this->id);
         $this->rooms = [];
@@ -246,7 +266,7 @@ class Socket extends Emitter
      *
      * @api private
      */
-    public function onconnect()
+    public function onconnect(): void
     {
         $this->nsp->connected[$this->id] = $this;
         $this->join($this->id);
@@ -264,7 +284,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api    private
      */
-    public function onpacket($packet)
+    public function onpacket(array $packet): void
     {
         switch ($packet['type']) {
             case Parser::BINARY_EVENT:
@@ -289,7 +309,7 @@ class Socket extends Emitter
      * @param {Object} packet object
      * @api   private
      */
-    public function onevent($packet)
+    public function onevent(array $packet): void
     {
         $args = $packet['data'] ?? [];
         if (! empty($packet['id']) || (isset($packet['id']) && $packet['id'] === 0)) {
@@ -304,7 +324,7 @@ class Socket extends Emitter
      * @param {Number} packet id
      * @api   private
      */
-    public function ack($id): Closure
+    public function ack(int $id): Closure
     {
         $sent = false;
         return function () use (&$sent, $id) {
@@ -313,6 +333,7 @@ class Socket extends Emitter
             if ($sent) {
                 return;
             }
+            $sent = true;
             $args = func_get_args();
             $type = $this->hasBin($args) ? Parser::BINARY_ACK : Parser::ACK;
             $self->packet(
@@ -330,14 +351,12 @@ class Socket extends Emitter
      *
      * @api private
      */
-    public function onack($packet)
+    public function onack(array $packet): void
     {
         $ack = $this->acks[$packet['id']];
         if (is_callable($ack)) {
             call_user_func($ack, $packet['data']);
             unset($this->acks[$packet['id']]);
-        } else {
-            echo('bad ack ' . $packet['id']);
         }
     }
 
@@ -347,7 +366,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api private
      */
-    public function ondisconnect()
+    public function ondisconnect(): void
     {
         $this->onclose('client namespace disconnect');
     }
@@ -358,7 +377,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api private
      */
-    public function onerror($err)
+    public function onerror($err): void
     {
         if ($this->listeners('error')) {
             $this->emit('error', $err);
@@ -373,7 +392,7 @@ class Socket extends Emitter
      * @throws Exception
      * @api    private
      */
-    public function onclose($reason)
+    public function onclose(string $reason)
     {
         if (! $this->connected) {
             return $this;
@@ -402,7 +421,7 @@ class Socket extends Emitter
      * @api   private
      */
 
-    public function error($err)
+    public function error($err): void
     {
         $this->packet(
             [
@@ -444,19 +463,19 @@ class Socket extends Emitter
      * @return Socket {Socket} self
      * @api    public
      */
-    public function compress($compress): Socket
+    public function compress(bool $compress): Socket
     {
         $this->flags['compress'] = $compress;
         return $this;
     }
 
-    protected function hasBin($args): bool
+    protected function hasBin(array $args): bool
     {
         $hasBin = false;
 
         array_walk_recursive(
             $args,
-            function ($item, $key) use ($hasBin) {
+            function ($item, $key) use (&$hasBin) {
                 if (! ctype_print($item)) {
                     $hasBin = true;
                 }

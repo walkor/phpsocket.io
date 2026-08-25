@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Rooms Example</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <ul class="pages">
+    <li class="login page">
+      <div class="form">
+        <h2 class="brandName">phpsocket.io</h2>
+        <p class="brandDesc">Rooms example &mdash; join, leave, and message a room</p>
+        <hr class="brandDivider"/>
+        <input class="usernameInput" type="text" maxlength="14" placeholder="Your nickname..." autocomplete="off"/>
+        <input class="roomInput" type="text" maxlength="24" placeholder="Room name..." autocomplete="off"/>
+        <button class="joinButton">Join Room</button>
+      </div>
+    </li>
+    <li class="room page">
+      <div class="roomHeader">
+        <div class="roomHeaderLeft">
+          <span class="statusDot"></span>
+          <span class="roomTitle">Room: <span class="roomName"></span></span>
+        </div>
+        <div class="roomHeaderRight">
+          <span class="memberCount"><span class="memberNumber">0</span> in room</span>
+          <button class="leaveButton">Leave</button>
+        </div>
+      </div>
+      <div class="roomBody">
+        <div class="roomArea">
+          <ul class="messages"></ul>
+        </div>
+        <aside class="sidebar">
+          <div class="sidebarTitle">Members</div>
+          <ul class="memberList"></ul>
+        </aside>
+      </div>
+      <div class="inputArea">
+        <input class="inputMessage" placeholder="Message this room..." autocomplete="off"/>
+        <button class="sendButton" title="Send">&#9654;</button>
+      </div>
+      <footer class="roomFooter">
+        Powered by <a href="https://github.com/walkor/phpsocket.io" target="_blank">phpsocket.io</a>
+        &amp; <a href="https://github.com/walkor/workerman" target="_blank">Workerman</a>
+      </footer>
+    </li>
+  </ul>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/4.0.0/jquery.min.js"></script>
+  <script src="socket.io.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

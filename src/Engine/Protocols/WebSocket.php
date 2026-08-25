@@ -36,7 +36,7 @@ class WebSocket
      *
      * @param string $buffer
      */
-    public static function input($buffer, $connection)
+    public static function input(string $buffer, object $connection)
     {
         if (strlen($buffer) < self::MIN_HEAD_LEN) {
             return 0;
@@ -71,7 +71,7 @@ class WebSocket
      * @param $res
      * @return int
      */
-    public static function dealHandshake($connection, $req, $res)
+    public static function dealHandshake(object $connection, object $req, object $res)
     {
         if (isset($req->headers['sec-websocket-key1'])) {
             $res->writeHead(400);

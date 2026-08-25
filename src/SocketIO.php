@@ -4,20 +4,23 @@ namespace PHPSocketIO;
 
 use Workerman\Worker;
 use PHPSocketIO\Engine\Engine;
+use PHPSocketIO\Event\Emitter;
 
 class SocketIO
 {
+    // Intentionally untyped: tests stand in a lightweight double for the
+    // real Workerman\Worker (constructing a real one requires an actual
+    // event loop).
     public $worker;
-    public $sockets;
-    public $nsps = [];
-    protected $_nsp = null;
-    protected $_socket = null;
-    protected $_adapter = null;
-    public $engine = null;
-    protected $_origins = '*:*';
-    protected $_path = null;
+    public ?Nsp $sockets = null;
+    public array $nsps = [];
+    protected ?string $_nsp = null;
+    protected ?string $_socket = null;
+    protected ?string $_adapter = null;
+    public ?Engine $engine = null;
+    protected string $_origins = '*:*';
 
-    public function __construct($port = null, $opts = [])
+    public function __construct(?int $port = null, array $opts = [])
     {
         $nsp = $opts['nsp'] ?? '\PHPSocketIO\Nsp';
         $this->nsp($nsp);
@@ -57,7 +60,7 @@ class SocketIO
         }
     }
 
-    public function nsp($v = null)
+    public function nsp(?string $v = null)
     {
         if (empty($v)) {
             return $this->_nsp;
@@ -66,7 +69,7 @@ class SocketIO
         return $this;
     }
 
-    public function socket($v = null)
+    public function socket(?string $v = null)
     {
         if (empty($v)) {
             return $this->_socket;
@@ -75,7 +78,7 @@ class SocketIO
         return $this;
     }
 
-    public function adapter($v = null)
+    public function adapter(?string $v = null)
     {
         if (empty($v)) {
             return $this->_adapter;
@@ -87,7 +90,7 @@ class SocketIO
         return $this;
     }
 
-    public function origins($v = null)
+    public function origins(?string $v = null)
     {
         if ($v === null) {
             return $this->_origins;
@@ -99,7 +102,7 @@ class SocketIO
         return $this;
     }
 
-    public function attach($srv, $opts = []): SocketIO
+    public function attach(Worker $srv, array $opts = []): SocketIO
     {
         $engine = new Engine();
         $engine->attach($srv, $opts);
@@ -113,7 +116,7 @@ class SocketIO
         return $this;
     }
 
-    public function bind($engine): SocketIO
+    public function bind(Engine $engine): SocketIO
     {
         $this->engine = $engine;
         $this->engine->on('connection', [$this, 'onConnection']);
@@ -121,7 +124,7 @@ class SocketIO
         return $this;
     }
 
-    public function of($name, $fn = null)
+    public function of(string $name, ?callable $fn = null): Nsp
     {
         if ($name[0] !== '/') {
             $name = "/$name";
@@ -136,14 +139,14 @@ class SocketIO
         return $this->nsps[$name];
     }
 
-    public function onConnection($engine_socket): SocketIO
+    public function onConnection(Emitter $engine_socket): SocketIO
     {
         $client = new Client($this, $engine_socket);
         $client->connect('/');
         return $this;
     }
 
-    public function on()
+    public function on(): ?Emitter
     {
         $args = array_pad(func_get_args(), 2, null);
 
@@ -154,14 +157,15 @@ class SocketIO
         } elseif ($args[0] !== null) {
             return call_user_func_array([$this->sockets, 'on'], $args);
         }
+        return null;
     }
 
-    public function in()
+    public function in(): Nsp
     {
         return call_user_func_array([$this->sockets, 'in'], func_get_args());
     }
 
-    public function to()
+    public function to(): Nsp
     {
         return call_user_func_array([$this->sockets, 'to'], func_get_args());
     }
@@ -171,12 +175,12 @@ class SocketIO
         return call_user_func_array([$this->sockets, 'emit'], func_get_args());
     }
 
-    public function send()
+    public function send(): Nsp
     {
         return call_user_func_array([$this->sockets, 'send'], func_get_args());
     }
 
-    public function write()
+    public function write(): Nsp
     {
         return call_user_func_array([$this->sockets, 'write'], func_get_args());
     }

@@ -6,11 +6,11 @@ use Exception;
 
 class ChannelAdapter extends DefaultAdapter
 {
-    protected $_channelId = null;
+    protected ?string $_channelId = null;
 
-    public static $ip = '127.0.0.1';
+    public static string $ip = '127.0.0.1';
 
-    public static $port = 2206;
+    public static int $port = 2206;
 
     /**
      * @throws Exception
@@ -22,15 +22,9 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::connect(self::$ip, self::$port);
         \Channel\Client::$onMessage = [$this, 'onChannelMessage'];
         \Channel\Client::subscribe("socket.io#/#");
-        Debug::debug('ChannelAdapter __construct');
     }
 
-    public function __destruct()
-    {
-        Debug::debug('ChannelAdapter __destruct');
-    }
-
-    public function add($id, $room)
+    public function add(string $id, string $room): void
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
@@ -38,7 +32,7 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::subscribe($channel);
     }
 
-    public function del($id, $room)
+    public function del(string $id, string $room): void
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
@@ -49,7 +43,7 @@ class ChannelAdapter extends DefaultAdapter
         }
     }
 
-    public function delAll($id)
+    public function delAll(string $id): void
     {
         $rooms = isset($this->sids[$id]) ? array_keys($this->sids[$id]) : [];
         if ($rooms) {
@@ -67,7 +61,7 @@ class ChannelAdapter extends DefaultAdapter
         unset($this->sids[$id]);
     }
 
-    public function onChannelMessage($channel, $msg)
+    public function onChannelMessage(string $channel, array $msg): void
     {
         if ($this->_channelId === array_shift($msg)) {
             return;
@@ -78,7 +72,6 @@ class ChannelAdapter extends DefaultAdapter
         $opts = $msg[1];
 
         if (! $packet) {
-            echo "invalid  channel:$channel packet \n";
             return;
         }
 
@@ -87,14 +80,13 @@ class ChannelAdapter extends DefaultAdapter
         }
 
         if ($packet['nsp'] != $this->nsp->name) {
-            echo "ignore different namespace {$packet['nsp']} != {$this->nsp->name}\n";
             return;
         }
 
         $this->broadcast($packet, $opts, true);
     }
 
-    public function broadcast($packet, $opts, $remote = false)
+    public function broadcast(array $packet, array $opts, bool $remote = false): void
     {
         parent::broadcast($packet, $opts);
         if (! $remote) {

@@ -4,37 +4,42 @@ namespace PHPSocketIO\Engine\Protocols\Http;
 
 class Request
 {
+    // $onData/$onEnd/$onClose/$cleanup are intentionally untyped: PHP
+    // doesn't allow `callable` as a property type, and these are assigned
+    // closures or [$obj, 'method'] callables interchangeably.
     public $onData = null;
 
     public $onEnd = null;
 
     public $onClose = null;
 
-    public $httpVersion = null;
+    public ?string $httpVersion = null;
 
-    public $headers = [];
+    public array $headers = [];
 
-    public $rawHeaders = null;
+    public ?array $rawHeaders = null;
 
-    public $method = null;
+    public ?string $method = null;
 
-    public $url = null;
+    public ?string $url = null;
 
-    public $connection = null;
+    // Duck-typed: real usage is a Workerman TcpConnection, tests use a
+    // lightweight double.
+    public ?object $connection = null;
 
-    public $_query = null;
+    public ?array $_query = null;
 
-    public $res = null;
+    public ?object $res = null;
 
     public $cleanup = null;
 
-    public function __construct($connection, $raw_head)
+    public function __construct(object $connection, string $raw_head)
     {
         $this->connection = $connection;
         $this->parseHead($raw_head);
     }
 
-    public function parseHead($raw_head)
+    public function parseHead(string $raw_head): void
     {
         $header_data = explode("\r\n", $raw_head);
         [$this->method, $this->url, $protocol] = explode(' ', $header_data[0]);
@@ -50,7 +55,7 @@ class Request
         }
     }
 
-    public function destroy()
+    public function destroy(): void
     {
         $this->onData = $this->onEnd = $this->onClose = null;
         $this->connection = null;

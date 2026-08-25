@@ -4,35 +4,22 @@ namespace PHPSocketIO\Parser;
 
 use Exception;
 use PHPSocketIO\Event\Emitter;
-use PHPSocketIO\Debug;
 
 class Decoder extends Emitter
 {
-    public function __construct()
+    /**
+     * @throws Exception
+     */
+    public function add(string $obj): void
     {
-        Debug::debug('Decoder __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Decoder __destruct');
+        $packet = self::decodeString($obj);
+        $this->emit('decoded', $packet);
     }
 
     /**
      * @throws Exception
      */
-    public function add($obj): void
-    {
-        if (is_string($obj)) {
-            $packet = self::decodeString($obj);
-            $this->emit('decoded', $packet);
-        }
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function decodeString($str): array
+    public function decodeString(string $str): array
     {
         $p = [];
         $i = 0;

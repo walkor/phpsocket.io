@@ -3,30 +3,19 @@
 namespace PHPSocketIO\Engine;
 
 use PHPSocketIO\Event\Emitter;
-use PHPSocketIO\Debug;
 
 class Transport extends Emitter
 {
-    public $readyState = 'opening';
-    public $req = null;
-    public $res = null;
+    public string $readyState = 'opening';
+    public ?object $req = null;
+    public ?object $res = null;
     public $shouldClose = null;
 
-    public function __construct()
-    {
-        Debug::debug('Transport __construct no access !!!!');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Transport __destruct');
-    }
-
-    public function noop()
+    public function noop(): void
     {
     }
 
-    public function onRequest($req)
+    public function onRequest(object $req): void
     {
         $this->req = $req;
     }
@@ -38,26 +27,24 @@ class Transport extends Emitter
         $this->doClose($fn);
     }
 
-    public function onError(string $msg, string $desc = '')
+    public function onError(string $msg, string $desc = ''): void
     {
         if ($this->listeners('error')) {
             $this->emit('error', "TransportError: {$msg}" . ($desc ? " - {$desc}" : ''));
-        } else {
-            echo("ignored transport error $msg $desc\n");
         }
     }
 
-    public function onPacket($packet): void
+    public function onPacket(array $packet): void
     {
         $this->emit('packet', $packet);
     }
 
-    public function onData($data)
+    public function onData(string $data)
     {
         $this->onPacket(Parser::decodePacket($data));
     }
 
-    public function onClose()
+    public function onClose(): void
     {
         $this->req = $this->res = null;
         $this->readyState = 'closed';

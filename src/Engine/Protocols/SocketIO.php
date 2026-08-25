@@ -9,7 +9,7 @@ use Workerman\Connection\TcpConnection;
 
 class SocketIO
 {
-    public static function input($http_buffer, $connection)
+    public static function input(string $http_buffer, object $connection)
     {
         if (! empty($connection->hasReadedHead)) {
             return strlen($http_buffer);
@@ -67,7 +67,7 @@ class SocketIO
         }
     }
 
-    public static function onData($connection, $data)
+    public static function onData(object $connection, string $data): void
     {
         $req = $connection->httpRequest;
         self::emitData($connection, $req, $data);
@@ -78,7 +78,7 @@ class SocketIO
         }
     }
 
-    protected static function emitRequest($connection, $req, $res)
+    protected static function emitRequest(object $connection, object $req, object $res): void
     {
         try {
             call_user_func($connection->onRequest, $req, $res);
@@ -87,7 +87,7 @@ class SocketIO
         }
     }
 
-    public static function emitClose($connection)
+    public static function emitClose(object $connection): void
     {
         $req = $connection->httpRequest;
         if (isset($req->onClose)) {
@@ -108,7 +108,7 @@ class SocketIO
         self::cleanup($connection);
     }
 
-    public static function cleanup($connection)
+    public static function cleanup(object $connection): void
     {
         if (! empty($connection->onRequest)) {
             $connection->onRequest = null;
@@ -126,7 +126,7 @@ class SocketIO
         }
     }
 
-    public static function emitData($connection, $req, $data)
+    public static function emitData(object $connection, object $req, string $data): void
     {
         if (isset($req->onData)) {
             try {
@@ -137,7 +137,7 @@ class SocketIO
         }
     }
 
-    public static function emitEnd($connection, $req)
+    public static function emitEnd(object $connection, object $req): void
     {
         if (isset($req->onEnd)) {
             try {
@@ -149,7 +149,7 @@ class SocketIO
         $connection->hasReadedHead = false;
     }
 
-    public static function encode($buffer, $connection)
+    public static function encode(string $buffer, object $connection): string
     {
         if (! isset($connection->onRequest)) {
             $connection->httpResponse->setHeader('Content-Length', strlen($buffer));
@@ -158,7 +158,7 @@ class SocketIO
         return $buffer;
     }
 
-    public static function decode($http_buffer, $connection)
+    public static function decode(string $http_buffer, object $connection)
     {
         if (isset($connection->onRequest)) {
             return $http_buffer;

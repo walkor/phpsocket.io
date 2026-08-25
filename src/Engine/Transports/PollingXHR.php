@@ -2,23 +2,11 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use PHPSocketIO\Debug;
-
 class PollingXHR extends Polling
 {
-    public $sid = null;
+    public ?string $sid = null;
 
-    public function __construct()
-    {
-        Debug::debug('PollingXHR __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('PollingXHR __destruct');
-    }
-
-    public function onRequest($req)
+    public function onRequest(object $req): void
     {
         if ('OPTIONS' === $req->method) {
             $res = $req->res;
@@ -31,7 +19,7 @@ class PollingXHR extends Polling
         }
     }
 
-    public function doWrite($data)
+    public function doWrite(string $data): void
     {
         // explicit UTF-8 is required for pages not served under utf todo
         $content_type = preg_match('/^\d+:/', $data) ? 'text/plain; charset=UTF-8' : 'application/octet-stream';
@@ -42,7 +30,6 @@ class PollingXHR extends Polling
             'X-XSS-Protection' => '0',
         ];
         if (empty($this->res)) {
-            echo new \Exception('empty this->res');
             return;
         }
         $this->res->writeHead(200, '', $this->headers($this->req, $headers));
