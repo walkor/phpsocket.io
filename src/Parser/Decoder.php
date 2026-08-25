@@ -10,18 +10,16 @@ class Decoder extends Emitter
     /**
      * @throws Exception
      */
-    public function add($obj): void
+    public function add(string $obj): void
     {
-        if (is_string($obj)) {
-            $packet = self::decodeString($obj);
-            $this->emit('decoded', $packet);
-        }
+        $packet = self::decodeString($obj);
+        $this->emit('decoded', $packet);
     }
 
     /**
      * @throws Exception
      */
-    public function decodeString($str): array
+    public function decodeString(string $str): array
     {
         $p = [];
         $i = 0;

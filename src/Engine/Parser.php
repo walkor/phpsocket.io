@@ -29,7 +29,7 @@ class Parser
         'data' => 'parser error'
     ];
 
-    public static function encodePacket($packet): string
+    public static function encodePacket(array $packet): string
     {
         $data = $packet['data'] ?? '';
         return self::$packets[$packet['type']] . $data;
@@ -64,7 +64,7 @@ class Parser
      * @param $msg
      * @return array {Object} with `type` and `data` (if any)
      */
-    public static function decodeBase64Packet($msg): array
+    public static function decodeBase64Packet(string $msg): array
     {
         $type = self::$packetsList[$msg[0]];
         $data = base64_decode(substr($msg, 1));
@@ -86,7 +86,7 @@ class Parser
      * @param {Array} packets
      * @api   private
      */
-    public static function encodePayload($packets, $supportsBinary = null): string
+    public static function encodePayload(array $packets, ?bool $supportsBinary = null): string
     {
         if ($supportsBinary) {
             return self::encodePayloadAsBinary($packets);
@@ -103,7 +103,7 @@ class Parser
         return $results;
     }
 
-    public static function encodeOne($packet): string
+    public static function encodeOne(array $packet): string
     {
         $message = self::encodePacket($packet);
         return strlen($message) . ':' . $message;
@@ -115,7 +115,7 @@ class Parser
     *
     * @api public
     */
-    public static function decodePayload($data, $binaryType = null)
+    public static function decodePayload(string $data, ?string $binaryType = null)
     {
         if (! preg_match('/^\d+:\d/', $data)) {
             return self::decodePayloadAsBinary($data, $binaryType);
@@ -177,7 +177,7 @@ class Parser
      * @return string {Buffer} encoded payload
      * @api    private
      */
-    public static function encodePayloadAsBinary($packets): string
+    public static function encodePayloadAsBinary(array $packets): string
     {
         $results = '';
         foreach ($packets as $msg) {
@@ -186,7 +186,7 @@ class Parser
         return $results;
     }
 
-    public static function encodeOneAsBinary($p): string
+    public static function encodeOneAsBinary(array $p): string
     {
         $packet = self::encodePacket($p);
         $encodingLength = '' . strlen($packet);
@@ -204,7 +204,7 @@ class Parser
     * description of encodePayloadAsBinary
     * @api public
     */
-    public static function decodePayloadAsBinary($data, $binaryType = null): array
+    public static function decodePayloadAsBinary(string $data, ?string $binaryType = null): array
     {
         $bufferTail = $data;
         $buffers = [];

@@ -6,7 +6,7 @@ use PHPSocketIO\Event\Emitter;
 
 class Encoder extends Emitter
 {
-    public function encode($obj): array
+    public function encode(array $obj): array
     {
         if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {
             // Binary events/acks are not supported by this encoder.
@@ -17,7 +17,7 @@ class Encoder extends Emitter
         }
     }
 
-    public static function encodeAsString($obj): string
+    public static function encodeAsString(array $obj): string
     {
         $str = '';
         $nsp = false;

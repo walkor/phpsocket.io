@@ -18,13 +18,13 @@ class DefaultAdapter
         $this->encoder = new Parser\Encoder();
     }
 
-    public function add($id, $room)
+    public function add(string $id, string $room): void
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
     }
 
-    public function del($id, $room)
+    public function del(string $id, string $room): void
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
@@ -33,7 +33,7 @@ class DefaultAdapter
         }
     }
 
-    public function delAll($id)
+    public function delAll(string $id): void
     {
         $rooms = array_keys($this->sids[$id] ?? []);
         foreach ($rooms as $room) {
@@ -42,7 +42,7 @@ class DefaultAdapter
         unset($this->sids[$id]);
     }
 
-    public function broadcast($packet, $opts, $remote = false)
+    public function broadcast(array $packet, array $opts, bool $remote = false): void
     {
         $rooms = $opts['rooms'] ?? [];
         $except = $opts['except'] ?? [];
@@ -86,7 +86,7 @@ class DefaultAdapter
         }
     }
 
-    public function clients($rooms, $fn)
+    public function clients(array $rooms, callable $fn): void
     {
         $sids = [];
         foreach ($rooms as $room) {

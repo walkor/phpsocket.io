@@ -24,7 +24,7 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::subscribe("socket.io#/#");
     }
 
-    public function add($id, $room)
+    public function add(string $id, string $room): void
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
@@ -32,7 +32,7 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::subscribe($channel);
     }
 
-    public function del($id, $room)
+    public function del(string $id, string $room): void
     {
         unset($this->sids[$id][$room]);
         unset($this->rooms[$room][$id]);
@@ -43,7 +43,7 @@ class ChannelAdapter extends DefaultAdapter
         }
     }
 
-    public function delAll($id)
+    public function delAll(string $id): void
     {
         $rooms = isset($this->sids[$id]) ? array_keys($this->sids[$id]) : [];
         if ($rooms) {
@@ -61,7 +61,7 @@ class ChannelAdapter extends DefaultAdapter
         unset($this->sids[$id]);
     }
 
-    public function onChannelMessage($channel, $msg)
+    public function onChannelMessage(string $channel, array $msg): void
     {
         if ($this->_channelId === array_shift($msg)) {
             return;
@@ -86,7 +86,7 @@ class ChannelAdapter extends DefaultAdapter
         $this->broadcast($packet, $opts, true);
     }
 
-    public function broadcast($packet, $opts, $remote = false)
+    public function broadcast(array $packet, array $opts, bool $remote = false): void
     {
         parent::broadcast($packet, $opts);
         if (! $remote) {
