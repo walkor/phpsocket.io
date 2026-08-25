@@ -168,11 +168,35 @@ class ClientTest extends TestCase
         $conn = FakeEngineConn::make();
         $client = new Client($io, $conn);
 
-        $client->onclose('first');
+        $client->onclose($client->id, 'first');
         // Second call must not error even though destroy() already ran.
-        $client->onclose('second');
+        $client->onclose($client->id, 'second');
 
         $this->assertNull($client->conn);
+    }
+
+    public function testConnCloseEventDeliversRealReasonNotId(): void
+    {
+        $io = new SocketIO();
+        $conn = FakeEngineConn::make('conn1');
+        $client = new Client($io, $conn);
+        $client->connect('/');
+        $socket = $client->nsps['/'];
+        $seenReason = null;
+        $socket->on('disconnect', function ($reason) use (&$seenReason) {
+            $seenReason = $reason;
+        });
+
+        // Client::setup() wires onclose() as the listener for conn's 'close'
+        // event, and Engine\Socket emits that as ($id, $reason, $description)
+        // -- simulate that exact multi-argument emission (via the real
+        // Emitter this fake extends) instead of calling onclose() directly,
+        // since only going through the real event dispatch reproduces the
+        // bug this test guards against (the reason arriving as the socket
+        // id instead of the actual reason).
+        $conn->emit('close', $conn->id, 'ping timeout', 'no heartbeat received');
+
+        $this->assertSame('ping timeout', $seenReason);
     }
 
     public function testOnerrorPropagatesToSocketsAndClosesConnection(): void
