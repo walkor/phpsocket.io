@@ -8,21 +8,23 @@ use PHPSocketIO\Event\Emitter;
 
 class Engine extends Emitter
 {
+    // Intentionally untyped: holds whatever server object attach() is
+    // handed (a real Workerman\Worker in production).
     public $server;
-    public $pingTimeout = 60;
-    public $pingInterval = 25;
-    public $upgradeTimeout = 5;
-    public $transports = [];
-    public $allowUpgrades = [];
-    public $allowRequest = [];
-    public $clients = [];
-    public $origins = '*:*';
-    public static $allowTransports = [
+    public int $pingTimeout = 60;
+    public int $pingInterval = 25;
+    public int $upgradeTimeout = 5;
+    public array $transports = [];
+    public array $allowUpgrades = [];
+    public array $allowRequest = [];
+    public array $clients = [];
+    public string $origins = '*:*';
+    public static array $allowTransports = [
         'polling' => 'polling',
         'websocket' => 'websocket'
     ];
 
-    public static $errorMessages = [
+    public static array $errorMessages = [
         'Transport unknown',
         'Session ID unknown',
         'Bad handshake method',

@@ -7,12 +7,12 @@ use PHPSocketIO\Engine\Parser;
 
 class WebSocket extends Transport
 {
-    public $sid = null;
-    public $writable = true;
-    public $supportsFraming = true;
-    public $supportsBinary = true;
-    public $name = 'websocket';
-    public $socket = null;
+    public ?string $sid = null;
+    public bool $writable = true;
+    public bool $supportsFraming = true;
+    public bool $supportsBinary = true;
+    public string $name = 'websocket';
+    public ?object $socket = null;
 
     public function __construct($req)
     {

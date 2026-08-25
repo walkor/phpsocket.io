@@ -6,9 +6,9 @@ use PHPSocketIO\Event\Emitter;
 
 class Transport extends Emitter
 {
-    public $readyState = 'opening';
-    public $req = null;
-    public $res = null;
+    public string $readyState = 'opening';
+    public ?object $req = null;
+    public ?object $res = null;
     public $shouldClose = null;
 
     public function noop()

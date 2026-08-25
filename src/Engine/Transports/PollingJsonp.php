@@ -4,8 +4,8 @@ namespace PHPSocketIO\Engine\Transports;
 
 class PollingJsonp extends Polling
 {
-    public $head = null;
-    public $foot = ');';
+    public ?string $head = null;
+    public string $foot = ');';
 
     public function __construct($req)
     {

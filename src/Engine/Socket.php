@@ -7,21 +7,27 @@ use Workerman\Timer;
 
 class Socket extends Emitter
 {
-    public $id = 0;
+    public string $id = '';
+    // Intentionally untyped: duck-typed server object (real usage: Engine;
+    // tests: a lightweight Emitter-based double).
     public $server = null;
-    public $upgrading = false;
-    public $upgraded = false;
-    public $readyState = 'opening';
-    public $writeBuffer = [];
-    public $packetsFn = [];
-    public $sentCallbackFn = [];
-    public $request = null;
-    public $remoteAddress = '';
-    public $checkIntervalTimer;
-    public $upgradeTimeoutTimer = null;
-    public $pingTimeoutTimer = null;
-    public $upgradeTransport = null;
-    public $transport = null;
+    public bool $upgrading = false;
+    public bool $upgraded = false;
+    public string $readyState = 'opening';
+    public array $writeBuffer = [];
+    public array $packetsFn = [];
+    public array $sentCallbackFn = [];
+    public ?object $request = null;
+    public string $remoteAddress = '';
+    // Workerman\Timer::add() return values (timer ids), or null when unset.
+    public ?int $checkIntervalTimer = null;
+    public ?int $upgradeTimeoutTimer = null;
+    public ?int $pingTimeoutTimer = null;
+    // Duck-typed transport objects (real usage: a Transport subclass;
+    // tests: a lightweight double) -- typed as ?object rather than
+    // ?Transport since it only needs to be *an* object, not that class.
+    public ?object $upgradeTransport = null;
+    public ?object $transport = null;
 
     public function __construct($id, $server, $transport, $req)
     {

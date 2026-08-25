@@ -7,13 +7,13 @@ use PHPSocketIO\Engine\Parser;
 
 class Polling extends Transport
 {
-    public $name = 'polling';
-    public $chunks = '';
+    public string $name = 'polling';
+    public string $chunks = '';
     public $shouldClose = null;
-    public $writable = false;
-    public $supportsBinary = null;
-    public $dataRes = null;
-    public $dataReq = null;
+    public bool $writable = false;
+    public ?bool $supportsBinary = null;
+    public ?object $dataRes = null;
+    public ?object $dataReq = null;
 
     public function onRequest($req)
     {

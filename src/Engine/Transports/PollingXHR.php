@@ -4,7 +4,7 @@ namespace PHPSocketIO\Engine\Transports;
 
 class PollingXHR extends Polling
 {
-    public $sid = null;
+    public ?string $sid = null;
 
     public function onRequest($req)
     {

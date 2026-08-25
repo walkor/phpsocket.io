@@ -4,19 +4,21 @@ namespace PHPSocketIO\Engine\Protocols\Http;
 
 class Response
 {
-    public $statusCode = 200;
+    public int $statusCode = 200;
 
-    protected $_statusPhrase = null;
+    protected ?string $_statusPhrase = null;
 
-    protected $_connection = null;
+    // Duck-typed: real usage is a Workerman TcpConnection, tests use a
+    // lightweight double.
+    protected ?object $_connection = null;
 
-    protected $_headers = [];
+    protected array $_headers = [];
 
-    public $headersSent = false;
+    public bool $headersSent = false;
 
-    public $writable = true;
+    public bool $writable = true;
 
-    protected $_buffer = '';
+    protected string $_buffer = '';
 
     public function __construct($connection)
     {
@@ -137,7 +139,7 @@ class Response
         $this->writable = false;
     }
 
-    public static $codes = [
+    public static array $codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
