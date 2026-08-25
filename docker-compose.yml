@@ -22,6 +22,18 @@ services:
     tty: false
     stdin_open: false
 
+  ack:
+    build: .
+    ports:
+      - "2032:2032"
+      - "2033:2033"
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-dev --optimize-autoloader --no-interaction && php examples/ack/start.php start"
+    restart: unless-stopped
+    tty: false
+    stdin_open: false
+
   phpcs:
     build: .
     volumes:

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Acknowledgements Example</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="brandName">phpsocket.io</div>
+    <div class="brandDesc">Acknowledgements example &mdash; both directions of socket.emit(event, data, callback)</div>
+
+    <div class="statusRow">
+      <span class="statusDot"></span>
+      <span class="statusText">connecting&hellip;</span>
+    </div>
+
+    <div class="actionRow">
+      <button class="actionButton" id="clientToServerBtn">Client &rarr; Server ack</button>
+      <button class="actionButton secondary" id="serverToClientBtn">Server &rarr; Client ack</button>
+    </div>
+
+    <div class="sectionTitle">Log</div>
+    <div class="log" id="log"></div>
+
+    <div class="roomFooter">
+      Powered by <a href="https://github.com/walkor/phpsocket.io" target="_blank">phpsocket.io</a>
+      &amp; <a href="https://github.com/walkor/workerman" target="_blank">Workerman</a>
+    </div>
+  </div>
+
+  <script src="socket.io.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
