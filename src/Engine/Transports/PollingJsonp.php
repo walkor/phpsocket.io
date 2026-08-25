@@ -11,7 +11,7 @@ class PollingJsonp extends Polling
 
     public function __construct($req)
     {
-        $this->head = '___eio[' . (isset($req['_query']['j']) ? preg_replace('/[^0-9]/', '', $req['_query']['j']) : '') . '](';
+        $this->head = '___eio[' . (isset($req->_query['j']) ? preg_replace('/[^0-9]/', '', $req->_query['j']) : '') . '](';
     }
 
     public function onData($data)
