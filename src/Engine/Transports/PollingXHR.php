@@ -2,21 +2,9 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use PHPSocketIO\Debug;
-
 class PollingXHR extends Polling
 {
     public $sid = null;
-
-    public function __construct()
-    {
-        Debug::debug('PollingXHR __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('PollingXHR __destruct');
-    }
 
     public function onRequest($req)
     {

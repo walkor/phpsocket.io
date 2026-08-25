@@ -2,20 +2,8 @@
 
 namespace PHPSocketIO\Event;
 
-use PHPSocketIO\Debug;
-
 class Emitter
 {
-    public function __construct()
-    {
-        Debug::debug('Emitter __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Emitter __destruct');
-    }
-
     /**
      * [event=>[[listener1, once?], [listener2,once?], ..], ..]
      */

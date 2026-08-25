@@ -4,7 +4,6 @@ namespace PHPSocketIO\Engine;
 
 use PHPSocketIO\Event\Emitter;
 use Workerman\Timer;
-use PHPSocketIO\Debug;
 
 class Socket extends Emitter
 {
@@ -32,12 +31,6 @@ class Socket extends Emitter
         $this->remoteAddress = $req->connection->getRemoteIp() . ':' . $req->connection->getRemotePort();
         $this->setTransport($transport);
         $this->onOpen();
-        Debug::debug('Engine/Socket __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Engine/Socket __destruct');
     }
 
     public function maybeUpgrade(object $transport): void

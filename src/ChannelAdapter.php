@@ -22,12 +22,6 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::connect(self::$ip, self::$port);
         \Channel\Client::$onMessage = [$this, 'onChannelMessage'];
         \Channel\Client::subscribe("socket.io#/#");
-        Debug::debug('ChannelAdapter __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('ChannelAdapter __destruct');
     }
 
     public function add($id, $room)

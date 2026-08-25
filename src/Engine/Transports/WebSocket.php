@@ -4,7 +4,6 @@ namespace PHPSocketIO\Engine\Transports;
 
 use PHPSocketIO\Engine\Transport;
 use PHPSocketIO\Engine\Parser;
-use PHPSocketIO\Debug;
 
 class WebSocket extends Transport
 {
@@ -21,12 +20,6 @@ class WebSocket extends Transport
         $this->socket->onMessage = [$this, 'onData2'];
         $this->socket->onClose = [$this, 'onClose'];
         $this->socket->onError = [$this, 'onError2'];
-        Debug::debug('WebSocket __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('WebSocket __destruct');
     }
 
     public function onData2($connection, $data): void

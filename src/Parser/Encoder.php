@@ -4,20 +4,9 @@ namespace PHPSocketIO\Parser;
 
 use Exception;
 use PHPSocketIO\Event\Emitter;
-use PHPSocketIO\Debug;
 
 class Encoder extends Emitter
 {
-    public function __construct()
-    {
-        Debug::debug('Encoder __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Encoder __destruct');
-    }
-
     public function encode($obj): array
     {
         if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {

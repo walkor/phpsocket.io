@@ -3,7 +3,6 @@
 namespace PHPSocketIO\Engine\Transports;
 
 use Exception;
-use PHPSocketIO\Debug;
 
 class PollingJsonp extends Polling
 {
@@ -13,12 +12,6 @@ class PollingJsonp extends Polling
     public function __construct($req)
     {
         $this->head = '___eio[' . (isset($req['_query']['j']) ? preg_replace('/[^0-9]/', '', $req['_query']['j']) : '') . '](';
-        Debug::debug('PollingJsonp __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('PollingJsonp __destruct');
     }
 
     public function onData($data)

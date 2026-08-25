@@ -5,7 +5,6 @@ namespace PHPSocketIO\Engine;
 use Exception;
 use PHPSocketIO\Engine\Transports\WebSocket;
 use PHPSocketIO\Event\Emitter;
-use PHPSocketIO\Debug;
 
 class Engine extends Emitter
 {
@@ -54,12 +53,6 @@ class Engine extends Emitter
                 $this->$key = $opts[$key];
             }
         }
-        Debug::debug('Engine __construct');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Engine __destruct');
     }
 
     public function handleRequest(object $req, object $res)

@@ -3,7 +3,6 @@
 namespace PHPSocketIO\Engine;
 
 use PHPSocketIO\Event\Emitter;
-use PHPSocketIO\Debug;
 
 class Transport extends Emitter
 {
@@ -11,16 +10,6 @@ class Transport extends Emitter
     public $req = null;
     public $res = null;
     public $shouldClose = null;
-
-    public function __construct()
-    {
-        Debug::debug('Transport __construct no access !!!!');
-    }
-
-    public function __destruct()
-    {
-        Debug::debug('Transport __destruct');
-    }
 
     public function noop()
     {

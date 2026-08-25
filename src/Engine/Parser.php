@@ -3,15 +3,9 @@
 namespace PHPSocketIO\Engine;
 
 use Exception;
-use PHPSocketIO\Debug;
 
 class Parser
 {
-    public function __construct()
-    {
-        Debug::debug('Engine/Parser __construct');
-    }
-
     public static $packets = [
         'open' => 0,     // non-ws
         'close' => 1,    // non-ws
