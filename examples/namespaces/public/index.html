@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO Namespaces Example</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="brandName">phpsocket.io</div>
+    <div class="brandDesc">Namespaces example &mdash; /public and /admin are fully isolated channels on the same server</div>
+
+    <div class="picker">
+      <div class="pickerRow">
+        <label class="nsOption selected">
+          <input type="radio" name="ns" value="/public" checked>
+          <span>
+            <div class="nsOptionLabel">Public</div>
+            <div class="nsOptionPath">/public</div>
+          </span>
+        </label>
+        <label class="nsOption">
+          <input type="radio" name="ns" value="/admin">
+          <span>
+            <div class="nsOptionLabel">Admin</div>
+            <div class="nsOptionPath">/admin</div>
+          </span>
+        </label>
+      </div>
+      <button class="joinButton" id="connectButton">Connect</button>
+    </div>
+
+    <div class="connectedView" id="connectedView">
+      <div class="statusRow">
+        <div class="statusLeft">
+          <span class="statusDot"></span>
+          <span class="statusText">Connected to <span class="nsBadge" id="nsBadge">/public</span></span>
+        </div>
+        <button class="switchButton" id="switchButton">Switch namespace</button>
+      </div>
+      <div class="onlineCount" id="onlineCount" style="margin-bottom: 10px;"></div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="inputRow">
+        <input class="inputMessage" id="messageInput" placeholder="Message this namespace..." autocomplete="off"/>
+        <button class="sendButton" id="sendButton" title="Send">&#9654;</button>
+      </div>
+    </div>
+
+    <div class="roomFooter">
+      Powered by <a href="https://github.com/walkor/phpsocket.io" target="_blank">phpsocket.io</a>
+      &amp; <a href="https://github.com/walkor/workerman" target="_blank">Workerman</a>
+    </div>
+  </div>
+
+  <script src="socket.io.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

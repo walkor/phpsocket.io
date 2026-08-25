@@ -225,6 +225,42 @@ cd examples/rooms
 php start.php start
 ```
 
+### Acknowledgements ([examples/ack](examples/ack))
+
+Both directions of `emit(event, data, callback)` -- client asking the server to ack, and
+the server asking a specific client to ack back.
+
+```bash
+docker compose up --build ack
+```
+
+Then open [http://localhost:2033](http://localhost:2033) (Socket.IO on port `2032`).
+
+Without Docker:
+
+```bash
+cd examples/ack
+php start.php start
+```
+
+### Namespaces ([examples/namespaces](examples/namespaces))
+
+Two independent channels (`/public`, `/admin`) on the same server via `io->of()` -- messages
+in one never reach clients connected to the other.
+
+```bash
+docker compose up --build namespaces
+```
+
+Then open [http://localhost:2035](http://localhost:2035) (Socket.IO on port `2034`).
+
+Without Docker:
+
+```bash
+cd examples/namespaces
+php start.php start
+```
+
 ## Development
 
 This project uses GitHub Actions to run on every pull request and push to `master`:

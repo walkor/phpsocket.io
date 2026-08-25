@@ -34,6 +34,18 @@ services:
     tty: false
     stdin_open: false
 
+  namespaces:
+    build: .
+    ports:
+      - "2034:2034"
+      - "2035:2035"
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-dev --optimize-autoloader --no-interaction && php examples/namespaces/start.php start"
+    restart: unless-stopped
+    tty: false
+    stdin_open: false
+
   phpcs:
     build: .
     volumes:
