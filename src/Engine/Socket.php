@@ -170,8 +170,6 @@ class Socket extends Emitter
                     $this->emit('message', $packet['data']);
                     break;
             }
-        } else {
-            echo('packet received with closed socket');
         }
     }
 
@@ -340,10 +338,8 @@ class Socket extends Emitter
         if ($this->sentCallbackFn) {
             $seqFn = array_shift($this->sentCallbackFn);
             if (is_callable($seqFn)) {
-                echo('executing send callback');
                 call_user_func($seqFn, $this->transport);
             } elseif (is_array($seqFn)) {
-                echo('executing batch send callback');
                 foreach ($seqFn as $fn) {
                     call_user_func($fn, $this->transport);
                 }

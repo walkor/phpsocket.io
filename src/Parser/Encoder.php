@@ -2,7 +2,6 @@
 
 namespace PHPSocketIO\Parser;
 
-use Exception;
 use PHPSocketIO\Event\Emitter;
 
 class Encoder extends Emitter
@@ -10,7 +9,7 @@ class Encoder extends Emitter
     public function encode($obj): array
     {
         if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {
-            echo new Exception("not support BINARY_EVENT BINARY_ACK");
+            // Binary events/acks are not supported by this encoder.
             return [];
         } else {
             $encoding = self::encodeAsString($obj);

@@ -116,7 +116,6 @@ class RFC6455 implements ProtocolInterface
                     break;
                 // 错误的opcode
                 default:
-                    echo "error opcode $opcode and close websocket connection\n";
                     $connection->close();
                     return 0;
             }

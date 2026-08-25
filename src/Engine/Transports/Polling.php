@@ -47,7 +47,6 @@ class Polling extends Transport
         $this->emit('drain');
 
         if ($this->writable && $this->shouldClose) {
-            echo('triggering empty send to append close packet');
             $this->send([['type' => 'noop']]);
         }
     }
@@ -143,7 +142,6 @@ class Polling extends Transport
     {
         $this->writable = false;
         if ($this->shouldClose) {
-            echo('appending close packet to payload');
             $packets[] = ['type' => 'close'];
             call_user_func($this->shouldClose);
             $this->shouldClose = null;

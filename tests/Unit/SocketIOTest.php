@@ -129,7 +129,7 @@ class SocketIOTest extends TestCase
 
         $io->to('room1');
 
-        $this->assertArrayHasKey('room1', $io->sockets->rooms);
+        $this->assertArrayHasKey('room1', $io->sockets->getRoomTargets());
     }
 
     public function testInDelegatesToDefaultNamespace(): void
@@ -138,7 +138,7 @@ class SocketIOTest extends TestCase
 
         $io->in('room1');
 
-        $this->assertArrayHasKey('room1', $io->sockets->rooms);
+        $this->assertArrayHasKey('room1', $io->sockets->getRoomTargets());
     }
 
     public function testEmitDelegatesToDefaultNamespace(): void

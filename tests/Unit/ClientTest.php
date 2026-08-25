@@ -144,9 +144,7 @@ class ClientTest extends TestCase
 
         $client->disconnect();
 
-        // disconnect() sets $sockets = [] but immediately calls close(),
-        // which (via onclose()) tears the client down fully and nulls it.
-        $this->assertNull($client->sockets);
+        $this->assertSame([], $client->sockets);
         $this->assertCount(1, $conn->closeCalls);
     }
 

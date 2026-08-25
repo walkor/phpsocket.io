@@ -9,28 +9,40 @@ use PHPSocketIO\Parser\Parser;
 
 class Socket extends Emitter
 {
+    // $nsp/$server/$adapter/$request/$client/$conn are intentionally left
+    // untyped: they're duck-typed against whatever the surrounding SocketIO
+    // wiring (or a test double) hands them, not strictly the concrete
+    // Nsp/SocketIO/Http\Request/Client classes.
     public $nsp = null;
     public $server = null;
     public $adapter = null;
-    public $id = null;
-    public $path = '/';
+    public ?string $id = null;
+    public string $path = '/';
     public $request = null;
     public $client = null;
     public $conn = null;
-    public $rooms = [];
-    public $_rooms = [];
-    public $flags = [];
-    public $acks = [];
-    public $connected = true;
-    public $disconnected = false;
-    public $handshake = [];
+    public array $rooms = [];
+
+    // Ephemeral per-emit() state. No evidence of external use (checked real
+    // consumers on GitHub while raising the floor for v3.0.0) and mutating
+    // these from outside would corrupt in-flight broadcast bookkeeping, so
+    // they're now protected -- read them via getRoomTargets()/getFlags()/
+    // getAcks() if you need to inspect them.
+    protected array $roomTargets = [];
+    protected array $flags = [];
+    protected array $acks = [];
+
+    public bool $connected = true;
+    public bool $disconnected = false;
+    public array $handshake = [];
+    // Left untyped: real-world consumers assign a mix of int/string here
+    // depending on their own user id scheme.
     public $userId = null;
-    public $isGuest = false;
-    public $addedUser = null;
-    public $username = null;
+    public bool $isGuest = false;
+    public ?bool $addedUser = null;
+    public ?string $username = null;
 
-
-    public static $events = [
+    public static array $events = [
         'error' => 'error',
         'connect' => 'connect',
         'disconnect' => 'disconnect',
@@ -38,11 +50,26 @@ class Socket extends Emitter
         'removeListener' => 'removeListener'
     ];
 
-    public static $flagsMap = [
+    public static array $flagsMap = [
         'json' => 'json',
         'volatile' => 'volatile',
         'broadcast' => 'broadcast'
     ];
+
+    public function getRoomTargets(): array
+    {
+        return $this->roomTargets;
+    }
+
+    public function getFlags(): array
+    {
+        return $this->flags;
+    }
+
+    public function getAcks(): array
+    {
+        return $this->acks;
+    }
 
     public function __construct($nsp, $client)
     {
@@ -99,21 +126,20 @@ class Socket extends Emitter
             $flags = $this->flags;
             // access last argument to see if it's an ACK callback
             if (is_callable(end($args))) {
-                if ($this->_rooms || isset($flags['broadcast'])) {
+                if ($this->roomTargets || isset($flags['broadcast'])) {
                     throw new Exception('Callbacks are not supported when broadcasting');
                 }
-                echo('emitting packet with ack id ' . $this->nsp->ids);
                 $this->acks[$this->nsp->ids] = array_pop($args);
                 $packet['id'] = $this->nsp->ids++;
             }
             $packet['data'] = $args;
 
-            if ($this->_rooms || ! empty($flags['broadcast'])) {
+            if ($this->roomTargets || ! empty($flags['broadcast'])) {
                 $this->adapter->broadcast(
                     $packet,
                     [
                         'except' => [$this->id => $this->id],
-                        'rooms' => $this->_rooms,
+                        'rooms' => $this->roomTargets,
                         'flags' => $flags
                     ]
                 );
@@ -123,7 +149,7 @@ class Socket extends Emitter
             }
 
             // reset flags
-            $this->_rooms = [];
+            $this->roomTargets = [];
             $this->flags = [];
         }
         return $this;
@@ -139,8 +165,8 @@ class Socket extends Emitter
      */
     public function to($name): Socket
     {
-        if (! isset($this->_rooms[$name])) {
-            $this->_rooms[$name] = $name;
+        if (! isset($this->roomTargets[$name])) {
+            $this->roomTargets[$name] = $name;
         }
         return $this;
     }
@@ -331,8 +357,6 @@ class Socket extends Emitter
         if (is_callable($ack)) {
             call_user_func($ack, $packet['data']);
             unset($this->acks[$packet['id']]);
-        } else {
-            echo('bad ack ' . $packet['id']);
         }
     }
 

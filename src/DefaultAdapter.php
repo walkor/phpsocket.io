@@ -4,10 +4,13 @@ namespace PHPSocketIO;
 
 class DefaultAdapter
 {
+    // Intentionally untyped: accepts any nsp-like object exposing ->name
+    // and ->connected (tests use lightweight duck-typed fakes here instead
+    // of a real Nsp).
     public $nsp = null;
-    public $rooms = [];
-    public $sids = [];
-    public $encoder = null;
+    public array $rooms = [];
+    public array $sids = [];
+    public ?Parser\Encoder $encoder = null;
 
     public function __construct($nsp)
     {

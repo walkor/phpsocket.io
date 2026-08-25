@@ -9,15 +9,18 @@ use PHPSocketIO\Parser\Parser;
 
 class Client
 {
-    public $server = null;
+    public ?SocketIO $server = null;
+    // Intentionally untyped: duck-typed against whatever engine-level
+    // connection object SocketIO hands it (real usage: Engine\Socket; tests:
+    // a lightweight fake).
     public $conn = null;
-    public $encoder = null;
-    public $decoder = null;
-    public $id = null;
-    public $request = null;
-    public $nsps = [];
-    public $connectBuffer = [];
-    public $sockets = [];
+    public ?Encoder $encoder = null;
+    public ?Decoder $decoder = null;
+    public ?string $id = null;
+    public ?object $request = null;
+    public array $nsps = [];
+    public array $connectBuffer = [];
+    public array $sockets = [];
 
     public function __construct($server, $conn)
     {
@@ -143,9 +146,6 @@ class Client
 
     public function writeToEngine($encodedPackets, $volatile = false)
     {
-        if ($volatile) {
-            echo new Exception('volatile');
-        }
         if ($volatile && ! $this->conn->transport->writable) {
             return;
         }
@@ -220,7 +220,7 @@ class Client
         foreach ($this->sockets as $socket) {
             $socket->onclose($reason);
         }
-        $this->sockets = null;
+        $this->sockets = [];
     }
 
     /**
@@ -236,6 +236,7 @@ class Client
         $this->conn->removeAllListeners();
         $this->decoder->removeAllListeners();
         $this->encoder->removeAllListeners();
-        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = $this->nsps = null;
+        $this->server = $this->conn = $this->encoder = $this->decoder = $this->request = null;
+        $this->nsps = [];
     }
 }

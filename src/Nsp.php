@@ -7,21 +7,40 @@ use PHPSocketIO\Parser\Parser;
 
 class Nsp extends Emitter
 {
+    // $adapter/$server are intentionally left untyped: duck-typed against
+    // whatever SocketIO (or a test double) hands them.
     public $adapter;
-    public $name = null;
+    public ?string $name = null;
     public $server = null;
-    public $rooms = [];
-    public $flags = [];
-    public $sockets = [];
-    public $connected = [];
-    public $fns = [];
-    public $ids = 0;
-    public $acks = [];
-    public static $events = [
+
+    // Ephemeral per-emit() targeting/flags -- protected for the same reason
+    // as Socket::$roomTargets/$flags (no external usage found, and mutating
+    // them from outside would corrupt in-flight broadcast bookkeeping).
+    protected array $rooms = [];
+    protected array $flags = [];
+
+    public array $sockets = [];
+    // Read directly by DefaultAdapter::broadcast() and Socket::onconnect()/
+    // onclose(), so this stays public.
+    public array $connected = [];
+    // Incremented by Socket::emit() when assigning ack ids, so this stays
+    // public too.
+    public int $ids = 0;
+    public static array $events = [
         'connect' => 'connect',    // for symmetry with client
         'connection' => 'connection',
         'newListener' => 'newListener'
     ];
+
+    public function getRoomTargets(): array
+    {
+        return $this->rooms;
+    }
+
+    public function getFlags(): array
+    {
+        return $this->flags;
+    }
 
     public function __construct($server, $name)
     {
@@ -61,8 +80,6 @@ class Nsp extends Emitter
             }
             $this->emit('connect', $socket);
             $this->emit('connection', $socket);
-        } else {
-            echo('next called after client was closed - ignoring socket');
         }
     }
 
@@ -99,7 +116,6 @@ class Nsp extends Emitter
             $packet = ['type' => $parserType, 'data' => $args];
 
             if (is_callable(end($args))) {
-                echo('Callbacks are not supported when broadcasting');
                 return;
             }
 

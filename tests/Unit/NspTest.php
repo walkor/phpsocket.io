@@ -22,7 +22,7 @@ class NspTest extends TestCase
 
         $nsp->to('room1');
 
-        $this->assertArrayHasKey('room1', $nsp->rooms);
+        $this->assertArrayHasKey('room1', $nsp->getRoomTargets());
     }
 
     public function testInIsAliasForTo(): void
@@ -31,7 +31,7 @@ class NspTest extends TestCase
 
         $nsp->in('room1');
 
-        $this->assertArrayHasKey('room1', $nsp->rooms);
+        $this->assertArrayHasKey('room1', $nsp->getRoomTargets());
     }
 
     public function testEmitBroadcastsToConnectedSocketsInTargetedRoom(): void
@@ -54,8 +54,8 @@ class NspTest extends TestCase
 
         $nsp->emit('chat message', 'hi');
 
-        $this->assertSame([], $nsp->rooms);
-        $this->assertSame([], $nsp->flags);
+        $this->assertSame([], $nsp->getRoomTargets());
+        $this->assertSame([], $nsp->getFlags());
     }
 
     public function testEmitWithTrailingCallableDoesNotBroadcast(): void
@@ -102,7 +102,7 @@ class NspTest extends TestCase
 
         $nsp->compress(true);
 
-        $this->assertTrue($nsp->flags['compress']);
+        $this->assertTrue($nsp->getFlags()['compress']);
     }
 
     public function testClientsDelegatesToAdapterWithTargetedRooms(): void

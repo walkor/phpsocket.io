@@ -2,8 +2,6 @@
 
 namespace PHPSocketIO\Engine;
 
-use Exception;
-
 class Parser
 {
     public static array $packets = [
@@ -162,7 +160,6 @@ class Parser
 
         if ($length !== '') {
             // parser error - ignoring payload
-            echo new Exception('parser error');
             return self::$err;
         }
     }

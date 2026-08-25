@@ -7,15 +7,17 @@ use PHPSocketIO\Engine\Engine;
 
 class SocketIO
 {
+    // Intentionally untyped: tests stand in a lightweight double for the
+    // real Workerman\Worker (constructing a real one requires an actual
+    // event loop).
     public $worker;
-    public $sockets;
-    public $nsps = [];
-    protected $_nsp = null;
-    protected $_socket = null;
-    protected $_adapter = null;
-    public $engine = null;
-    protected $_origins = '*:*';
-    protected $_path = null;
+    public ?Nsp $sockets = null;
+    public array $nsps = [];
+    protected ?string $_nsp = null;
+    protected ?string $_socket = null;
+    protected ?string $_adapter = null;
+    public ?Engine $engine = null;
+    protected string $_origins = '*:*';
 
     public function __construct($port = null, $opts = [])
     {

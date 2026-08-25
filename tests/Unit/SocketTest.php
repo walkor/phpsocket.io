@@ -115,7 +115,7 @@ class SocketTest extends TestCase
         });
 
         $this->assertSame(1, $nsp->ids);
-        $this->assertArrayHasKey(0, $socket->acks);
+        $this->assertArrayHasKey(0, $socket->getAcks());
         [$packet] = $client->packetCalls[0];
         $this->assertSame(0, $packet['id']);
         $this->assertSame(['message with ack', 'payload'], $packet['data']);
@@ -196,14 +196,17 @@ class SocketTest extends TestCase
         $nsp = $this->makeNsp();
         $socket = new Socket($nsp, $this->makeClient());
         $received = null;
-        $socket->acks[7] = function ($data) use (&$received) {
+        // Register the ack the same way real code does: emit with a
+        // trailing callback, which Socket::emit() stores under the id it
+        // assigns (0, since this is nsp's first emit).
+        $socket->emit('needs ack', function ($data) use (&$received) {
             $received = $data;
-        };
+        });
 
-        $socket->onpacket(['type' => Parser::ACK, 'id' => 7, 'data' => 'result']);
+        $socket->onpacket(['type' => Parser::ACK, 'id' => 0, 'data' => 'result']);
 
         $this->assertSame('result', $received);
-        $this->assertArrayNotHasKey(7, $socket->acks);
+        $this->assertArrayNotHasKey(0, $socket->getAcks());
     }
 
     public function testAckCallbackFiresOnlyOnce(): void

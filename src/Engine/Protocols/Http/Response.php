@@ -2,8 +2,6 @@
 
 namespace PHPSocketIO\Engine\Protocols\Http;
 
-use Exception;
-
 class Response
 {
     public $statusCode = 200;
@@ -34,7 +32,6 @@ class Response
     public function writeHead($status_code, $reason_phrase = '', $headers = null)
     {
         if ($this->headersSent) {
-            echo "header has already send\n";
             return false;
         }
         $this->statusCode = $status_code;
@@ -106,7 +103,6 @@ class Response
     public function end($data = null)
     {
         if (! $this->writable) {
-            echo new Exception('unwirtable');
             return false;
         }
         if ($data !== null) {

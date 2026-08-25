@@ -2,8 +2,6 @@
 
 namespace PHPSocketIO\Engine\Transports;
 
-use Exception;
-
 class PollingJsonp extends Polling
 {
     public $head = null;
@@ -35,7 +33,6 @@ class PollingJsonp extends Polling
             'X-XSS-Protection' => '0'
         ];
         if (empty($this->res)) {
-            echo new Exception('empty $this->res');
             return;
         }
         $this->res->writeHead(200, '', $this->headers($headers));

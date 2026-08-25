@@ -52,7 +52,6 @@ class ParserTest extends TestCase
     {
         $packet = ['type' => Parser::BINARY_EVENT, 'data' => ['test']];
 
-        $this->expectOutputRegex('/not support BINARY_EVENT BINARY_ACK/');
         $this->assertSame([], $this->encoder->encode($packet));
     }
 

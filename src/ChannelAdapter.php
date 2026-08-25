@@ -6,11 +6,11 @@ use Exception;
 
 class ChannelAdapter extends DefaultAdapter
 {
-    protected $_channelId = null;
+    protected ?string $_channelId = null;
 
-    public static $ip = '127.0.0.1';
+    public static string $ip = '127.0.0.1';
 
-    public static $port = 2206;
+    public static int $port = 2206;
 
     /**
      * @throws Exception
@@ -72,7 +72,6 @@ class ChannelAdapter extends DefaultAdapter
         $opts = $msg[1];
 
         if (! $packet) {
-            echo "invalid  channel:$channel packet \n";
             return;
         }
 
@@ -81,7 +80,6 @@ class ChannelAdapter extends DefaultAdapter
         }
 
         if ($packet['nsp'] != $this->nsp->name) {
-            echo "ignore different namespace {$packet['nsp']} != {$this->nsp->name}\n";
             return;
         }
 
