@@ -20,18 +20,18 @@ class Response
 
     protected string $_buffer = '';
 
-    public function __construct($connection)
+    public function __construct(object $connection)
     {
         $this->_connection = $connection;
     }
 
-    protected function initHeader()
+    protected function initHeader(): void
     {
         $this->_headers['Connection'] = 'keep-alive';
         $this->_headers['Content-Type'] = 'Content-Type: text/html;charset=utf-8';
     }
 
-    public function writeHead($status_code, $reason_phrase = '', $headers = null)
+    public function writeHead(int $status_code, string $reason_phrase = '', ?array $headers = null)
     {
         if ($this->headersSent) {
             return false;
@@ -73,22 +73,22 @@ class Response
         return $head_buffer . "\r\n";
     }
 
-    public function setHeader($key, $val)
+    public function setHeader(string $key, $val): void
     {
         $this->_headers[$key] = $val;
     }
 
-    public function getHeader($name)
+    public function getHeader(string $name)
     {
         return $this->_headers[$name] ?? '';
     }
 
-    public function removeHeader($name)
+    public function removeHeader(string $name): void
     {
         unset($this->_headers[$name]);
     }
 
-    public function write($chunk)
+    public function write(string $chunk): void
     {
         if (! isset($this->_headers['Content-Length'])) {
             $chunk = dechex(strlen($chunk)) . "\r\n" . $chunk . "\r\n";
@@ -102,7 +102,7 @@ class Response
         }
     }
 
-    public function end($data = null)
+    public function end(?string $data = null)
     {
         if (! $this->writable) {
             return false;
@@ -127,7 +127,7 @@ class Response
         return $ret;
     }
 
-    public function destroy()
+    public function destroy(): void
     {
         if (! empty($this->_connection->httpRequest)) {
             $this->_connection->httpRequest->destroy();

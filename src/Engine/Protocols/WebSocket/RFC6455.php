@@ -242,7 +242,7 @@ class RFC6455 implements ProtocolInterface
      * @param $res
      * @return int
      */
-    public static function dealHandshake($connection, $req, $res)
+    public static function dealHandshake(object $connection, object $req, object $res)
     {
         $headers = [];
         if (isset($connection->onWebSocketConnect)) {

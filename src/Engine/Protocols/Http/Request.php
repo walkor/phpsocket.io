@@ -33,13 +33,13 @@ class Request
 
     public $cleanup = null;
 
-    public function __construct($connection, $raw_head)
+    public function __construct(object $connection, string $raw_head)
     {
         $this->connection = $connection;
         $this->parseHead($raw_head);
     }
 
-    public function parseHead($raw_head)
+    public function parseHead(string $raw_head): void
     {
         $header_data = explode("\r\n", $raw_head);
         [$this->method, $this->url, $protocol] = explode(' ', $header_data[0]);
@@ -55,7 +55,7 @@ class Request
         }
     }
 
-    public function destroy()
+    public function destroy(): void
     {
         $this->onData = $this->onEnd = $this->onClose = null;
         $this->connection = null;
