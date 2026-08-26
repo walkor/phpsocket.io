@@ -17,6 +17,7 @@ class Decoder extends Emitter
     }
 
     /**
+     * @return array<string, mixed>
      * @throws Exception
      */
     public function decodeString(string $str): array
@@ -65,11 +66,11 @@ class Decoder extends Emitter
         // look up id
         if (isset($str[$i + 1])) {
             $next = $str[$i + 1];
-            if ('' !== $next && strval((int)$next) === strval($next)) {
+            if (strval((int)$next) === strval($next)) {
                 $p['id'] = '';
                 while (++$i) {
                     $c = $str[$i];
-                    if (null == $c || strval((int)$c) != strval($c)) {
+                    if (strval((int)$c) != strval($c)) {
                         --$i;
                         break;
                     }
@@ -90,6 +91,9 @@ class Decoder extends Emitter
         return $p;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function error(): array
     {
         return [

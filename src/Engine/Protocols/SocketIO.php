@@ -9,6 +9,9 @@ use Workerman\Connection\TcpConnection;
 
 class SocketIO
 {
+    /**
+     * @return mixed
+     */
     public static function input(string $http_buffer, object $connection)
     {
         if (! empty($connection->hasReadedHead)) {
@@ -158,6 +161,9 @@ class SocketIO
         return $buffer;
     }
 
+    /**
+     * @return mixed
+     */
     public static function decode(string $http_buffer, object $connection)
     {
         if (isset($connection->onRequest)) {

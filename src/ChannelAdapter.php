@@ -13,6 +13,7 @@ class ChannelAdapter extends DefaultAdapter
     public static int $port = 2206;
 
     /**
+     * @param object $nsp
      * @throws Exception
      */
     public function __construct($nsp)
@@ -61,6 +62,9 @@ class ChannelAdapter extends DefaultAdapter
         unset($this->sids[$id]);
     }
 
+    /**
+     * @param array<int, mixed> $msg
+     */
     public function onChannelMessage(string $channel, array $msg): void
     {
         if ($this->_channelId === array_shift($msg)) {
@@ -86,6 +90,10 @@ class ChannelAdapter extends DefaultAdapter
         $this->broadcast($packet, $opts, true);
     }
 
+    /**
+     * @param array<string, mixed> $packet
+     * @param array<string, mixed> $opts
+     */
     public function broadcast(array $packet, array $opts, bool $remote = false): void
     {
         parent::broadcast($packet, $opts);

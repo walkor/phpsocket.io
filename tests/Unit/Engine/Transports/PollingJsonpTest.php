@@ -56,6 +56,7 @@ class PollingJsonpTest extends TestCase
     public function testDoWriteWrapsJsonInJsonpCallback(): void
     {
         $transport = new PollingJsonp($this->makeReq('3'));
+        $transport->req = $this->makeReq('3');
         $transport->res = new RecordingHttpResponse();
 
         $transport->doWrite('3:4hi');
@@ -83,7 +84,7 @@ class PollingJsonpTest extends TestCase
             $seen = $headers;
         });
 
-        $result = $transport->headers(['X-Test' => '1']);
+        $result = $transport->headers($this->makeReq(), ['X-Test' => '1']);
 
         $this->assertSame($result, $seen);
     }

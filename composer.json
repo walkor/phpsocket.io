@@ -40,10 +40,16 @@
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.7",
-    "phpunit/phpunit": "^9.6"
+    "phpunit/phpunit": "^9.6",
+    "phpstan/phpstan": "^2.2"
   },
   "scripts": {
     "test": "phpunit",
-    "lint": "phpcs src/"
+    "phpcs": "phpcs src/",
+    "phpstan": "phpstan analyse",
+    "lint": [
+      "@phpcs",
+      "@phpstan"
+    ]
   }
 }

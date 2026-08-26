@@ -7,16 +7,21 @@ class Request
     // $onData/$onEnd/$onClose/$cleanup are intentionally untyped: PHP
     // doesn't allow `callable` as a property type, and these are assigned
     // closures or [$obj, 'method'] callables interchangeably.
+    /** @var callable|null */
     public $onData = null;
 
+    /** @var callable|null */
     public $onEnd = null;
 
+    /** @var callable|null */
     public $onClose = null;
 
     public ?string $httpVersion = null;
 
+    /** @var array<string, string> */
     public array $headers = [];
 
+    /** @var array<int, string>|null */
     public ?array $rawHeaders = null;
 
     public ?string $method = null;
@@ -27,10 +32,12 @@ class Request
     // lightweight double.
     public ?object $connection = null;
 
+    /** @var array<string, string>|null */
     public ?array $_query = null;
 
     public ?object $res = null;
 
+    /** @var callable|null */
     public $cleanup = null;
 
     public function __construct(object $connection, string $raw_head)

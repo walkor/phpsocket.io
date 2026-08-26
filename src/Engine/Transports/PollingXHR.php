@@ -36,6 +36,10 @@ class PollingXHR extends Polling
         $this->res->end($data);
     }
 
+    /**
+     * @param array<string, mixed> $headers
+     * @return array<string, mixed>
+     */
     public function headers(object $req, array $headers = []): array
     {
         if (isset($req->headers['origin'])) {

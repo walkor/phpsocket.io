@@ -94,6 +94,18 @@ class ParserTest extends TestCase
         $this->assertSame($packets, $decoded);
     }
 
+    public function testEncodeDecodePayloadAsBinaryRoundTripWithMultiDigitLength(): void
+    {
+        // Long enough that the encoded packet length needs 2+ digits,
+        // exercising encodeOneAsBinary()'s per-digit chr() loop fully.
+        $packets = [['type' => 'message', 'data' => str_repeat('x', 20)]];
+
+        $encoded = Parser::encodePayload($packets, true);
+        $decoded = Parser::decodePayloadAsBinary($encoded);
+
+        $this->assertSame($packets, $decoded);
+    }
+
     public function testDecodePayloadDelegatesToBinaryWhenNotLengthPrefixed(): void
     {
         $packets = [['type' => 'message', 'data' => 'hi']];

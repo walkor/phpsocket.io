@@ -9,34 +9,47 @@ class Nsp extends Emitter
 {
     // $adapter/$server are intentionally left untyped: duck-typed against
     // whatever SocketIO (or a test double) hands them.
+    /** @var object */
     public $adapter;
     public ?string $name = null;
+    /** @var SocketIO|null */
     public $server = null;
 
     // Ephemeral per-emit() targeting/flags -- protected for the same reason
     // as Socket::$roomTargets/$flags (no external usage found, and mutating
     // them from outside would corrupt in-flight broadcast bookkeeping).
+    /** @var array<string, string> */
     protected array $rooms = [];
+    /** @var array<string, mixed> */
     protected array $flags = [];
 
+    /** @var array<string, Socket> */
     public array $sockets = [];
     // Read directly by DefaultAdapter::broadcast() and Socket::onconnect()/
     // onclose(), so this stays public.
+    /** @var array<string, Socket> */
     public array $connected = [];
     // Incremented by Socket::emit() when assigning ack ids, so this stays
     // public too.
     public int $ids = 0;
+    /** @var array<string, string> */
     public static array $events = [
         'connect' => 'connect',    // for symmetry with client
         'connection' => 'connection',
         'newListener' => 'newListener'
     ];
 
+    /**
+     * @return array<string, string>
+     */
     public function getRoomTargets(): array
     {
         return $this->rooms;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFlags(): array
     {
         return $this->flags;
@@ -72,6 +85,7 @@ class Nsp extends Emitter
     // but tests exercise this with a lightweight fake (constructing a real
     // Client requires a real SocketIO + conn wiring), so it's duck-typed
     // against $client->id/$client->conn like Socket's own $client property.
+    /** @param object $client */
     public function add($client, Nsp $nsp, ?callable $fn): void
     {
         $socket_name = $this->server->socket();
@@ -89,8 +103,6 @@ class Nsp extends Emitter
 
     /**
      * Removes a client. Called by each `Socket`.
-     *
-     * @api private
      */
     public function remove(Socket $socket): void
     {
@@ -102,15 +114,14 @@ class Nsp extends Emitter
     /**
      * Emits to all clients.
      *
-     * @param null $ev
+     * @param mixed $ev
      * @return Nsp|void {Namespace} self
-     * @api    public
      */
     public function emit($ev = null)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev])) {
-            call_user_func_array([get_parent_class(__CLASS__), 'emit'], $args);
+            parent::emit(...$args);
         } else {
             // set up packet object
 
@@ -160,9 +171,7 @@ class Nsp extends Emitter
     /**
      * Sets the compress flag.
      *
-     * @param  {Boolean} if `true`, compresses the sending data
      * @return Nsp {Socket} self
-     * @api    public
      */
     public function compress(bool $compress): Nsp
     {

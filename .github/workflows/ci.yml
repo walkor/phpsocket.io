@@ -6,7 +6,7 @@ on:
     branches: [master]
 
 jobs:
-  phpcs:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +18,8 @@ jobs:
       - run: composer install --no-interaction
 
       - run: vendor/bin/phpcs src/
+
+      - run: vendor/bin/phpstan analyse
 
   tests:
     runs-on: ubuntu-latest

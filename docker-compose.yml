@@ -53,6 +53,13 @@ services:
     command: sh -c "composer install --no-interaction && vendor/bin/phpcs src/"
     profiles: [tools]
 
+  phpstan:
+    build: .
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-interaction && vendor/bin/phpstan analyse"
+    profiles: [tools]
+
   phpunit:
     build: .
     volumes:

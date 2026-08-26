@@ -5,15 +5,24 @@ namespace PHPSocketIO\Engine\Transports;
 use PHPSocketIO\Engine\Transport;
 use PHPSocketIO\Engine\Parser;
 
-class Polling extends Transport
+abstract class Polling extends Transport
 {
     public string $name = 'polling';
     public string $chunks = '';
+    /** @var callable|null */
     public $shouldClose = null;
     public bool $writable = false;
     public ?bool $supportsBinary = null;
     public ?object $dataRes = null;
     public ?object $dataReq = null;
+
+    /**
+     * @param array<string, mixed> $headers
+     * @return array<string, mixed>
+     */
+    abstract public function headers(object $req, array $headers = []): array;
+
+    abstract public function doWrite(string $data): void;
 
     public function onRequest(object $req): void
     {
@@ -46,6 +55,9 @@ class Polling extends Transport
         $this->writable = true;
         $this->emit('drain');
 
+        // Not redundant: emit('drain') can synchronously flush and reset
+        // $this->writable to false via Polling::send().
+        // @phpstan-ignore booleanAnd.leftAlwaysTrue
         if ($this->writable && $this->shouldClose) {
             $this->send([['type' => 'noop']]);
         }
@@ -113,6 +125,9 @@ class Polling extends Transport
         $this->dataRequestCleanup();
     }
 
+    /**
+     * @return bool|void
+     */
     public function onData(string $data)
     {
         $packets = Parser::decodePayload($data);
@@ -138,6 +153,9 @@ class Polling extends Transport
         parent::onClose();
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $packets
+     */
     public function send(array $packets): void
     {
         $this->writable = false;
