@@ -69,8 +69,7 @@ class Decoder extends Emitter
             if (strval((int)$next) === strval($next)) {
                 $p['id'] = '';
                 while (++$i) {
-                    $c = $str[$i];
-                    if (strval((int)$c) != strval($c)) {
+                    if (! isset($str[$i]) || strval((int)$str[$i]) != strval($str[$i])) {
                         --$i;
                         break;
                     }

@@ -64,5 +64,7 @@ services:
     build: .
     volumes:
       - .:/app
-    command: sh -c "composer install --no-interaction && vendor/bin/phpunit"
+    # error_reporting=E_ALL matches CI's stricter default so PHP warnings
+    # (e.g. uninitialized string offsets) fail here instead of only in CI.
+    command: sh -c "composer install --no-interaction && php -d error_reporting=E_ALL vendor/bin/phpunit"
     profiles: [tools]
