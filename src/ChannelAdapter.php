@@ -25,10 +25,20 @@ class ChannelAdapter extends DefaultAdapter
         \Channel\Client::subscribe("socket.io#/#");
     }
 
+    // Detects a socket's auto-joined self-sid room (24 hex chars, optionally
+    // "$nsp#"-prefixed) so it skips a dedicated channel -- see issue #303.
+    private static function isSidRoom(string $room): bool
+    {
+        return (bool) preg_match('/^(?:.*#)?[0-9a-f]{24}$/', $room);
+    }
+
     public function add(string $id, string $room): void
     {
         $this->sids[$id][$room] = true;
         $this->rooms[$room][$id] = true;
+        if (self::isSidRoom($room)) {
+            return;
+        }
         $channel = "socket.io#/#$room#";
         \Channel\Client::subscribe($channel);
     }
@@ -39,8 +49,10 @@ class ChannelAdapter extends DefaultAdapter
         unset($this->rooms[$room][$id]);
         if (empty($this->rooms[$room])) {
             unset($this->rooms[$room]);
-            $channel = "socket.io#/#$room#";
-            \Channel\Client::unsubscribe($channel);
+            if (! self::isSidRoom($room)) {
+                $channel = "socket.io#/#$room#";
+                \Channel\Client::unsubscribe($channel);
+            }
         }
     }
 
@@ -51,8 +63,10 @@ class ChannelAdapter extends DefaultAdapter
             foreach ($rooms as $room) {
                 if (isset($this->rooms[$room][$id])) {
                     unset($this->rooms[$room][$id]);
-                    $channel = "socket.io#/#$room#";
-                    \Channel\Client::unsubscribe($channel);
+                    if (! self::isSidRoom($room)) {
+                        $channel = "socket.io#/#$room#";
+                        \Channel\Client::unsubscribe($channel);
+                    }
                 }
                 if (isset($this->rooms[$room]) && empty($this->rooms[$room])) {
                     unset($this->rooms[$room]);
@@ -91,6 +105,32 @@ class ChannelAdapter extends DefaultAdapter
     }
 
     /**
+     * Channel names to publish a room-targeted broadcast to: real rooms each
+     * get their own channel; sid-rooms are deduped onto the shared default
+     * channel every worker already subscribes to.
+     *
+     * @param array<int, string> $rooms
+     * @return array<int, string>
+     */
+    private static function resolveChannelsForRooms(array $rooms): array
+    {
+        $channels = [];
+        $publishedDefault = false;
+        foreach ($rooms as $room) {
+            if (self::isSidRoom($room)) {
+                if ($publishedDefault) {
+                    continue;
+                }
+                $channels[] = 'socket.io#/#';
+                $publishedDefault = true;
+                continue;
+            }
+            $channels[] = "socket.io#/#$room#";
+        }
+        return $channels;
+    }
+
+    /**
      * @param array<string, mixed> $packet
      * @param array<string, mixed> $opts
      */
@@ -99,16 +139,9 @@ class ChannelAdapter extends DefaultAdapter
         parent::broadcast($packet, $opts);
         if (! $remote) {
             $packet['nsp'] = '/';
-
-            if (! empty($opts['rooms'])) {
-                foreach ($opts['rooms'] as $room) {
-                    $chn = "socket.io#/#$room#";
-                    $msg = [$this->_channelId, $packet, $opts];
-                    \Channel\Client::publish($chn, $msg);
-                }
-            } else {
-                $chn = "socket.io#/#";
-                $msg = [$this->_channelId, $packet, $opts];
+            $msg = [$this->_channelId, $packet, $opts];
+            $channels = empty($opts['rooms']) ? ['socket.io#/#'] : self::resolveChannelsForRooms($opts['rooms']);
+            foreach ($channels as $chn) {
                 \Channel\Client::publish($chn, $msg);
             }
         }
