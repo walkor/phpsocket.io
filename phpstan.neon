@@ -1,0 +1,49 @@
+parameters:
+    level: 6
+    paths:
+        - src
+    ignoreErrors:
+        # Client::$conn is typed ?Emitter (the widest type both real usage
+        # -- Engine\Socket -- and the test fixture actually share), but the
+        # code reads Engine\Socket-only members through it (id, request,
+        # readyState, transport, close(), write()). Accepted as known
+        # technical debt rather than introducing a formal shared interface.
+        -
+            identifier: property.notFound
+            path: src/Client.php
+        -
+            identifier: method.notFound
+            path: src/Client.php
+
+        # This file attaches ad-hoc dynamic properties onto Workerman's
+        # TcpConnection/ConnectionInterface objects at runtime (a pattern
+        # copied from Workerman itself, see the file header) -- those
+        # properties are never declared on the real classes. Accepted as
+        # known technical debt: this file has no unit test coverage today,
+        # so reworking it carries real risk for a static-analysis cleanup.
+        -
+            identifier: property.notFound
+            path: src/Engine/Protocols/WebSocket/RFC6455.php
+        -
+            identifier: method.notFound
+            path: src/Engine/Protocols/WebSocket/RFC6455.php
+        -
+            identifier: arguments.count
+            path: src/Engine/Protocols/WebSocket/RFC6455.php
+
+        # Both vendor false positives: Workerman's own TcpConnection docblock
+        # says $protocol is a ProtocolInterface instance, but its own comment
+        # right above says the real format is a class-name string (which is
+        # exactly how it's assigned here and elsewhere in this codebase) --
+        # the vendor docblock is stale, not this assignment.
+        -
+            identifier: assign.propertyType
+            path: src/Engine/Protocols/WebSocket.php
+
+        # workerman/channel's Client::$onMessage is documented "@var
+        # callback" -- not a real PHP type (should be "callable"), so
+        # PHPStan reads it as an unresolvable pseudo-class and rejects any
+        # value assigned to it, including this valid array callable.
+        -
+            identifier: assign.propertyType
+            path: src/ChannelAdapter.php

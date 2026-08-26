@@ -12,6 +12,7 @@ class Response
     // lightweight double.
     protected ?object $_connection = null;
 
+    /** @var array<string, mixed> */
     protected array $_headers = [];
 
     public bool $headersSent = false;
@@ -31,6 +32,10 @@ class Response
         $this->_headers['Content-Type'] = 'Content-Type: text/html;charset=utf-8';
     }
 
+    /**
+     * @param array<string, mixed>|null $headers
+     * @return bool|null
+     */
     public function writeHead(int $status_code, string $reason_phrase = '', ?array $headers = null)
     {
         if ($this->headersSent) {
@@ -47,6 +52,7 @@ class Response
         }
         $this->_buffer = $this->getHeadBuffer();
         $this->headersSent = true;
+        return null;
     }
 
     public function getHeadBuffer(): string
@@ -73,11 +79,17 @@ class Response
         return $head_buffer . "\r\n";
     }
 
+    /**
+     * @param mixed $val
+     */
     public function setHeader(string $key, $val): void
     {
         $this->_headers[$key] = $val;
     }
 
+    /**
+     * @return mixed
+     */
     public function getHeader(string $name)
     {
         return $this->_headers[$name] ?? '';
@@ -102,6 +114,9 @@ class Response
         }
     }
 
+    /**
+     * @return mixed
+     */
     public function end(?string $data = null)
     {
         if (! $this->writable) {
@@ -139,6 +154,7 @@ class Response
         $this->writable = false;
     }
 
+    /** @var array<int, string> */
     public static array $codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',

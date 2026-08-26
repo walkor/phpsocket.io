@@ -12,12 +12,15 @@ class PollingJsonp extends Polling
         $this->head = '___eio[' . (isset($req->_query['j']) ? preg_replace('/[^0-9]/', '', $req->_query['j']) : '') . '](';
     }
 
+    /**
+     * @return void
+     */
     public function onData(string $data)
     {
         $parsed_data = null;
         parse_str($data, $parsed_data);
         $data = $parsed_data['d'];
-        call_user_func([get_parent_class($this), 'onData'], preg_replace('/\\\\n/', '\\n', $data));
+        parent::onData(preg_replace('/\\\\n/', '\\n', $data));
     }
 
     public function doWrite(string $data): void
@@ -35,11 +38,16 @@ class PollingJsonp extends Polling
         if (empty($this->res)) {
             return;
         }
-        $this->res->writeHead(200, '', $this->headers($headers));
+        $this->res->writeHead(200, '', $this->headers($this->req, $headers));
         $this->res->end($data);
     }
 
-    public function headers(array $headers = []): array
+    // $req unused: no CORS needed for JSONP, just matches Polling's shared signature.
+    /**
+     * @param array<string, mixed> $headers
+     * @return array<string, mixed>
+     */
+    public function headers(object $req, array $headers = []): array
     {
         $listeners = $this->listeners('headers');
         foreach ($listeners as $listener) {

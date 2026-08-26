@@ -18,8 +18,11 @@ class Client
     public ?Decoder $decoder = null;
     public ?string $id = null;
     public ?object $request = null;
+    /** @var array<string, Socket> */
     public array $nsps = [];
+    /** @var array<string, string> */
     public array $connectBuffer = [];
+    /** @var array<string, Socket> */
     public array $sockets = [];
 
     public function __construct(SocketIO $server, Emitter $conn)
@@ -35,8 +38,6 @@ class Client
 
     /**
      * Sets up event listeners.
-     *
-     * @api private
      */
 
     public function setup(): void
@@ -49,9 +50,6 @@ class Client
 
     /**
      * Connects a client to a namespace.
-     *
-     * @param {String} namespace name
-     * @api   private
      */
 
     public function connect(string $name): void
@@ -82,8 +80,6 @@ class Client
 
     /**
      * Disconnects from all namespaces and closes transport.
-     *
-     * @api private
      */
     public function disconnect(): void
     {
@@ -96,8 +92,6 @@ class Client
 
     /**
      * Removes a socket. Called by each `Socket`.
-     *
-     * @api private
      */
     public function remove(Socket $socket): void
     {
@@ -110,8 +104,6 @@ class Client
 
     /**
      * Closes the underlying connection.
-     *
-     * @api private
      */
     public function close(): void
     {
@@ -126,10 +118,10 @@ class Client
 
     /**
      * Writes a packet to the transport.
-     *
-     * @param {Object} packet object
-     * @param {Object} options
-     * @api   private
+     */
+    /**
+     * @param array<string, mixed> $packet
+     * @param mixed $preEncoded
      */
     public function packet(array $packet, $preEncoded = false, ?bool $volatile = false): void
     {
@@ -144,6 +136,9 @@ class Client
         }
     }
 
+    /**
+     * @param array<int|string, mixed> $encodedPackets
+     */
     public function writeToEngine(array $encodedPackets, ?bool $volatile = false): void
     {
         if ($volatile && ! $this->conn->transport->writable) {
@@ -159,8 +154,6 @@ class Client
 
     /**
      * Called with incoming transport data.
-     *
-     * @api private
      */
     public function ondata(string $data): void
     {
@@ -174,8 +167,9 @@ class Client
 
     /**
      * Called when parser fully decodes a packet.
-     *
-     * @api private
+     */
+    /**
+     * @param array<string, mixed> $packet
      */
     public function ondecoded(array $packet): void
     {
@@ -191,8 +185,7 @@ class Client
     /**
      * Handles an error.
      *
-     * @param {Objcet} error object
-     * @api   private
+     * @param mixed $err
      */
     public function onerror($err): void
     {
@@ -209,7 +202,7 @@ class Client
      * already scoped to one connection) but kept as the first parameter so
      * the signature matches what's actually emitted.
      *
-     * @api private
+     * @param mixed $id
      */
     public function onclose($id, string $reason = '', ?string $description = null): void
     {
@@ -228,8 +221,6 @@ class Client
 
     /**
      * Cleans up event listeners.
-     *
-     * @api private
      */
     public function destroy(): void
     {

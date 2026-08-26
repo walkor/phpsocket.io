@@ -6,6 +6,10 @@ use PHPSocketIO\Event\Emitter;
 
 class Encoder extends Emitter
 {
+    /**
+     * @param array<string, mixed> $obj
+     * @return array<int, string>
+     */
     public function encode(array $obj): array
     {
         if (Parser::BINARY_EVENT == $obj['type'] || Parser::BINARY_ACK == $obj['type']) {
@@ -17,6 +21,9 @@ class Encoder extends Emitter
         }
     }
 
+    /**
+     * @param array<string, mixed> $obj
+     */
     public static function encodeAsString(array $obj): string
     {
         $str = '';

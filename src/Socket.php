@@ -13,14 +13,21 @@ class Socket extends Emitter
     // untyped: they're duck-typed against whatever the surrounding SocketIO
     // wiring (or a test double) hands them, not strictly the concrete
     // Nsp/SocketIO/Http\Request/Client classes.
+    /** @var object|null */
     public $nsp = null;
+    /** @var object|null */
     public $server = null;
+    /** @var object|null */
     public $adapter = null;
     public ?string $id = null;
     public string $path = '/';
+    /** @var object|null */
     public $request = null;
+    /** @var object|null */
     public $client = null;
+    /** @var object|null */
     public $conn = null;
+    /** @var array<string, string> */
     public array $rooms = [];
 
     // Ephemeral per-emit() state. No evidence of external use (checked real
@@ -28,20 +35,26 @@ class Socket extends Emitter
     // these from outside would corrupt in-flight broadcast bookkeeping, so
     // they're now protected -- read them via getRoomTargets()/getFlags()/
     // getAcks() if you need to inspect them.
+    /** @var array<string, string> */
     protected array $roomTargets = [];
+    /** @var array<string, mixed> */
     protected array $flags = [];
+    /** @var array<int, callable> */
     protected array $acks = [];
 
     public bool $connected = true;
     public bool $disconnected = false;
+    /** @var array<string, mixed> */
     public array $handshake = [];
     // Left untyped: real-world consumers assign a mix of int/string here
     // depending on their own user id scheme.
+    /** @var int|string|null */
     public $userId = null;
     public bool $isGuest = false;
     public ?bool $addedUser = null;
     public ?string $username = null;
 
+    /** @var array<string, string> */
     public static array $events = [
         'error' => 'error',
         'connect' => 'connect',
@@ -50,27 +63,41 @@ class Socket extends Emitter
         'removeListener' => 'removeListener'
     ];
 
+    /** @var array<string, string> */
     public static array $flagsMap = [
         'json' => 'json',
         'volatile' => 'volatile',
         'broadcast' => 'broadcast'
     ];
 
+    /**
+     * @return array<string, string>
+     */
     public function getRoomTargets(): array
     {
         return $this->roomTargets;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getFlags(): array
     {
         return $this->flags;
     }
 
+    /**
+     * @return array<int, callable>
+     */
     public function getAcks(): array
     {
         return $this->acks;
     }
 
+    /**
+     * @param object $nsp
+     * @param object $client
+     */
     public function __construct($nsp, $client)
     {
         $this->nsp = $nsp;
@@ -83,6 +110,9 @@ class Socket extends Emitter
         $this->handshake = $this->buildHandshake();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function buildHandshake(): array
     {
         //todo check this->request->_query
@@ -103,6 +133,9 @@ class Socket extends Emitter
         ];
     }
 
+    /**
+     * @return static|null
+     */
     public function __get(string $name)
     {
         if ($name === 'broadcast') {
@@ -113,13 +146,15 @@ class Socket extends Emitter
     }
 
     /**
+     * @param mixed $ev
+     * @return Socket
      * @throws Exception
      */
     public function emit($ev = null)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev])) {
-            call_user_func_array([get_parent_class(__CLASS__), 'emit'], $args);
+            parent::emit(...$args);
         } else {
             $packet = [];
             $packet['type'] = Parser::EVENT;
@@ -159,9 +194,7 @@ class Socket extends Emitter
     /**
      * Targets a room when broadcasting.
      *
-     * @param  {String} name
      * @return Socket {Socket} self
-     * @api    public
      */
     public function to(string $name): Socket
     {
@@ -180,7 +213,6 @@ class Socket extends Emitter
      * Sends a `message` event.
      *
      * @return Socket {Socket} self
-     * @api    public
      */
     public function send(): Socket
     {
@@ -201,9 +233,8 @@ class Socket extends Emitter
     /**
      * Writes a packet.
      *
-     * @param {Object} packet object
-     * @param {Object} options
-     * @api   private
+     * @param array<string, mixed> $packet
+     * @param mixed $preEncoded
      */
     public function packet(array $packet, $preEncoded = false): void
     {
@@ -217,9 +248,7 @@ class Socket extends Emitter
     /**
      * Joins a room.
      *
-     * @param  {String} room
      * @return Socket {Socket} self
-     * @api    private
      */
     public function join(string $room): Socket
     {
@@ -237,9 +266,7 @@ class Socket extends Emitter
     /**
      * Leaves a room.
      *
-     * @param  {String} room
      * @return Socket {Socket} self
-     * @api    private
      */
     public function leave(string $room): Socket
     {
@@ -250,8 +277,6 @@ class Socket extends Emitter
 
     /**
      * Leave all rooms.
-     *
-     * @api private
      */
 
     public function leaveAll(): void
@@ -263,8 +288,6 @@ class Socket extends Emitter
     /**
      * Called by `Namespace` upon succesful
      * middleware execution (ie: authorization).
-     *
-     * @api private
      */
     public function onconnect(): void
     {
@@ -280,9 +303,8 @@ class Socket extends Emitter
     /**
      * Called with each packet. Called by `Client`.
      *
-     * @param  {Object} packet
+     * @param array<string, mixed> $packet
      * @throws Exception
-     * @api    private
      */
     public function onpacket(array $packet): void
     {
@@ -306,8 +328,7 @@ class Socket extends Emitter
     /**
      * Called upon event packet.
      *
-     * @param {Object} packet object
-     * @api   private
+     * @param array<string, mixed> $packet
      */
     public function onevent(array $packet): void
     {
@@ -315,14 +336,11 @@ class Socket extends Emitter
         if (! empty($packet['id']) || (isset($packet['id']) && $packet['id'] === 0)) {
             $args[] = $this->ack($packet['id']);
         }
-        call_user_func_array([get_parent_class(__CLASS__), 'emit'], $args);
+        parent::emit(...$args);
     }
 
     /**
      * Produces an ack callback to emit with an event.
-     *
-     * @param {Number} packet id
-     * @api   private
      */
     public function ack(int $id): Closure
     {
@@ -349,11 +367,13 @@ class Socket extends Emitter
     /**
      * Called upon ack packet.
      *
-     * @api private
+     * @param array<string, mixed> $packet
      */
     public function onack(array $packet): void
     {
         $ack = $this->acks[$packet['id']];
+        // Not always true: an unknown/already-fired id yields null, not a callable.
+        // @phpstan-ignore function.alreadyNarrowedType
         if (is_callable($ack)) {
             call_user_func($ack, $packet['data']);
             unset($this->acks[$packet['id']]);
@@ -364,7 +384,6 @@ class Socket extends Emitter
      * Called upon client disconnect packet.
      *
      * @throws Exception
-     * @api private
      */
     public function ondisconnect(): void
     {
@@ -374,8 +393,8 @@ class Socket extends Emitter
     /**
      * Handles a client error.
      *
+     * @param mixed $err
      * @throws Exception
-     * @api private
      */
     public function onerror($err): void
     {
@@ -387,10 +406,8 @@ class Socket extends Emitter
     /**
      * Called upon closing. Called by `Client`.
      *
-     * @param  {String} reason
-     * @param  {Error} optional error object
+     * @return Socket|null
      * @throws Exception
-     * @api    private
      */
     public function onclose(string $reason)
     {
@@ -412,15 +429,14 @@ class Socket extends Emitter
         $this->client = null;
         $this->conn = null;
         $this->removeAllListeners();
+        return null;
     }
 
     /**
      * Produces an `error` packet.
      *
-     * @param {Object} error object
-     * @api   private
+     * @param mixed $err
      */
-
     public function error($err): void
     {
         $this->packet(
@@ -436,7 +452,6 @@ class Socket extends Emitter
      * @param bool $close
      * @return Socket {Socket} self
      * @throws Exception
-     * @api    public
      */
     public function disconnect(bool $close = false): Socket
     {
@@ -459,9 +474,7 @@ class Socket extends Emitter
     /**
      * Sets the compress flag.
      *
-     * @param  {Boolean} if `true`, compresses the sending data
      * @return Socket {Socket} self
-     * @api    public
      */
     public function compress(bool $compress): Socket
     {
@@ -469,6 +482,9 @@ class Socket extends Emitter
         return $this;
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function hasBin(array $args): bool
     {
         $hasBin = false;

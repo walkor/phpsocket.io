@@ -22,27 +22,21 @@ class WebSocket extends Transport
         $this->socket->onError = [$this, 'onConnectionError'];
     }
 
-    /**
-     * Adapter for the raw connection's onMessage callback, which Workerman
-     * always invokes as ($connection, $data). Drops $connection and
-     * forwards to the real Transport::onData(), which doesn't take one.
-     */
+    // Adapts Workerman's ($connection, $data) onMessage callback to Transport::onData($data).
     public function onConnectionMessage(object $connection, string $data): void
     {
-        call_user_func([get_parent_class($this), 'onData'], $data);
+        parent::onData($data);
+    }
+
+    // Adapts Workerman's ($connection, $code, $msg) onError callback to Transport::onError().
+    public function onConnectionError(object $connection, int $code, string $msg): void
+    {
+        parent::onError($msg, (string)$code);
     }
 
     /**
-     * Adapter for the raw connection's onError callback, invoked as
-     * ($connection, $code, $msg). Forwards to Transport::onError(), which
-     * emits 'error' -- the only way a raw transport-level failure reaches
-     * Engine\Socket::onError()'s cleanup path.
+     * @param array<int, array<string, mixed>> $packets
      */
-    public function onConnectionError(object $connection, int $code, string $msg): void
-    {
-        call_user_func([get_parent_class($this), 'onError'], $msg, (string)$code);
-    }
-
     public function send(array $packets): void
     {
         foreach ($packets as $packet) {

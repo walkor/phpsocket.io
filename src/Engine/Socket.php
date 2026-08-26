@@ -10,12 +10,16 @@ class Socket extends Emitter
     public string $id = '';
     // Intentionally untyped: duck-typed server object (real usage: Engine;
     // tests: a lightweight Emitter-based double).
+    /** @var object|null */
     public $server = null;
     public bool $upgrading = false;
     public bool $upgraded = false;
     public string $readyState = 'opening';
+    /** @var array<int, array<string, mixed>> */
     public array $writeBuffer = [];
+    /** @var array<int, mixed> */
     public array $packetsFn = [];
+    /** @var array<int, array<int, mixed>> */
     public array $sentCallbackFn = [];
     public ?object $request = null;
     public string $remoteAddress = '';
@@ -29,6 +33,9 @@ class Socket extends Emitter
     public ?object $upgradeTransport = null;
     public ?object $transport = null;
 
+    /**
+     * @param object $server
+     */
     public function __construct(string $id, $server, object $transport, object $req)
     {
         $this->id = $id;
@@ -55,6 +62,9 @@ class Socket extends Emitter
         $this->once('close', [$this, 'onUpgradeTransportClose']);
     }
 
+    /**
+     * @param array<string, mixed> $packet
+     */
     public function onUpgradePacket(array $packet): void
     {
         if (empty($this->upgradeTransport)) {
@@ -154,6 +164,9 @@ class Socket extends Emitter
         $this->setPingTimeout();
     }
 
+    /**
+     * @param array<string, mixed> $packet
+     */
     public function onPacket(array $packet): void
     {
         if ('open' === $this->readyState) {
@@ -250,17 +263,29 @@ class Socket extends Emitter
         }
     }
 
+    /**
+     * @param mixed $data
+     * @param array<string, mixed>|null $options
+     */
     public function send($data, ?array $options, ?callable $callback): Socket
     {
         $this->sendPacket('message', $data, $callback);
         return $this;
     }
 
+    /**
+     * @param mixed $data
+     * @param array<string, mixed>|null $options
+     */
     public function write($data, ?array $options = [], ?callable $callback = null): Socket
     {
         return $this->send($data, $options, $callback);
     }
 
+    /**
+     * @param mixed $data
+     * @param mixed $callback
+     */
     public function sendPacket(string $type, $data = null, $callback = null): void
     {
         if ('closing' !== $this->readyState) {
@@ -307,6 +332,9 @@ class Socket extends Emitter
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getAvailableUpgrades(): array
     {
         return ['websocket'];

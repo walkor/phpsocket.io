@@ -35,6 +35,7 @@ class WebSocket
      * 检查包的完整性
      *
      * @param string $buffer
+     * @return mixed
      */
     public static function input(string $buffer, object $connection)
     {
@@ -51,7 +52,7 @@ class WebSocket
         // http head
         $pos = strpos($buffer, "\r\n\r\n");
         if (! $pos) {
-            if (strlen($buffer) >= TcpConnection::$maxPackageSize) {
+            if (strlen($buffer) >= $connection->maxPackageSize) {
                 $connection->close("HTTP/1.1 400 bad request\r\n\r\nheader too long");
                 return 0;
             }

@@ -82,6 +82,22 @@ class ParserTest extends TestCase
         $this->assertSame([1], $packet['data']);
     }
 
+    public function testDecodeAckWithMultiDigitId(): void
+    {
+        $packet = $this->decoder->decodeString('342[1]');
+
+        $this->assertSame(42, $packet['id']);
+        $this->assertSame([1], $packet['data']);
+    }
+
+    public function testDecodeAckWithIdRunningToEndOfString(): void
+    {
+        $packet = $this->decoder->decodeString('342');
+
+        $this->assertSame(42, $packet['id']);
+        $this->assertArrayNotHasKey('data', $packet);
+    }
+
     public function testDecodeUnknownTypeReturnsError(): void
     {
         $packet = $this->decoder->decodeString('9["test"]');

@@ -11,8 +11,10 @@ class SocketIO
     // Intentionally untyped: tests stand in a lightweight double for the
     // real Workerman\Worker (constructing a real one requires an actual
     // event loop).
+    /** @var object|null */
     public $worker;
     public ?Nsp $sockets = null;
+    /** @var array<string, Nsp> */
     public array $nsps = [];
     protected ?string $_nsp = null;
     protected ?string $_socket = null;
@@ -20,6 +22,9 @@ class SocketIO
     public ?Engine $engine = null;
     protected string $_origins = '*:*';
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     public function __construct(?int $port = null, array $opts = [])
     {
         $nsp = $opts['nsp'] ?? '\PHPSocketIO\Nsp';
@@ -60,6 +65,9 @@ class SocketIO
         }
     }
 
+    /**
+     * @return string|static|null
+     */
     public function nsp(?string $v = null)
     {
         if (empty($v)) {
@@ -69,6 +77,9 @@ class SocketIO
         return $this;
     }
 
+    /**
+     * @return string|static|null
+     */
     public function socket(?string $v = null)
     {
         if (empty($v)) {
@@ -78,6 +89,9 @@ class SocketIO
         return $this;
     }
 
+    /**
+     * @return string|static|null
+     */
     public function adapter(?string $v = null)
     {
         if (empty($v)) {
@@ -90,6 +104,9 @@ class SocketIO
         return $this;
     }
 
+    /**
+     * @return string|static
+     */
     public function origins(?string $v = null)
     {
         if ($v === null) {
@@ -102,6 +119,9 @@ class SocketIO
         return $this;
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     public function attach(Worker $srv, array $opts = []): SocketIO
     {
         $engine = new Engine();
@@ -170,6 +190,9 @@ class SocketIO
         return call_user_func_array([$this->sockets, 'to'], func_get_args());
     }
 
+    /**
+     * @return Nsp|void
+     */
     public function emit()
     {
         return call_user_func_array([$this->sockets, 'emit'], func_get_args());

@@ -11,20 +11,27 @@ class Engine extends Emitter
 {
     // Intentionally untyped: holds whatever server object attach() is
     // handed (a real Workerman\Worker in production).
+    /** @var object|null */
     public $server;
     public int $pingTimeout = 60;
     public int $pingInterval = 25;
     public int $upgradeTimeout = 5;
+    /** @var array<int, mixed> */
     public array $transports = [];
+    /** @var array<int, mixed> */
     public array $allowUpgrades = [];
+    /** @var array<int, mixed> */
     public array $allowRequest = [];
+    /** @var array<string, Socket> */
     public array $clients = [];
     public string $origins = '*:*';
+    /** @var array<string, string> */
     public static array $allowTransports = [
         'polling' => 'polling',
         'websocket' => 'websocket'
     ];
 
+    /** @var array<int, string> */
     public static array $errorMessages = [
         'Transport unknown',
         'Session ID unknown',
@@ -40,6 +47,9 @@ class Engine extends Emitter
 
     private const ERROR_BAD_REQUEST = 3;
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     public function __construct(array $opts = [])
     {
         $ops_map = [
@@ -66,6 +76,7 @@ class Engine extends Emitter
     }
 
     /**
+     * @param mixed $err
      * @throws Exception
      */
     public function dealRequest($err, bool $success, object $req): void
@@ -103,6 +114,9 @@ class Engine extends Emitter
         );
     }
 
+    /**
+     * @return mixed
+     */
     protected function verify(object $req, object $res, bool $upgrade, callable $fn)
     {
         if (! isset($req->_query['transport']) || ! isset(self::$allowTransports[$req->_query['transport']])) {
@@ -126,6 +140,9 @@ class Engine extends Emitter
         call_user_func($fn, null, true, $req, $res);
     }
 
+    /**
+     * @return mixed
+     */
     public function checkRequest(object $req, object $res, callable $fn)
     {
         if ($this->origins === "*:*" || empty($this->origins)) {
@@ -204,7 +221,11 @@ class Engine extends Emitter
         unset($this->clients[$id]);
     }
 
-    public function attach(Worker $worker): void
+    // $opts unused: kept only to match SocketIO::attach()'s call site.
+    /**
+     * @param array<string, mixed> $opts
+     */
+    public function attach(Worker $worker, array $opts = []): void
     {
         $this->server = $worker;
         $worker->onConnect = [$this, 'onConnect'];
@@ -240,6 +261,7 @@ class Engine extends Emitter
     }
 
     /**
+     * @param mixed $err
      * @throws Exception
      */
     public function dealWebSocketConnect($err, bool $success, object $req, object $res): void

@@ -7,11 +7,17 @@ class DefaultAdapter
     // Intentionally untyped: accepts any nsp-like object exposing ->name
     // and ->connected (tests use lightweight duck-typed fakes here instead
     // of a real Nsp).
+    /** @var object|null */
     public $nsp = null;
+    /** @var array<string, array<string, bool>> */
     public array $rooms = [];
+    /** @var array<string, array<string, bool>> */
     public array $sids = [];
     public ?Parser\Encoder $encoder = null;
 
+    /**
+     * @param object $nsp
+     */
     public function __construct($nsp)
     {
         $this->nsp = $nsp;
@@ -42,6 +48,10 @@ class DefaultAdapter
         unset($this->sids[$id]);
     }
 
+    /**
+     * @param array<string, mixed> $packet
+     * @param array<string, mixed> $opts
+     */
     public function broadcast(array $packet, array $opts, bool $remote = false): void
     {
         $rooms = $opts['rooms'] ?? [];
@@ -86,6 +96,9 @@ class DefaultAdapter
         }
     }
 
+    /**
+     * @param array<int, string> $rooms
+     */
     public function clients(array $rooms, callable $fn): void
     {
         $sids = [];

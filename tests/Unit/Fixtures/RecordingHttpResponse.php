@@ -10,6 +10,7 @@ class RecordingHttpResponse
 {
     public array $writeHeadCalls = [];
     public array $endCalls = [];
+    public bool $writable = true;
 
     public function writeHead(...$args): void
     {

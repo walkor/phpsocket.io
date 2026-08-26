@@ -6,6 +6,8 @@ class Emitter
 {
     /**
      * [event=>[[listener1, once?], [listener2,once?], ..], ..]
+     *
+     * @var array<string, array<int, array{0: callable, 1: int}>>
      */
     protected array $_eventListenerMap = [];
 
@@ -50,6 +52,9 @@ class Emitter
         return $this;
     }
 
+    /**
+     * @return array<int, callable>
+     */
     public function listeners(string $event_name): array
     {
         if (empty($this->_eventListenerMap[$event_name])) {
@@ -62,6 +67,10 @@ class Emitter
         return $listeners;
     }
 
+    /**
+     * @param mixed $event_name
+     */
+    // @phpstan-ignore missingType.return (Socket/Nsp override with an incompatible return type on purpose)
     public function emit($event_name = null)
     {
         if (empty($event_name) || empty($this->_eventListenerMap[$event_name])) {

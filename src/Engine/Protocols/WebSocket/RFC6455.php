@@ -240,7 +240,7 @@ class RFC6455 implements ProtocolInterface
      * @param TcpConnection $connection
      * @param $req
      * @param $res
-     * @return int
+     * @return int|false
      */
     public static function dealHandshake(object $connection, object $req, object $res)
     {
