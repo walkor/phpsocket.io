@@ -123,7 +123,7 @@ class Parser
     /**
      * @return array<int|string, mixed>|null
      */
-    public static function decodePayload(string $data, ?string $binaryType = null)
+    public static function decodePayload(string $data, ?string $binaryType = null): ?array
     {
         if (! preg_match('/^\d+:\d/', $data)) {
             return self::decodePayloadAsBinary($data, $binaryType);
