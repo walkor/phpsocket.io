@@ -42,6 +42,16 @@ the wire, so they're called out below too.
       declared type; assigning an incompatible type (e.g. a string to a
       property typed `bool`) now throws a `TypeError` instead of being
       silently accepted.
+- [ ] **`ChannelAdapter` (multi-worker) users:** upgrade every worker
+      sharing a channel server at the same time -- do a full `stop` +
+      `start`, not `reload`. A socket's own sid-room no longer has a
+      dedicated `socket.io#/#<sid>#` pub/sub channel (see
+      [#303](https://github.com/walkor/phpsocket.io/issues/303)); sid-targeted
+      sends now go through the shared `socket.io#/#` channel. While old and
+      new workers run side by side, `io.to($sid)` sent from an old worker to
+      a socket on a new worker is dropped. If you publish to those per-sid
+      channels yourself via `\Channel\Client::publish()` (never a documented
+      API), publish to `socket.io#/#` instead.
 
 ## Behavior fixes worth knowing about
 
@@ -94,6 +104,21 @@ compensating for the old (broken) behavior.
   parser instead of the error path. Affected connections could be left in
   a stuck, half-dead state instead of cleaning up. Now closes and emits
   correctly.
+- **`ChannelAdapter` `Error package. package_length=...`**
+  ([#303](https://github.com/walkor/phpsocket.io/issues/303)): every
+  connection subscribed its worker to its own pub/sub channel, and the whole
+  list was resent on each reconnect to the channel server, crashing at
+  roughly 7-10k connections per worker. Sid-rooms (24 lowercase hex chars,
+  optionally `"/nsp#"`-prefixed) no longer get a channel, so the
+  subscription count now depends only on your app's own rooms. Trade-off:
+  sid-targeted sends -- and app rooms whose names happen to look like a sid,
+  such as MongoDB ObjectIds -- reach every worker, which drops them unless it
+  holds that socket.
+- **`ChannelAdapter` cross-worker delivery**: a socket leaving via
+  disconnect no longer unsubscribes its worker from a room other local
+  sockets are still in (they used to stop receiving that room's broadcasts
+  from other workers), and a broadcast to a room plus a sid together is no
+  longer delivered twice.
 
 ## What's new
 

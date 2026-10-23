@@ -46,6 +46,50 @@ services:
     tty: false
     stdin_open: false
 
+  # Integration test for ChannelAdapter's sid-room fix (issue #303): a real
+  # workerman/channel server plus two independent SocketIO workers, so
+  # cross-worker delivery (both io.to(sid) and io.to(room)) is exercised
+  # over actual pub/sub, not local-only state. See tests/integration/
+  # channel-adapter/README.md to run it.
+  channel-server:
+    build: .
+    volumes:
+      - .:/app
+    # No `composer install` here: this and the two worker services share
+    # the same bind-mounted vendor/ and running it concurrently in all
+    # three corrupts it. Run `docker compose --profile integration build`
+    # (or just start any single `tools`-profile service once) beforehand.
+    command: sh -c "php tests/integration/channel-adapter/channel-server.php start"
+    profiles: [integration]
+
+  channel-worker-a:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      WORKER_NAME: A
+      WORKER_PORT: 2040
+      CHANNEL_HOST: channel-server
+    ports:
+      - "2040:2040"
+    depends_on: [channel-server]
+    command: sh -c "php tests/integration/channel-adapter/worker.php start"
+    profiles: [integration]
+
+  channel-worker-b:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      WORKER_NAME: B
+      WORKER_PORT: 2041
+      CHANNEL_HOST: channel-server
+    ports:
+      - "2041:2041"
+    depends_on: [channel-server]
+    command: sh -c "php tests/integration/channel-adapter/worker.php start"
+    profiles: [integration]
+
   phpcs:
     build: .
     volumes:
