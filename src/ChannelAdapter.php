@@ -8,6 +8,9 @@ class ChannelAdapter extends DefaultAdapter
 {
     protected ?string $_channelId = null;
 
+    // "socket.io#<nsp>#": the namespace's default channel, and the prefix of its room channels.
+    protected string $_channelPrefix = 'socket.io#/#';
+
     public static string $ip = '127.0.0.1';
 
     public static int $port = 2206;
@@ -20,9 +23,22 @@ class ChannelAdapter extends DefaultAdapter
     {
         parent::__construct($nsp);
         $this->_channelId = (function_exists('random_int') ? random_int(1, 10000000) : rand(1, 10000000)) . "-" . (function_exists('posix_getpid') ? posix_getpid() : 1);
+        $this->_channelPrefix = "socket.io#{$this->nsp->name}#";
         \Channel\Client::connect(self::$ip, self::$port);
-        \Channel\Client::$onMessage = [$this, 'onChannelMessage'];
-        \Channel\Client::subscribe("socket.io#/#");
+        // Absorbs messages still in flight for a just-unsubscribed channel, which would otherwise throw.
+        if (\Channel\Client::$onMessage === null) {
+            \Channel\Client::$onMessage = static function (): void {
+            };
+        }
+        $this->subscribe($this->_channelPrefix);
+    }
+
+    // Per-channel callback: \Channel\Client::$onMessage is process-wide, so one per namespace can't share it.
+    private function subscribe(string $channel): void
+    {
+        \Channel\Client::on($channel, function ($msg) use ($channel): void {
+            $this->onChannelMessage($channel, $msg);
+        });
     }
 
     // Detects a socket's auto-joined self-sid room (24 hex chars, optionally
@@ -39,8 +55,7 @@ class ChannelAdapter extends DefaultAdapter
         if (self::isSidRoom($room)) {
             return;
         }
-        $channel = "socket.io#/#$room#";
-        \Channel\Client::subscribe($channel);
+        $this->subscribe("{$this->_channelPrefix}$room#");
     }
 
     public function del(string $id, string $room): void
@@ -50,8 +65,7 @@ class ChannelAdapter extends DefaultAdapter
         if (empty($this->rooms[$room])) {
             unset($this->rooms[$room]);
             if (! self::isSidRoom($room)) {
-                $channel = "socket.io#/#$room#";
-                \Channel\Client::unsubscribe($channel);
+                \Channel\Client::unsubscribe("{$this->_channelPrefix}$room#");
             }
         }
     }
@@ -66,7 +80,7 @@ class ChannelAdapter extends DefaultAdapter
                     unset($this->rooms[$room]);
                     // Channel subscriptions aren't refcounted: only drop once no local socket remains.
                     if (! self::isSidRoom($room)) {
-                        \Channel\Client::unsubscribe("socket.io#/#$room#");
+                        \Channel\Client::unsubscribe("{$this->_channelPrefix}$room#");
                     }
                 }
             }
@@ -111,14 +125,14 @@ class ChannelAdapter extends DefaultAdapter
      * @param array<int, string> $rooms
      * @return array<int, string>
      */
-    private static function resolveChannelsForRooms(array $rooms): array
+    private static function resolveChannelsForRooms(string $prefix, array $rooms): array
     {
         $channels = [];
         foreach ($rooms as $room) {
             if (self::isSidRoom($room)) {
-                return ['socket.io#/#'];
+                return [$prefix];
             }
-            $channels[] = "socket.io#/#$room#";
+            $channels[] = "$prefix$room#";
         }
         return $channels;
     }
@@ -131,9 +145,11 @@ class ChannelAdapter extends DefaultAdapter
     {
         parent::broadcast($packet, $opts);
         if (! $remote) {
-            $packet['nsp'] = '/';
+            $packet['nsp'] = $this->nsp->name;
             $msg = [$this->_channelId, $packet, $opts];
-            $channels = empty($opts['rooms']) ? ['socket.io#/#'] : self::resolveChannelsForRooms($opts['rooms']);
+            $channels = empty($opts['rooms'])
+                ? [$this->_channelPrefix]
+                : self::resolveChannelsForRooms($this->_channelPrefix, $opts['rooms']);
             foreach ($channels as $chn) {
                 \Channel\Client::publish($chn, $msg);
             }

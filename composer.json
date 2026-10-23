@@ -25,7 +25,7 @@
   "require": {
     "php": ">=7.4",
     "workerman/workerman": "^4.0.0",
-    "workerman/channel": ">=1.0.0",
+    "workerman/channel": ">=1.0.1",
     "ext-json": "*"
   },
   "autoload": {

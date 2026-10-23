@@ -1,10 +1,13 @@
 # ChannelAdapter cross-worker integration test
 
-Proves the issue #303 fix (`ChannelAdapter` skipping a dedicated pub/sub
-channel for auto-joined sid-rooms) doesn't break cross-worker delivery --
-the thing that fix could plausibly have broken. Two independent SocketIO
-workers, wired to a real `workerman/channel` server, exercise both
-`io.to(sid).emit()` and `io.to(room).emit()` across the process boundary.
+Proves `ChannelAdapter` delivers across workers: the issue #303 fix
+(skipping a dedicated pub/sub channel for auto-joined sid-rooms) and
+per-namespace channels. Two independent SocketIO workers, both declaring
+the `/` and `/chat` namespaces and wired to a real `workerman/channel`
+server, exercise `io.to(sid).emit()`, `io.to(room).emit()` and
+namespace-wide emits across the process boundary, check nothing leaks
+into the other namespace, and check that the same room name in both
+namespaces stays independent.
 
 Not part of `composer test` / CI: it needs real, timing-sensitive network
 processes (three Docker containers) rather than in-process fakes, so it's
@@ -21,7 +24,7 @@ node tests/integration/channel-adapter/test.js
 docker compose down channel-server channel-worker-a channel-worker-b
 ```
 
-Expected output: `PASS` for both cross-worker scenarios, then
+Expected output: `PASS` for every scenario, then
 `RESULT: ALL PASSED` (exit code 0). Any `FAIL` line or a non-zero exit
 code means something regressed.
 
