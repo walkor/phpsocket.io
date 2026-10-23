@@ -21,6 +21,7 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 
 - [Install](#install)
 - [Examples](#examples)
+- [Multiple processes](#multiple-processes)
 - [Run the examples](#run-the-examples)
 - [Development](#development)
 - [Contributing](#contributing)
@@ -184,6 +185,55 @@ $io->on('connection', function ($socket) {
 
 Worker::runAll();
 ```
+
+## Multiple processes
+
+A single process keeps every socket in its own memory, so `emit()`, `to($room)`
+and `to($sid)` only reach sockets in that process. To run several worker
+processes, or several servers, use `ChannelAdapter`: it relays broadcasts
+through a [workerman/channel](https://github.com/walkor/channel) server.
+
+```php
+<?php
+
+use Workerman\Worker;
+use PHPSocketIO\SocketIO;
+use PHPSocketIO\ChannelAdapter;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+// Pub/sub hub the worker processes use to reach each other's sockets.
+$channel = new Channel\Server('127.0.0.1', 2206);
+
+$io = new SocketIO(2026);
+$io->worker->count = 4;
+
+// ChannelAdapter connects to the channel server, which needs the event loop:
+// set it in workerStart, not through the constructor's 'adapter' option.
+$io->on('workerStart', function () use ($io) {
+    $io->adapter(ChannelAdapter::class);
+});
+
+$io->on('connection', function ($socket) {
+    $socket->on('chat message', function ($msg) use ($socket) {
+        $socket->broadcast->emit('chat message', $msg);
+    });
+});
+
+Worker::runAll();
+```
+
+- For a channel server on another host, set `ChannelAdapter::$ip` and
+  `ChannelAdapter::$port` before `Worker::runAll()`, and run `Channel\Server`
+  there instead.
+- **Clients must connect with the WebSocket transport only** when several
+  processes share a port, or several servers sit behind a load balancer
+  without sticky sessions: HTTP long-polling requests from one client can land
+  on different processes, and the handshake fails.
+
+  ```js
+  const socket = io('http://localhost:2026', { transports: ['websocket'] });
+  ```
 
 ## Run the examples
 

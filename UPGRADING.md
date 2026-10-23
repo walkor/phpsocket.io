@@ -126,6 +126,12 @@ compensating for the old (broken) behavior.
   `workerman/channel` minimum is now 1.0.1 (for `Client::on()`), and the
   adapter no longer overwrites a `\Channel\Client::$onMessage` your app
   sets itself.
+- **`ChannelAdapter` setup outside the event loop**: passing it as the
+  constructor option (`new SocketIO($port, ['adapter' => ChannelAdapter::class])`)
+  at script level always died with an obscure `Channel\Client` error. It now
+  throws a `RuntimeException` naming the supported setup, now documented in
+  the README's [Multiple processes](README.md#multiple-processes) section:
+  `$io->on('workerStart', function () use ($io) { $io->adapter(ChannelAdapter::class); });`.
 - **`ChannelAdapter` cross-worker delivery**: a socket leaving via
   disconnect no longer unsubscribes its worker from a room other local
   sockets are still in (they used to stop receiving that room's broadcasts
