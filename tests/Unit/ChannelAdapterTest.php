@@ -109,15 +109,16 @@ class ChannelAdapterTest extends TestCase
         $this->assertSame(['socket.io#/#'], $channels);
     }
 
-    public function testResolveChannelsForRoomsMixesSidAndRealRoomsCorrectly(): void
+    public function testResolveChannelsForRoomsCollapsesMixedSidAndRealRoomsOntoDefaultChannel(): void
     {
+        // Publishing to room1's channel as well would double-deliver on workers subscribed to both.
         $channels = $this->callPrivateStatic('resolveChannelsForRooms', [[
             'room1',
             '1bb9dcf2b5a3da4100aab5ee',
             'room2',
         ]]);
 
-        $this->assertSame(['socket.io#/#room1#', 'socket.io#/#', 'socket.io#/#room2#'], $channels);
+        $this->assertSame(['socket.io#/#'], $channels);
     }
 
     public function testAddOnSidRoomRegistersLocallyWithoutTouchingTheNetwork(): void
@@ -158,6 +159,20 @@ class ChannelAdapterTest extends TestCase
 
         $this->assertArrayNotHasKey($sid, $adapter->sids);
         $this->assertArrayNotHasKey($sid, $adapter->rooms);
+    }
+
+    public function testDelAllKeepsRealRoomSubscriptionWhileOtherLocalSocketsRemain(): void
+    {
+        // Seeded directly: add() on a real room would hit \Channel\Client; unsubscribe() throws here if reached.
+        $nsp = new FakeChannelNsp();
+        $adapter = $this->makeAdapter('self-id', $nsp);
+        $adapter->sids = ['a' => ['chat' => true], 'b' => ['chat' => true]];
+        $adapter->rooms = ['chat' => ['a' => true, 'b' => true]];
+
+        $adapter->delAll('a');
+
+        $this->assertSame(['b' => true], $adapter->rooms['chat']);
+        $this->assertArrayNotHasKey('a', $adapter->sids);
     }
 
     public function testOnChannelMessageIgnoresMessagesFromItself(): void

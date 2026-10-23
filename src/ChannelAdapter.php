@@ -61,15 +61,13 @@ class ChannelAdapter extends DefaultAdapter
         $rooms = isset($this->sids[$id]) ? array_keys($this->sids[$id]) : [];
         if ($rooms) {
             foreach ($rooms as $room) {
-                if (isset($this->rooms[$room][$id])) {
-                    unset($this->rooms[$room][$id]);
-                    if (! self::isSidRoom($room)) {
-                        $channel = "socket.io#/#$room#";
-                        \Channel\Client::unsubscribe($channel);
-                    }
-                }
+                unset($this->rooms[$room][$id]);
                 if (isset($this->rooms[$room]) && empty($this->rooms[$room])) {
                     unset($this->rooms[$room]);
+                    // Channel subscriptions aren't refcounted: only drop once no local socket remains.
+                    if (! self::isSidRoom($room)) {
+                        \Channel\Client::unsubscribe("socket.io#/#$room#");
+                    }
                 }
             }
         }
@@ -106,8 +104,9 @@ class ChannelAdapter extends DefaultAdapter
 
     /**
      * Channel names to publish a room-targeted broadcast to: real rooms each
-     * get their own channel; sid-rooms are deduped onto the shared default
-     * channel every worker already subscribes to.
+     * get their own channel; any sid-room sends the whole broadcast once on
+     * the shared default channel instead, since every worker subscribes to it
+     * and filters by all rooms locally (publishing to both would deliver twice).
      *
      * @param array<int, string> $rooms
      * @return array<int, string>
@@ -115,15 +114,9 @@ class ChannelAdapter extends DefaultAdapter
     private static function resolveChannelsForRooms(array $rooms): array
     {
         $channels = [];
-        $publishedDefault = false;
         foreach ($rooms as $room) {
             if (self::isSidRoom($room)) {
-                if ($publishedDefault) {
-                    continue;
-                }
-                $channels[] = 'socket.io#/#';
-                $publishedDefault = true;
-                continue;
+                return ['socket.io#/#'];
             }
             $channels[] = "socket.io#/#$room#";
         }
