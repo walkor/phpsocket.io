@@ -9,9 +9,9 @@ namespace-wide emits across the process boundary, check nothing leaks
 into the other namespace, and check that the same room name in both
 namespaces stays independent.
 
-Not part of `composer test` / CI: it needs real, timing-sensitive network
-processes (three Docker containers) rather than in-process fakes, so it's
-a manual/CI-optional check, not something that runs on every commit.
+Not part of `composer test`: it needs real network processes (three Docker
+containers) rather than in-process fakes. CI runs it, plus the scale check
+below, in the `integration` job of `.github/workflows/ci.yml`.
 
 ## Run it
 

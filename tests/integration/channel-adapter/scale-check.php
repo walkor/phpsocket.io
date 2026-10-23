@@ -36,7 +36,8 @@ $bootstrap->onWorkerStart = function () use ($channelHost, $count) {
     echo "Simulated {$count} sid-room joins.\n";
     echo 'Subscribed channel count: ' . count($subscribed) . "\n";
 
-    posix_kill(posix_getpid(), SIGTERM);
+    // Stop the master too: killing only this worker would make it restart and run again.
+    posix_kill(posix_getppid(), SIGINT);
 };
 
 Worker::runAll();

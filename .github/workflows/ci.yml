@@ -37,3 +37,37 @@ jobs:
       - run: composer install --no-interaction
 
       - run: vendor/bin/phpunit
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: docker compose --profile integration build
+
+      # The three integration containers share this bind-mounted vendor/.
+      - run: docker compose --profile tools run --rm phpunit composer install --no-interaction --no-progress
+
+      - run: docker compose up -d channel-server channel-worker-a channel-worker-b
+
+      - run: npm install --no-save socket.io-client@2.5.0
+
+      - name: Wait for workers
+        run: |
+          for port in 2040 2041; do
+            timeout 30 sh -c "until curl -s 'http://localhost:$port/socket.io/?EIO=3&transport=polling' >/dev/null; do sleep 1; done"
+          done
+
+      - run: node tests/integration/channel-adapter/test.js
+
+      - name: Scale check (issue #303)
+        run: |
+          timeout 120 docker compose run --rm -e CHANNEL_HOST=channel-server -e SCALE_COUNT=10000 channel-worker-a \
+            sh -c "php tests/integration/channel-adapter/scale-check.php start" | tee scale.log
+          grep -q "^Subscribed channel count: 1" scale.log
+
+      - if: failure()
+        run: docker compose --profile integration logs
+
+      - if: always()
+        run: docker compose --profile integration down
