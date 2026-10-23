@@ -4,11 +4,13 @@ namespace PHPSocketIO\Tests\Unit;
 
 use PHPSocketIO\ChannelAdapter;
 use PHPSocketIO\Parser\Encoder;
+use PHPSocketIO\SocketIO;
 use PHPSocketIO\Tests\Unit\Fixtures\RecordingSocket;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use RuntimeException;
 
 class FakeChannelNsp
 {
@@ -83,6 +85,14 @@ class ChannelAdapterTest extends TestCase
             '24 chars but not all hex' => ['not-a-real-sid-just-24ch', false],
             'uppercase hex never produced by bin2hex' => ['1BB9DCF2B5A3DA4100AAB5EE', false],
         ];
+    }
+
+    public function testConstructorOptionOutsideTheEventLoopFailsWithGuidance(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('workerStart');
+
+        new SocketIO(null, ['adapter' => ChannelAdapter::class]);
     }
 
     public function testResolveChannelsForRoomsUsesDedicatedChannelForRealRooms(): void

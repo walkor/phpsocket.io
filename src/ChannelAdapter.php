@@ -3,6 +3,8 @@
 namespace PHPSocketIO;
 
 use Exception;
+use RuntimeException;
+use Workerman\Worker;
 
 class ChannelAdapter extends DefaultAdapter
 {
@@ -21,6 +23,16 @@ class ChannelAdapter extends DefaultAdapter
      */
     public function __construct($nsp)
     {
+        // Connecting before the loop runs fails, or would share one connection across forked workers.
+        /** @var \Workerman\Events\EventInterface|null $loop Workerman's docblock omits null (no loop yet). */
+        $loop = Worker::getEventLoop();
+        if ($loop === null) {
+            throw new RuntimeException(
+                'ChannelAdapter needs a running Workerman event loop. Set it in workerStart: '
+                . '$io->on(\'workerStart\', function () use ($io) { '
+                . '$io->adapter(\\PHPSocketIO\\ChannelAdapter::class); });'
+            );
+        }
         parent::__construct($nsp);
         $this->_channelId = (function_exists('random_int') ? random_int(1, 10000000) : rand(1, 10000000)) . "-" . (function_exists('posix_getpid') ? posix_getpid() : 1);
         $this->_channelPrefix = "socket.io#{$this->nsp->name}#";
