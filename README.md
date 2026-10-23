@@ -30,6 +30,15 @@ A server-side PHP implementation of [socket.io](https://github.com/socketio/sock
 
 ## Install
 
+v3.0.0 is in pre-release. This README documents it, and Composer only installs it when asked:
+
+```bash
+composer require workerman/phpsocket.io:^3.0@beta
+```
+
+Coming from v2.x, read [UPGRADING.md](UPGRADING.md) first. Please report problems in the
+[issues](https://github.com/walkor/phpsocket.io/issues). For the current stable release (v2.x):
+
 ```bash
 composer require workerman/phpsocket.io
 ```
