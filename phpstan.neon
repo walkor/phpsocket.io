@@ -39,11 +39,3 @@ parameters:
         -
             identifier: assign.propertyType
             path: src/Engine/Protocols/WebSocket.php
-
-        # workerman/channel's Client::$onMessage is documented "@var
-        # callback" -- not a real PHP type (should be "callable"), so
-        # PHPStan reads it as an unresolvable pseudo-class and rejects any
-        # value assigned to it, including this valid array callable.
-        -
-            identifier: assign.propertyType
-            path: src/ChannelAdapter.php

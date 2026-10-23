@@ -1,9 +1,11 @@
-// Integration test for ChannelAdapter's sid-room fix (GitHub issue #303).
+// Integration test for ChannelAdapter cross-worker delivery: the sid-room fix
+// (GitHub issue #303) and per-namespace channels.
 //
-// Connects one socket.io-client to each of two independent SocketIO workers
+// Connects socket.io-clients to two independent SocketIO workers
 // (channel-worker-a, channel-worker-b), both wired to a real workerman/channel
-// server, and proves cross-worker delivery still works for both io.to(sid)
-// and io.to(room) -- the exact behavior the fix must not break.
+// server and both declaring the "/" and "/chat" namespaces, and proves
+// cross-worker delivery works for io.to(sid), io.to(room) and namespace-wide
+// emits, without leaking across namespaces.
 //
 // Run via: docker compose --profile integration up -d
 //          node tests/integration/channel-adapter/test.js
@@ -38,6 +40,14 @@ function connect(url) {
             clearTimeout(timer);
             reject(err);
         });
+    });
+}
+
+function expectNone(socket, event, ms = 1500) {
+    return new Promise((resolve) => {
+        let got = 0;
+        socket.on(event, () => { got++; });
+        setTimeout(() => resolve(got), ms);
     });
 }
 
@@ -87,6 +97,48 @@ async function testCrossWorkerRoomBroadcast(a, b) {
     }
 }
 
+async function testCrossWorkerNamespaceBroadcast(nsp, a, b, bOther) {
+    const received = waitFor(b.socket, 'all-ping-received', `${nsp} namespace-wide emit: B never received it`);
+    const leaked = expectNone(bOther.socket, 'all-ping-received');
+    a.socket.emit('ping-all');
+    try {
+        const payload = await received;
+        if (payload.nsp === nsp && payload.worker === 'A') {
+            pass(`cross-worker ${nsp} namespace-wide emit: A -> B delivered correctly`);
+        } else {
+            fail(`${nsp} namespace-wide emit: unexpected payload ${JSON.stringify(payload)}`);
+        }
+    } catch (err) {
+        fail(err.message);
+    }
+    const leakCount = await leaked;
+    if (leakCount === 0) {
+        pass(`${nsp} namespace-wide emit did not leak into another namespace`);
+    } else {
+        fail(`${nsp} namespace-wide emit leaked ${leakCount} time(s) into another namespace`);
+    }
+}
+
+async function testSameRoomNameAcrossNamespaces(chatA, chatB, rootB) {
+    // The root namespace leaving "lobby" on worker B must not unsubscribe B's "/chat" lobby.
+    const room = 'lobby';
+    chatA.socket.emit('join-room', room);
+    chatB.socket.emit('join-room', room);
+    rootB.socket.emit('join-room', room);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    rootB.socket.emit('leave-room', room);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const received = waitFor(chatB.socket, 'room-ping-received', 'same room name across namespaces: /chat on B never received the lobby ping');
+    chatA.socket.emit('ping-room', room);
+    try {
+        await received;
+        pass('same room name in "/" and "/chat": leaving it in "/" keeps "/chat" delivery working');
+    } catch (err) {
+        fail(err.message);
+    }
+}
+
 (async () => {
     let a, b;
     try {
@@ -100,8 +152,20 @@ async function testCrossWorkerRoomBroadcast(a, b) {
     await testCrossWorkerSidTargeting(a, b);
     await testCrossWorkerRoomBroadcast(a, b);
 
-    a.socket.close();
-    b.socket.close();
+    let chatA, chatB;
+    try {
+        [chatA, chatB] = await Promise.all([connect(`${WORKER_A_URL}/chat`), connect(`${WORKER_B_URL}/chat`)]);
+    } catch (err) {
+        console.log(`FAIL: could not connect to /chat on both workers: ${err.message}`);
+        process.exit(1);
+    }
+
+    await testCrossWorkerNamespaceBroadcast('/', a, b, chatB);
+    await testCrossWorkerNamespaceBroadcast('/chat', chatA, chatB, b);
+    await testCrossWorkerSidTargeting(chatA, chatB);
+    await testSameRoomNameAcrossNamespaces(chatA, chatB, b);
+
+    [a, b, chatA, chatB].forEach((c) => c.socket.close());
 
     if (failed) {
         console.log('\nRESULT: FAILED');

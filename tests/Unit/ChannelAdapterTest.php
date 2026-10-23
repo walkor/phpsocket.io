@@ -87,21 +87,21 @@ class ChannelAdapterTest extends TestCase
 
     public function testResolveChannelsForRoomsUsesDedicatedChannelForRealRooms(): void
     {
-        $channels = $this->callPrivateStatic('resolveChannelsForRooms', [['room1', 'room2']]);
+        $channels = $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/#', ['room1', 'room2']]);
 
         $this->assertSame(['socket.io#/#room1#', 'socket.io#/#room2#'], $channels);
     }
 
     public function testResolveChannelsForRoomsRoutesSidRoomToDefaultChannel(): void
     {
-        $channels = $this->callPrivateStatic('resolveChannelsForRooms', [['1bb9dcf2b5a3da4100aab5ee']]);
+        $channels = $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/#', ['1bb9dcf2b5a3da4100aab5ee']]);
 
         $this->assertSame(['socket.io#/#'], $channels);
     }
 
     public function testResolveChannelsForRoomsDedupesMultipleSidRoomsOntoOneDefaultPublish(): void
     {
-        $channels = $this->callPrivateStatic('resolveChannelsForRooms', [[
+        $channels = $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/#', [
             '1bb9dcf2b5a3da4100aab5ee',
             '2cc8ecf3c6b4eb5211bbc6ff',
         ]]);
@@ -112,13 +112,25 @@ class ChannelAdapterTest extends TestCase
     public function testResolveChannelsForRoomsCollapsesMixedSidAndRealRoomsOntoDefaultChannel(): void
     {
         // Publishing to room1's channel as well would double-deliver on workers subscribed to both.
-        $channels = $this->callPrivateStatic('resolveChannelsForRooms', [[
+        $channels = $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/#', [
             'room1',
             '1bb9dcf2b5a3da4100aab5ee',
             'room2',
         ]]);
 
         $this->assertSame(['socket.io#/#'], $channels);
+    }
+
+    public function testResolveChannelsForRoomsUsesTheNamespacePrefix(): void
+    {
+        $this->assertSame(
+            ['socket.io#/chat#lobby#'],
+            $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/chat#', ['lobby']])
+        );
+        $this->assertSame(
+            ['socket.io#/chat#'],
+            $this->callPrivateStatic('resolveChannelsForRooms', ['socket.io#/chat#', ['/chat#1bb9dcf2b5a3da4100aab5ee']])
+        );
     }
 
     public function testAddOnSidRoomRegistersLocallyWithoutTouchingTheNetwork(): void

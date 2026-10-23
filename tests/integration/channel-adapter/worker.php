@@ -27,27 +27,40 @@ $bootstrap->onWorkerStart = function () use ($workerName, $port, $channelHost) {
     // its port unless done explicitly here.
     $io->worker->listen();
 
-    $io->on('connection', function ($socket) use ($workerName) {
-        $socket->emit('welcome', ['sid' => $socket->id, 'worker' => $workerName]);
+    // Same handlers on "/" and "/chat": declaring a second namespace used to
+    // break cross-worker delivery in both of them.
+    foreach (['/', '/chat'] as $name) {
+        $nsp = $io->of($name);
+        $nsp->on('connection', function ($socket) use ($nsp, $workerName) {
+            $socket->emit('welcome', ['sid' => $socket->id, 'worker' => $workerName]);
 
-        $socket->on('join-room', function ($room) use ($socket) {
-            $socket->join($room);
-        });
+            $socket->on('join-room', function ($room) use ($socket) {
+                $socket->join($room);
+            });
 
-        $socket->on('ping-sid', function ($targetSid) use ($socket, $workerName) {
-            $socket->to($targetSid)->emit('ping-received', [
-                'from' => $socket->id,
-                'worker' => $workerName,
-            ]);
-        });
+            $socket->on('leave-room', function ($room) use ($socket) {
+                $socket->leave($room);
+            });
 
-        $socket->on('ping-room', function ($room) use ($socket, $workerName) {
-            $socket->to($room)->emit('room-ping-received', [
-                'from' => $socket->id,
-                'worker' => $workerName,
-            ]);
+            $socket->on('ping-sid', function ($targetSid) use ($socket, $workerName) {
+                $socket->to($targetSid)->emit('ping-received', [
+                    'from' => $socket->id,
+                    'worker' => $workerName,
+                ]);
+            });
+
+            $socket->on('ping-room', function ($room) use ($socket, $workerName) {
+                $socket->to($room)->emit('room-ping-received', [
+                    'from' => $socket->id,
+                    'worker' => $workerName,
+                ]);
+            });
+
+            $socket->on('ping-all', function () use ($nsp, $workerName) {
+                $nsp->emit('all-ping-received', ['nsp' => $nsp->name, 'worker' => $workerName]);
+            });
         });
-    });
+    }
 };
 
 Worker::runAll();

@@ -114,6 +114,18 @@ compensating for the old (broken) behavior.
   sid-targeted sends -- and app rooms whose names happen to look like a sid,
   such as MongoDB ObjectIds -- reach every worker, which drops them unless it
   holds that socket.
+- **`ChannelAdapter` with more than one namespace**: declaring any
+  namespace besides `/` (e.g. `$io->of('/chat')`) silently broke
+  cross-worker delivery in *every* namespace, `/` included: all adapters
+  shared one process-wide `\Channel\Client::$onMessage` callback (only the
+  last one created received anything), and every message was published as
+  namespace `/`. Each namespace now has its own channels
+  (`socket.io#/chat#`, `socket.io#/chat#<room>#`) with per-channel
+  callbacks, so the same room name in two namespaces no longer shares a
+  subscription either. Root-namespace channel names are unchanged. The
+  `workerman/channel` minimum is now 1.0.1 (for `Client::on()`), and the
+  adapter no longer overwrites a `\Channel\Client::$onMessage` your app
+  sets itself.
 - **`ChannelAdapter` cross-worker delivery**: a socket leaving via
   disconnect no longer unsubscribes its worker from a room other local
   sockets are still in (they used to stop receiving that room's broadcasts
